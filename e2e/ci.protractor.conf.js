@@ -15,7 +15,7 @@ exports.config = {
     }
   },
   directConnect: true,
-  baseUrl: "http://em-showcase-aat.service.core-compute-aat.internal/media-viewer",
+  baseUrl: "http://xui-media-viewer-aat.service.core-compute-aat.internal/media-viewer",
   // Change baseUrl to the following line to run functional tests locally:
   //baseUrl: "http://localhost:3000/",
   specs: [
@@ -47,4 +47,3 @@ exports.config = {
     }
   ]
 };
-

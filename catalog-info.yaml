@@ -1,11 +1,11 @@
 apiVersion: backstage.io/v1alpha1
 kind: Component
 metadata:
-  name: "em-media-viewer"
+  name: "xui-media-viewer"
   annotations:
     # This must match folder-name/job-name in Jenkins.
-    jenkins.io/job-full-name: cft:HMCTS_d_to_i/em-media-viewer
-    github.com/project-slug: hmcts/em-media-viewer
+    jenkins.io/job-full-name: cft:HMCTS_d_to_i/xui-media-viewer
+    github.com/project-slug: hmcts/rpx-xui-media-viewer
   tags:
     - nodejs
   links:
@@ -15,4 +15,4 @@ metadata:
 spec:
   type: service
   lifecycle: production
-  owner: dcd_em
+  owner: rpx-xui

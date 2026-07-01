@@ -11,7 +11,7 @@ const vaultConfig = aksVaultConfig as VaultConfig;
 propertiesVolume.addTo(vaultConfig);
 
 const vaultSecrets = vaultConfig.secrets || {};
-const appSecrets = vaultSecrets['rpx-xui-media-viewer'] || vaultSecrets['em-showcase'] || {};
+const appSecrets = vaultSecrets['rpx-xui-media-viewer'] || {};
 const useAatUrls = process.env['MV_USE_AAT'] === 'true' || process.env['REFORM_ENVIRONMENT'] === 'aat';
 
 const envOrDefault = (envName: string, localDefault: string, aatDefault: string = localDefault): string =>
@@ -89,7 +89,7 @@ export const config = {
     url: envOrDefault('IDAM_URL', 'http://localhost:5000', 'http://idam-api.aat.platform.hmcts.net'),
     client: process.env['IDAM_CLIENT_ID'] || 'webshow',
     secret: process.env['IDAM_SECRET'] || process.env['IDAM_CLIENT_SECRET'] || IDAM_SECRET || 'AAAAAAAAAAAAAAAA',
-    redirect: process.env['REDIRECT_URL'] || 'https://em-show-aat.service.core-compute-aat.internal/oauth2/callback',
+    redirect: process.env['REDIRECT_URL'] || 'https://xui-media-viewer-aat.service.core-compute-aat.internal/oauth2/callback',
     password: process.env['IDAM_PASSWORD'] || IDAM_PASSWORD || '***REMOVED***',
   },
   s2s: {
