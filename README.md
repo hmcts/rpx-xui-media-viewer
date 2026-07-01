@@ -43,6 +43,17 @@ yarn check:aat-config
 
 The default AAT redirect URI uses the registered `xui-media-viewer` callback. Override `REDIRECT_URL` only when the IdAM client registration supports the local callback you want to use.
 
+To verify a running local AAT instance:
+
+```
+yarn smoke:local:aat
+```
+
+## Replacing em-showcase media-viewer use
+This standalone app replaces `em-showcase` for media-viewer validation against AAT. It keeps compatible local navigation for `/`, `#/media-viewer`, and `#/dm-store`; the DM Store route now points users back to the media-viewer document ID flow instead of carrying the old DM Store showcase UI.
+
+Supported media-viewer checks include document loading, annotations, redactions, redaction search, ICP, multimedia, hearing-recording, and document-assembly proxy paths.
+
 ## Integrating into your own Angular application
 add @hmcts/media-viewer as a dependency in package.json
 

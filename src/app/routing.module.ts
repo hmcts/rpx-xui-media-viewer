@@ -11,14 +11,28 @@ import { ToggleComponent } from './media-viewer-wrapper/toolbar-toggles/toggle/t
 import { CustomToolbarModule } from './media-viewer-wrapper/custom-toolbar/custom-toolbar.module';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { RpxTranslationModule } from 'rpx-xui-translation';
+import { StartPageComponent } from './start-page.component';
+import { DmStoreRetiredComponent } from './dm-store-retired.component';
 
-const routes: Routes = [{
+const routes: Routes = [
+  {
     path: '',
+    component: StartPageComponent
+  },
+  {
+    path: 'media-viewer',
     component: MediaViewerWrapperComponent
-}];
+  },
+  {
+    path: 'dm-store',
+    component: DmStoreRetiredComponent
+  }
+];
 
 @NgModule({
   declarations: [
+    StartPageComponent,
+    DmStoreRetiredComponent,
     MediaViewerWrapperComponent,
     ToolbarTogglesComponent,
     ToggleComponent
@@ -27,9 +41,10 @@ const routes: Routes = [{
     CommonModule,
     BrowserAnimationsModule,
     RouterModule.forRoot(routes, {
-    scrollPositionRestoration: 'enabled',
-    anchorScrolling: 'enabled'
-}),
+      scrollPositionRestoration: 'enabled',
+      anchorScrolling: 'enabled',
+      useHash: true
+    }),
     HttpClientModule,
     ReactiveFormsModule,
     MediaViewerModule,
