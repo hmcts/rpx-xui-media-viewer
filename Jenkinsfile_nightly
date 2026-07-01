@@ -34,13 +34,9 @@ def vaultOverrides = [
 ]
 
 def secrets = [
-  "s2s-${params.ENVIRONMENT}": [
-    secret('microservicekey-em-gw', 'S2S_KEY')
-  ],
-  "rpa-${params.ENVIRONMENT}": [
-    secret('show-oauth2-token', 'IDAM_SECRET')
-  ],
-  "rpx-xui-media-viewer-${params.ENVIRONMENT}": [
+  "rpx-${params.ENVIRONMENT}": [
+    secret('microservicekey-em-gw', 'S2S_KEY'),
+    secret('show-oauth2-token', 'IDAM_SECRET'),
     secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
     secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
     secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),

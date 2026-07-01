@@ -11,7 +11,7 @@ const vaultConfig = aksVaultConfig as VaultConfig;
 propertiesVolume.addTo(vaultConfig);
 
 const vaultSecrets = vaultConfig.secrets || {};
-const appSecrets = vaultSecrets['rpx-xui-media-viewer'] || {};
+const appSecrets = vaultSecrets['rpx'] || {};
 const useAatUrls = process.env['MV_USE_AAT'] === 'true' || process.env['REFORM_ENVIRONMENT'] === 'aat';
 
 const envOrDefault = (envName: string, localDefault: string, aatDefault: string = localDefault): string =>
