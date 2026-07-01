@@ -24,6 +24,9 @@ if [[ "$missing_required_env" -ne 0 ]]; then
   exit 1
 fi
 
+yarn build:lib
+yarn copy:lib-js-dependencies
+yarn copy:lib-assets
 yarn setup:api
 
 yarn start:api &
