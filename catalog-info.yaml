@@ -15,4 +15,4 @@ metadata:
 spec:
   type: service
   lifecycle: production
-  owner: rpx-xui
+  owner: dcd_group_expertui_v2
