@@ -65,7 +65,7 @@ while IFS= read -r line || [[ -n "${line}" ]]; do
   if [[ -z "${value}" ]]; then
     echo "Warning: ${secret_name} was not populated from ${VAULT}; ${key} left blank." >&2
   fi
-  echo "${key}=${value}" >> "${tmp_file}"
+  printf '%s=%q\n' "${key}" "${value}" >> "${tmp_file}"
 done < "${TEMPLATE_FILE}"
 
 mv "${tmp_file}" "${OUT_FILE}"

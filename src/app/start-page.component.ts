@@ -13,7 +13,7 @@ import { Component } from '@angular/core';
               <tbody class="govuk-table__body">
                 <tr class="govuk-table__row">
                   <td class="govuk-table__cell">
-                    <a class="govuk-!-padding-left-2" routerLink="/media-viewer" skipLocationChange>Media Viewer</a>
+                    <a class="govuk-!-padding-left-2" routerLink="/media-viewer">Media Viewer</a>
                   </td>
                 </tr>
               </tbody>
