@@ -4,8 +4,8 @@ nodejs:
   ingressHost: xui-media-viewer-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
   image: 'hmctsprod.azurecr.io/xui/media-viewer:latest'
   keyVaults:
-    rpx-xui-media-viewer:
-      resourceGroup: rpx-xui-media-viewer
+    rpx:
+      resourceGroup: rpx
       secrets:
         - microservicekey-em-gw
         - show-oauth2-token

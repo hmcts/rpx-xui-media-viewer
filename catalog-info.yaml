@@ -4,7 +4,7 @@ metadata:
   name: "xui-media-viewer"
   annotations:
     # This must match folder-name/job-name in Jenkins.
-    jenkins.io/job-full-name: cft:HMCTS_d_to_i/xui-media-viewer
+    jenkins.io/job-full-name: cft:HMCTS_j_to_z/rpx-xui-media-viewer
     github.com/project-slug: hmcts/rpx-xui-media-viewer
   tags:
     - nodejs
@@ -15,4 +15,4 @@ metadata:
 spec:
   type: service
   lifecycle: production
-  owner: rpx-xui
+  owner: dcd_group_expertui_v2
