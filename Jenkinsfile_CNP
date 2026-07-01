@@ -66,6 +66,19 @@ withPipeline(type, product, component) {
   onPR{
   env.EXECUTE_E2E=true
   }
+  before('akschartsinstall') {
+    onPR {
+      if (!env.CHANGE_URL && env.BRANCH_NAME ==~ /^PR-\d+$/) {
+        env.CHANGE_ID = env.CHANGE_ID ?: env.BRANCH_NAME.replaceFirst('^PR-', '')
+        env.CHANGE_URL = "https://github.com/hmcts/rpx-xui-media-viewer/pull/${env.CHANGE_ID}"
+        echo "Filled missing Jenkins PR CHANGE_URL from BRANCH_NAME=${env.BRANCH_NAME}"
+      }
+      if (!env.CHANGE_BRANCH && env.GIT_COMMIT) {
+        env.CHANGE_BRANCH = env.GIT_COMMIT
+        echo "Filled missing Jenkins PR CHANGE_BRANCH from GIT_COMMIT"
+      }
+    }
+  }
   enableAksStagingDeployment()
   disableLegacyDeployment()
 
