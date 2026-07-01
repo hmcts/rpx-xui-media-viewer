@@ -86,7 +86,7 @@ export const config = {
     }
   },
   idam: {
-    url: envOrDefault('IDAM_URL', 'http://localhost:5000', 'http://idam-api.aat.platform.hmcts.net'),
+    url: envOrDefault('IDAM_URL', 'http://localhost:5000', 'https://idam-api.aat.platform.hmcts.net'),
     client: process.env['IDAM_CLIENT_ID'] || 'webshow',
     secret: process.env['IDAM_SECRET'] || process.env['IDAM_CLIENT_SECRET'] || IDAM_SECRET || 'AAAAAAAAAAAAAAAA',
     redirect: process.env['REDIRECT_URL'] || 'https://xui-media-viewer-aat.service.core-compute-aat.internal/oauth2/callback',
