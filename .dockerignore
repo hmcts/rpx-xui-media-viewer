@@ -1,5 +1,7 @@
 .git
 .github
+.vscode
+.idea
 .angular
 **/.angular
 .DS_Store
@@ -14,26 +16,35 @@ coverage
 **/coverage
 dist
 **/dist
+e2e
 functional-output
 reports
 **/reports
 test-results
 **/test-results
+test
+**/test
 
 node_modules
 **/node_modules
 .yarn/cache
 **/.yarn/cache
+.yarn/global
 .yarn/install-state.gz
 .yarn/unplugged
 **/.cache
+**/.parcel-cache
 
 Jenkinsfile*
 README.md
 playwright-report
 trace
+mochawesome-report
 tmp
+.sessions
 logs
+dummy.pdf
+*.iml
 *.log
 **/*.log
 
