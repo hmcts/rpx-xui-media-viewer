@@ -8,6 +8,30 @@ This is an angular library that can be used to view and annotate PDF documents a
 - yarn package
 - yarn start:ng
 
+## Running locally against AAT
+The demo app can run locally while the bundled Express API proxies document, annotation, redaction, ICP, hearing-recording, and document-assembly calls to AAT.
+
+1. Copy `.env.example` to `.env`.
+2. Fill the blank secret values from the approved HMCTS secret source:
+   - `IDAM_SECRET`
+   - `IDAM_PASSWORD`
+   - `S2S_KEY`
+3. Run:
+
+```
+yarn start:aat
+```
+
+The script compiles the API, starts it on `PORT` or `1337`, then starts the Angular demo with `proxy.config.js`. The `.env` file is ignored by git and must not be committed.
+
+To check only the AAT endpoint configuration without starting the app:
+
+```
+yarn check:aat-config
+```
+
+The default AAT redirect URI remains the registered `webshow` callback. Override `REDIRECT_URL` only when the IdAM client registration supports the local callback you want to use.
+
 ## Integrating into your own Angular application
 add @hmcts/media-viewer as a dependency in package.json
 
