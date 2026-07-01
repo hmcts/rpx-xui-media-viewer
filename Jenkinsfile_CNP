@@ -4,7 +4,7 @@ properties([
   [
     $class       : 'GithubProjectProperty',
     displayName  : 'MediaViewer',
-    projectUrlStr: 'https://github.com/hmcts/em-media-viewer/'
+    projectUrlStr: 'https://github.com/hmcts/rpx-xui-media-viewer/'
   ],
   pipelineTriggers([
     [$class: 'GitHubPushTrigger']
@@ -15,7 +15,7 @@ properties([
 @Library("Infrastructure")
 
 def type = "nodejs"
-def product = "em"
+def product = "xui"
 def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
@@ -29,7 +29,7 @@ env.ICP_API_URL = "https://em-icp.aat.platform.hmcts.net"
 env.NPA_URL = "http://em-npa-aat.service.core-compute-aat.internal"
 env.IDAM_URL = "http://idam-api.aat.platform.hmcts.net"
 env.S2S_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
-env.REDIRECT_URL = "https://em-show-aat.service.core-compute-aat.internal/oauth2/callback"
+env.REDIRECT_URL = "https://xui-media-viewer-aat.service.core-compute-aat.internal/oauth2/callback"
 env.NODE_ENV="TEST"
 
 def vaultOverrides = [
@@ -43,7 +43,7 @@ def secrets = [
         'rpa-${env}': [
                 secret('show-oauth2-token', 'IDAM_SECRET')
         ],
-        'em-showcase-${env}': [
+        'rpx-xui-media-viewer-${env}': [
           secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
           secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
           secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),
@@ -66,7 +66,7 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   enableSecurityScan()
   env.EXECUTE_E2E=false
-  env.TEST_URL = 'https://em-media-viewer-staging.service.core-compute-aat.internal/'
+  env.TEST_URL = 'https://xui-media-viewer-staging.service.core-compute-aat.internal/'
   onPR{
   env.EXECUTE_E2E=true
   }

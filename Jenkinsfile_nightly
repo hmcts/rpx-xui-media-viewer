@@ -4,7 +4,7 @@ properties([
   [
   $class       : 'GithubProjectProperty',
   displayName  : 'MediaViewer',
-  projectUrlStr: 'https://github.com/hmcts/em-media-viewer/'
+  projectUrlStr: 'https://github.com/hmcts/rpx-xui-media-viewer/'
   ],
   pipelineTriggers([
     cron('H 17 * * *')
@@ -23,7 +23,7 @@ properties([
 @Library("Infrastructure")
 
 def type = "nodejs"
-def product = "em"
+def product = "xui"
 def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
@@ -40,7 +40,7 @@ def secrets = [
   "rpa-${params.ENVIRONMENT}": [
     secret('show-oauth2-token', 'IDAM_SECRET')
   ],
-  "em-showcase-${params.ENVIRONMENT}": [
+  "rpx-xui-media-viewer-${params.ENVIRONMENT}": [
     secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
     secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
     secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),
@@ -58,7 +58,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 }
 
 withNightlyPipeline(type, product, component) {
-  env.TEST_URL = 'http://em-media-viewer-aat.service.core-compute-aat.internal'
+  env.TEST_URL = 'http://xui-media-viewer-aat.service.core-compute-aat.internal'
   env.IDAM_URL = params.IDAM_API_URL
   env.S2S_PROVIDER = params.S2S_PROVIDER_URL
   env.CCD_DATA_STORE_API_URL = params.CCD_DATA_STORE_URL

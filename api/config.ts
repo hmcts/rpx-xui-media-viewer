@@ -3,16 +3,23 @@ import * as propertiesVolume from '@hmcts/properties-volume';
 
 type VaultConfig = typeof aksVaultConfig & {
   secrets?: {
-    'em-showcase': Record<string, string | undefined>;
+    [key: string]: Record<string, string | undefined>;
   };
 };
 
 const vaultConfig = aksVaultConfig as VaultConfig;
 propertiesVolume.addTo(vaultConfig);
 
-const IDAM_SECRET = vaultConfig.secrets ? vaultConfig.secrets['em-showcase']['show-oauth2-token'] : undefined;
-const S2S_KEY = vaultConfig.secrets ? vaultConfig.secrets['em-showcase']['microservicekey-em-gw'] : undefined;
-const IDAM_PASSWORD = vaultConfig.secrets ? vaultConfig.secrets['em-showcase']['password'] : undefined;
+const vaultSecrets = vaultConfig.secrets || {};
+const appSecrets = vaultSecrets['rpx-xui-media-viewer'] || {};
+const useAatUrls = process.env['MV_USE_AAT'] === 'true' || process.env['REFORM_ENVIRONMENT'] === 'aat';
+
+const envOrDefault = (envName: string, localDefault: string, aatDefault: string = localDefault): string =>
+  process.env[envName] || (useAatUrls ? aatDefault : localDefault);
+
+const IDAM_SECRET = appSecrets['show-oauth2-token'];
+const S2S_KEY = appSecrets['microservicekey-em-gw'];
+const IDAM_PASSWORD = appSecrets['password'];
 
 export const config = {
   proxies: {
@@ -22,22 +29,38 @@ export const config = {
         '/api/template-renditions',
         '/doc-assembly'
       ],
-      target: process.env['REFORM_ENVIRONMENT'] ? process.env['DOCASSEMBLY_URL'] : 'http://localhost:4631',
+      target: envOrDefault(
+        'DOCASSEMBLY_URL',
+        'http://localhost:4631',
+        'http://dg-docassembly-aat.service.core-compute-aat.internal'
+      ),
       pathRewrite: {
         '^/doc-assembly': '/api'
       }
     },
     dmStore: {
       endpoints: ['/documents'],
-      target: process.env['REFORM_ENVIRONMENT'] ? process.env['DM_STORE_APP_URL'] : 'http://localhost:4603'
+      target: envOrDefault(
+        'DM_STORE_APP_URL',
+        'http://localhost:4603',
+        'http://dm-store-aat.service.core-compute-aat.internal'
+      )
     },
     hrsApi: {
       endpoints: ['/hearing-recordings'],
-      target: process.env['REFORM_ENVIRONMENT'] ? process.env['HRS_API_URL'] : 'http://localhost:8080'
+      target: envOrDefault(
+        'HRS_API_URL',
+        'http://localhost:8080',
+        'http://em-hrs-api-aat.service.core-compute-aat.internal'
+      )
     },
     annotation: {
       endpoints: ['/em-anno'],
-      target: process.env['REFORM_ENVIRONMENT'] ? process.env['ANNOTATION_API_URL'] : 'http://localhost:4623',
+      target: envOrDefault(
+        'ANNOTATION_API_URL',
+        'http://localhost:4623',
+        'http://em-anno-aat.service.core-compute-aat.internal'
+      ),
       pathRewrite: {
         '^/em-anno': '/api'
       }
@@ -47,24 +70,32 @@ export const config = {
         '/api/markups',
         '/api/redaction'
       ],
-      target: process.env['REFORM_ENVIRONMENT'] ? process.env['NPA_URL'] : 'http://localhost:4624'
+      target: envOrDefault(
+        'NPA_URL',
+        'http://localhost:4624',
+        'http://em-npa-aat.service.core-compute-aat.internal'
+      )
     },
     icp: {
       endpoints: ['/icp'],
-      target: process.env['REFORM_ENVIRONMENT'] ? process.env['ICP_API_URL'] : 'http://localhost:4621',
+      target: envOrDefault(
+        'ICP_API_URL',
+        'http://localhost:4621',
+        'https://em-icp.aat.platform.hmcts.net'
+      ),
     }
   },
   idam: {
-    url: process.env['IDAM_URL'] || 'http://localhost:5000',
-    client: 'webshow',
-    secret: IDAM_SECRET || 'AAAAAAAAAAAAAAAA',
-    redirect: process.env['REDIRECT_URL'] || 'https://em-show-aat.service.core-compute-aat.internal/oauth2/callback',
-    password: IDAM_PASSWORD || '***REMOVED***',
+    url: envOrDefault('IDAM_URL', 'http://localhost:5000', 'http://idam-api.aat.platform.hmcts.net'),
+    client: process.env['IDAM_CLIENT_ID'] || 'webshow',
+    secret: process.env['IDAM_SECRET'] || process.env['IDAM_CLIENT_SECRET'] || IDAM_SECRET || 'AAAAAAAAAAAAAAAA',
+    redirect: process.env['REDIRECT_URL'] || 'https://xui-media-viewer-aat.service.core-compute-aat.internal/oauth2/callback',
+    password: process.env['IDAM_PASSWORD'] || IDAM_PASSWORD || '***REMOVED***',
   },
   s2s: {
-    url: process.env['S2S_URL'] || 'http://localhost:4502',
-    secret: S2S_KEY || 'AAAAAAAAAAAAAAAA',
-    microservice: 'em_gw'
+    url: envOrDefault('S2S_URL', 'http://localhost:4502', 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal'),
+    secret: process.env['S2S_KEY'] || process.env['S2S_SECRET'] || S2S_KEY || 'AAAAAAAAAAAAAAAA',
+    microservice: process.env['S2S_MICROSERVICE'] || 'em_gw'
   },
   port: process.env.PORT || 1337,
   tokenRefreshTime: 60 * 60 * 1000

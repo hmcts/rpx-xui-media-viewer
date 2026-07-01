@@ -1,11 +1,11 @@
 nodejs:
   applicationPort: 1337
-  aadIdentityName: em
-  ingressHost: em-media-viewer-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
-  image: 'hmctsprod.azurecr.io/em/media-viewer:latest'
+  aadIdentityName: xui
+  ingressHost: xui-media-viewer-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal
+  image: 'hmctsprod.azurecr.io/xui/media-viewer:latest'
   keyVaults:
-    em-showcase:
-      resourceGroup: em-showcase
+    rpx-xui-media-viewer:
+      resourceGroup: rpx-xui-media-viewer
       secrets:
         - microservicekey-em-gw
         - show-oauth2-token
@@ -20,4 +20,4 @@ nodejs:
     IDAM_URL: "https://idam-api.{{ .Values.global.environment }}.platform.hmcts.net"
     S2S_URL: "http://rpe-service-auth-provider-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
     NPA_URL: "http://em-npa-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal"
-    REDIRECT_URL: "https://em-show-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback"
+    REDIRECT_URL: "https://xui-media-viewer-{{ .Values.global.environment }}.service.core-compute-{{ .Values.global.environment }}.internal/oauth2/callback"

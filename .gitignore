@@ -30,6 +30,9 @@ reports/
 !.vscode/extensions.json
 
 # misc
+/.env
+/.env.*
+!/.env.example
 /.angular/cache
 /.sass-cache
 /connect.lock

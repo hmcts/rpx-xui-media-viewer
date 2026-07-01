@@ -33,9 +33,9 @@ const mvData = {
   "NESTED_PAGE_NUMBER_TO_NAVIGATE": '8',
   "NESTED_PAGE_CONTENT": 'Children',
   "EXUI_PR_ENV": 'xui',
-  "PREVIEW_ENV": 'em-media-viewer-pr',
+  "PREVIEW_ENV": 'xui-media-viewer-pr',
   "LOCAL_ENV": 'local',
-  "STAGING_ENV": 'em-media-viewer-staging',
+  "STAGING_ENV": 'xui-media-viewer-staging',
   // Note: If someone removed document (with documentID below) then that will fail 'Load new document with no outlines' test
   "NO_OUTLINE_CASE_ID": '291b1dd0-1627-43d8-beb0-a9cb171dc0b6',
 };

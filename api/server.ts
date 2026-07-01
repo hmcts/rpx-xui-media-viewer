@@ -93,6 +93,6 @@ Promise.all([serviceAuthRepository.init(), idamRepository.init()])
 
     })
     .catch(err => {
-        logger.error('Could not start em-showcase application >> ', err.message);
+        logger.error('Could not start media-viewer application >> ', err.message);
         logger.error('\n', err.stack);
     });
