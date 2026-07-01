@@ -10,12 +10,24 @@ This is an angular library that can be used to view and annotate PDF documents a
 ## Running locally against AAT
 The demo app can run locally while the bundled Express API proxies document, annotation, redaction, ICP, hearing-recording, and document-assembly calls to AAT.
 
-1. Copy `.env.example` to `.env`.
-2. Fill the blank secret values from the approved HMCTS secret source:
-   - `IDAM_SECRET`
-   - `IDAM_PASSWORD`
-   - `S2S_KEY`
-3. Run:
+1. Generate `.env` from the `rpx-aat` Key Vault:
+
+```
+yarn env:populate:aat
+```
+
+   Optional custom output path and template:
+
+```
+bash ./scripts/populate-env-from-keyvault.sh aat /tmp/media-viewer.env .env.example
+```
+
+   The script fills:
+   - `IDAM_SECRET` from `show-oauth2-token`
+   - `IDAM_PASSWORD` from `password`
+   - `S2S_KEY` from `microservicekey-em-gw`
+
+2. Start the local AAT-connected app:
 
 ```
 yarn start:aat
