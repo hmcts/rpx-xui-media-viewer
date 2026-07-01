@@ -1,6 +1,5 @@
 # @hmcts/media-viewer 
-[![Coverage Status](https://coveralls.io/repos/github/hmcts/media-viewer/badge.svg?branch=master)](https://coveralls.io/github/hmcts/media-viewer?branch=upload-npm-in-pipeline)
-[![Build Status](https://travis-ci.com/hmcts/media-viewer.svg?branch=master)](https://travis-ci.com/hmcts/media-viewer)
+[![Node.js Package](https://github.com/hmcts/rpx-xui-media-viewer/actions/workflows/npmpublish.yml/badge.svg)](https://github.com/hmcts/rpx-xui-media-viewer/actions/workflows/npmpublish.yml)
 
 This is an angular library that can be used to view and annotate PDF documents and images
 
@@ -30,7 +29,7 @@ To check only the AAT endpoint configuration without starting the app:
 yarn check:aat-config
 ```
 
-The default AAT redirect URI remains the registered `webshow` callback. Override `REDIRECT_URL` only when the IdAM client registration supports the local callback you want to use.
+The default AAT redirect URI uses the registered `xui-media-viewer` callback. Override `REDIRECT_URL` only when the IdAM client registration supports the local callback you want to use.
 
 ## Integrating into your own Angular application
 add @hmcts/media-viewer as a dependency in package.json
