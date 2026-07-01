@@ -11,10 +11,12 @@ ENV PUPPETEER_SKIP_DOWNLOAD=1 \
   SCARF_ANALYTICS=false
 
 USER root
-RUN apk add --no-cache rsync python3 make g++
+ENV WORKDIR /opt/app
+RUN apk add --no-cache rsync python3 make g++ \
+  && mkdir -p ${WORKDIR}/projects/media-viewer \
+  && chown -R hmcts:hmcts ${WORKDIR}
 USER hmcts
 
-ENV WORKDIR /opt/app
 WORKDIR ${WORKDIR}
 
 COPY --chown=hmcts:hmcts .yarn/ ./.yarn/

@@ -96,9 +96,9 @@ yarn smoke:local:aat
 
 The smoke check verifies:
 - `http://localhost:3000/`
-- `http://localhost:3000/#/media-viewer`
-- `http://localhost:3000/#/dm-store`
 - `http://localhost:1337/health` returns `UP`
+
+Use a browser for route-level checks because `#/media-viewer` and `#/dm-store` are Angular hash routes, not server paths.
 
 ### Useful overrides
 Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.
