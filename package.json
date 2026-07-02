@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.21",
+  "version": "4.2.22",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -29,8 +29,8 @@
     "copy:demo-files": "yarn copy:demo-js-dependencies && yarn copy:demo-assets",
     "copy:lib-js-dependencies": "cross-env NODE_PATH=. rsync -r projects/media-viewer/node_modules/pdfjs-dist/build dist/media-viewer/assets",
     "copy:demo-js-dependencies": "cross-env NODE_PATH=. rsync -r projects/media-viewer/node_modules/pdfjs-dist/build dist/demo-app/assets",
-    "copy:lib-assets": "cross-env NODE_PATH=. rsync -r projects/media-viewer/src/assets/* dist/media-viewer/assets/",
-    "copy:demo-assets": "cross-env NODE_PATH=. rsync -r projects/media-viewer/src/assets/* dist/demo-app/assets/",
+    "copy:lib-assets": "cross-env NODE_PATH=. rsync -r --exclude='*:Zone.Identifier' projects/media-viewer/src/assets/* dist/media-viewer/assets/",
+    "copy:demo-assets": "cross-env NODE_PATH=. rsync -r --exclude='*:Zone.Identifier' projects/media-viewer/src/assets/* dist/demo-app/assets/",
     "copy:docs": "yarn copy:readme && yarn copy:licence",
     "copy:licence": "cross-env NODE_PATH=. cp ./README.md dist/media-viewer",
     "copy:readme": "cross-env NODE_PATH=. cp ./LICENCE dist/media-viewer",
