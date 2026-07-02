@@ -123,12 +123,12 @@ describe('KeyboardNavDirective', () => {
       const newButton = document.createElement('button');
       hostElement.appendChild(newButton);
     
-      requestAnimationFrame(() => {
+      setTimeout(() => {
         expect(updateSpy).toHaveBeenCalled();
         expect(directive['focusableItems'].length).toBe(4);
         expect(directive['focusableItems']).toContain(newButton);
         done();
-      });
+      }, 0);
     });
   });
 

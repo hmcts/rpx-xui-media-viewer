@@ -7,6 +7,7 @@ import { By } from '@angular/platform-browser';
 import { HighlightCreateService } from '../../annotation-create/highlight-create/highlight-create.service';
 import { StoreModule } from '@ngrx/store';
 import { reducers } from '../../../../store/reducers/reducers';
+import { KeyboardBoxMoveDirective } from './keyboard-box-move.directive';
 
 describe('RectangleComponent', () => {
   let component: RectangleComponent;
@@ -42,7 +43,7 @@ describe('RectangleComponent', () => {
 
   beforeEach(() => {
     return TestBed.configureTestingModule({
-      declarations: [RectangleComponent],
+      declarations: [RectangleComponent, KeyboardBoxMoveDirective],
       imports: [
         FormsModule,
         MutableDivModule,
