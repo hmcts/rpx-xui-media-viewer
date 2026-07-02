@@ -10,7 +10,7 @@ process.env.ICP_API_URL = 'https://em-icp.aat.platform.hmcts.net';
 process.env.REDIRECT_URL = 'https://xui-media-viewer-aat.service.core-compute-aat.internal/oauth2/callback';
 process.env.NODE_CONFIG = JSON.stringify({
   secrets: {
-    'em-showcase': {
+    rpx: {
       'show-oauth2-token': 'test-idam-secret',
       'microservicekey-em-gw': 'test-s2s-key',
       password: 'test-password'
