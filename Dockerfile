@@ -1,9 +1,12 @@
 FROM hmctsprod.azurecr.io/base/node:20-alpine AS base
+LABEL maintainer="HMCTS Expert UI <https://github.com/hmcts>"
 
 ENV PUPPETEER_SKIP_DOWNLOAD=1 \
   PUPPETEER_SKIP_CHROMIUM_DOWNLOAD=1 \
   CHROMEDRIVER_SKIP_DOWNLOAD=1 \
+  CYPRESS_INSTALL_BINARY=0 \
   PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+  PLAYWRIGHT_BROWSERS_PATH=0 \
   SENTRYCLI_SKIP_DOWNLOAD=1 \
   NPM_CONFIG_FUND=false \
   NPM_CONFIG_AUDIT=false \
@@ -11,8 +14,9 @@ ENV PUPPETEER_SKIP_DOWNLOAD=1 \
   SCARF_ANALYTICS=false
 
 USER root
-ENV WORKDIR /opt/app
-RUN apk add --no-cache rsync python3 make g++ \
+ENV WORKDIR=/opt/app
+RUN corepack enable \
+  && apk add --no-cache rsync python3 make g++ \
   && mkdir -p ${WORKDIR}/projects/media-viewer \
   && chown -R hmcts:hmcts ${WORKDIR}
 USER hmcts
