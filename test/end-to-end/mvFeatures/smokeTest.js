@@ -8,7 +8,7 @@ Scenario('Login to the manage case application', async ({I}) => {
   await loginTest(I);
 
 }).retry(testConfig.TestRetryScenarios)
-  .tag('@wip')
+  .tag('@smoke')
 
 Scenario('Core Functionality Tested', async ({I}) => {
   await updateBookmarkTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
@@ -18,4 +18,4 @@ Scenario('Core Functionality Tested', async ({I}) => {
   await markContentForRedactionUsingDrawBoxTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
 
 }).retry(testConfig.TestRetryScenarios)
-  .tag('@wip')
+  .tag('@smoke')

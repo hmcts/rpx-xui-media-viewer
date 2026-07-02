@@ -39,7 +39,7 @@
     "test": "yarn puppeteer:install && cd projects/media-viewer && ng test",
     "test:coverage": "echo test:coverage",
     "test:a11y": "echo test:a11y",
-    "test:smoke": "yarn puppeteer:install && NODE_PATH=. node ./node_modules/codeceptjs/bin/codecept.js run -c ./test/end-to-end/codecept.smoke.conf.js --grep @smoke --steps --reporter mocha-multi",
+    "test:smoke": "yarn puppeteer:install && E2E_TEST_PATH=./mvFeatures/smokeTest.js NODE_PATH=. node ./node_modules/codeceptjs/bin/codecept.js run -c ./test/end-to-end/codecept.smoke.conf.js --grep @smoke --steps --reporter mocha-multi",
     "test:fullfunctional": "yarn e2e:fullfunctional",
     "test:functional": "yarn e2e:fullfunctional",
     "test:crossbrowser_PT": "protractor e2e/saucelabs.conf.js",
