@@ -14,6 +14,7 @@
     "env:populate": "bash ./scripts/populate-env-from-keyvault.sh",
     "env:populate:aat": "bash ./scripts/populate-env-from-keyvault.sh aat",
     "smoke:local:aat": "bash ./scripts/smoke-local-aat.sh",
+    "test:local:aat": "bash ./scripts/test-local-aat.sh",
     "setup": "yarn setup:api && yarn setup:demo",
     "setup:api": "cross-env NODE_PATH=. rm -rf ./dist/api && tsc -p ./api --outDir dist/api",
     "check:aat-config": "yarn setup:api && node scripts/check-local-aat-config.js",

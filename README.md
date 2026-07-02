@@ -100,6 +100,18 @@ The smoke check verifies:
 
 Use a browser for route-level checks because `#/media-viewer` and `#/dm-store` are Angular hash routes, not server paths.
 
+For browser-level proof that the standalone viewer is using AAT-backed services, keep
+`yarn start:aat` running, then run:
+
+```
+yarn test:local:aat
+```
+
+This opens `http://localhost:3000/#/media-viewer`, loads
+`/documents/<MV_SMOKE_PDF_DOCUMENT_ID>/binary`, and waits for the rendered PDF viewer
+and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
+default AAT PDF document id.
+
 ### Useful overrides
 Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.
 
