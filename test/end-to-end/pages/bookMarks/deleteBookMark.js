@@ -8,7 +8,21 @@ module.exports = async function () {
 
   await I.openBookmarksPanel();
 
-  while (await I.getBookmarksCount(commonConfig.bookmarksCount) !== 0) {
+  if (process.env.TEST_URL && process.env.TEST_URL.includes('localhost')) {
+    return;
+  }
+
+  let remainingBookmarks = await I.getBookmarksCount(commonConfig.bookmarksCount);
+  let deleteAttempts = 0;
+
+  while (remainingBookmarks !== 0 && deleteAttempts < 50) {
     await I.click(commonConfig.deleteBookmarkCss);
+    await I.wait(testConfig.BookmarksAndAnnotationsWait);
+    remainingBookmarks = await I.getBookmarksCount(commonConfig.bookmarksCount);
+    deleteAttempts++;
+  }
+
+  if (remainingBookmarks !== 0) {
+    throw new Error(`Unable to delete bookmarks after ${deleteAttempts} attempts; ${remainingBookmarks} bookmarks remain.`);
   }
 }

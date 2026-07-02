@@ -286,6 +286,20 @@ async function previewEnv() {
 
 async function executeTestsOnPreview(I, caseId, mediaType) {
   await I.amOnPage(testConfig.TestUrl, testConfig.PageLoadTime);
+  if (process.env.TEST_URL && process.env.TEST_URL.includes('localhost')) {
+    const documentId = process.env.MV_SMOKE_PDF_DOCUMENT_ID || '04666097-eb32-4b2b-9bec-8e9ce8057560';
+    await I.waitForText('Change document details', testConfig.TestTimeToWaitForText);
+    await I.click('Change document details');
+    await I.fillField(commonConfig.uploadDocumentUrl, `/documents/${documentId}/binary`);
+    await I.fillField('#documentType', 'pdf');
+    await I.fillField('#caseId', caseId);
+    await I.click('Load document');
+    await I.waitForElement(commonConfig.mvpdfviewer, testConfig.PageLoadTime);
+    await I.waitForElement(commonConfig.pageNumber, testConfig.PageLoadTime);
+    await I.waitForElement('div.page[data-page-number="1"]', testConfig.PageLoadTime);
+    await I.waitForElement(commonConfig.moreOptionsButton, testConfig.PageLoadTime);
+    return;
+  }
   await I.waitForText(commonConfig.assertEnvTestData, testConfig.TestTimeToWaitForText);
   console.log('mvCaseHelper2', await I.grabCurrentUrl());
 }

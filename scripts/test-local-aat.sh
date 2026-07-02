@@ -10,7 +10,7 @@ if [[ -f "${env_file}" ]]; then
   set +a
 fi
 
-export TEST_URL="${TEST_URL:-http://localhost:3000/#/media-viewer}"
+export TEST_URL="${TEST_URL:-http://localhost:3000/}"
 export E2E_TEST_PATH="${E2E_TEST_PATH:-./mvFeatures/localAatSmoke.js}"
 export MV_SMOKE_PDF_DOCUMENT_ID="${MV_SMOKE_PDF_DOCUMENT_ID:-04666097-eb32-4b2b-9bec-8e9ce8057560}"
 

@@ -1,3 +1,3 @@
 import { Logger } from '@hmcts/nodejs-logging';
 
-export const logger = Logger.getLogger('xui-media-viewer');
+export const logger = Logger.getLogger('em-media-viewer');
