@@ -8,7 +8,7 @@ async function clearBookmarksViaApi(I) {
     return false;
   }
 
-  const documentId = process.env.MV_SMOKE_PDF_DOCUMENT_ID || '04666097-eb32-4b2b-9bec-8e9ce8057560';
+  const documentId = process.env.MV_CURRENT_DOCUMENT_ID || process.env.MV_SMOKE_PDF_DOCUMENT_ID || '04666097-eb32-4b2b-9bec-8e9ce8057560';
   const testUrl = new URL(process.env.TEST_URL);
   const baseUrl = `${testUrl.protocol}//${testUrl.host}`;
 

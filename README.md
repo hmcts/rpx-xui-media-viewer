@@ -112,6 +112,48 @@ This opens `http://localhost:3000/#/media-viewer`, loads
 and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
 default AAT PDF document id.
 
+### 5. Create isolated AAT test documents
+For mutation-heavy functional tests, do not share one document across parallel workers.
+Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
+is running:
+
+```
+yarn local-aat:documents -- --pdf-count 7 --image-count 1 --output .local-aat-documents.env
+```
+
+This writes:
+- `MV_SMOKE_PDF_DOCUMENT_ID`
+- `MV_SMOKE_IMAGE_DOCUMENT_ID`
+- `MV_FUNCTIONAL_PDF_DOCUMENT_IDS`
+- `MV_FUNCTIONAL_IMAGE_DOCUMENT_IDS`
+
+The upload path mirrors em-showcase: multipart `files`, `classification=PUBLIC`,
+and civil/probate metadata are posted to `/documents`.
+
+### 6. Run isolated local functional tests
+With `yarn start:aat` still running, execute the functional groups with separate
+documents and separate reports:
+
+```
+yarn test:functional:local:isolated
+```
+
+By default this creates fresh documents, runs up to three feature files at a time,
+and writes reports under `functional-output/local-isolated/`. Override with:
+- `MV_LOCAL_PARALLEL_MAX_JOBS=1` to run the same isolated groups serially
+- `MV_CREATE_LOCAL_AAT_DOCS=false` to reuse IDs from `.local-aat-documents.env`
+- `E2E_PARALLEL_OUTPUT_ROOT=<path>` to change report location
+
+For the strongest isolation proof, make each scenario upload and use its own document:
+
+```
+yarn test:functional:local:self-contained
+```
+
+This is slower because it creates a fresh AAT DM Store document for each scenario, but
+it is the best local check when diagnosing interference between bookmarks,
+annotations, comments, and redactions.
+
 ### Useful overrides
 Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.
 

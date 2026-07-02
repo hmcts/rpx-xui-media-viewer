@@ -1,4 +1,8 @@
 const puppeteer = require('puppeteer');
+const {
+  defaultFixturePath,
+  uploadDocument
+} = require('./local-aat-document-fixtures');
 
 const DEFAULT_DOCUMENT_ID = '04666097-eb32-4b2b-9bec-8e9ce8057560';
 const testUrl = process.env.TEST_URL || 'http://localhost:3000/';
@@ -27,8 +31,10 @@ async function loadLocalDocument(page) {
     summary.click();
   });
 
-  const documentId = process.env.MV_SMOKE_PDF_DOCUMENT_ID || DEFAULT_DOCUMENT_ID;
-  const caseId = process.env.MV_SMOKE_CASE_ID || 'local-aat-media-viewer';
+  const documentId = process.env.MV_CREATE_DOCUMENT_PER_SCENARIO === 'true'
+    ? await uploadDocument(defaultFixturePath('pdf'))
+    : process.env.MV_SMOKE_PDF_DOCUMENT_ID || DEFAULT_DOCUMENT_ID;
+  const caseId = process.env.MV_SMOKE_CASE_ID || `local-aat-media-viewer-${documentId}`;
 
   await setInputValue(page, '#documentUrl', `/documents/${documentId}/binary`);
   await setInputValue(page, '#documentType', 'pdf');
