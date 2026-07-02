@@ -1,8 +1,9 @@
 const config = require('../config');
+const smokeOutputDir = process.env.E2E_SMOKE_OUTPUT_DIR || './smoke-output';
 
 exports.config = {
     tests: config.TestPathToRun,
-    output: `${process.cwd()}/${config.TestOutputDir}`,
+    output: `${process.cwd()}/${smokeOutputDir}`,
     helpers: {
         Puppeteer: {
             url: config.TestUrl1,
@@ -62,12 +63,12 @@ exports.config = {
             },
             'mocha-junit-reporter': {
                 stdout: '-',
-                options: {mochaFile: './functional-output/result.xml'}
+                options: {mochaFile: `${smokeOutputDir}/result.xml`}
             },
             mochawesome: {
-                stdout: './functional-output/mv-e2e-mochawesome-stdout.log',
+                stdout: `${smokeOutputDir}/mv-e2e-mochawesome-stdout.log`,
                 options: {
-                    reportDir: config.TestOutputDir || './functional-output',
+                    reportDir: smokeOutputDir,
                     reportFilename: 'mv-e2e-result',
                     inlineAssets: true,
                     reportTitle: 'MV E2E Tests'
