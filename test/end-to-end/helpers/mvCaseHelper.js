@@ -300,10 +300,7 @@ async function executeTestsOnPreview(I, caseId, mediaType) {
     await I.waitForElement(commonConfig.moreOptionsButton, testConfig.PageLoadTime);
     return;
   }
-  await I.waitForElement(commonConfig.mvpdfviewer, testConfig.PageLoadTime);
-  await I.waitForElement(commonConfig.pageNumber, testConfig.PageLoadTime);
-  await I.waitForElement('div.page[data-page-number="1"]', testConfig.PageLoadTime);
-  await I.waitForElement(commonConfig.moreOptionsButton, testConfig.PageLoadTime);
+  await I.waitForText(commonConfig.assertEnvTestData, testConfig.TestTimeToWaitForText);
   console.log('mvCaseHelper2', await I.grabCurrentUrl());
 }
 
