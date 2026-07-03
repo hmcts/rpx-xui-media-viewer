@@ -144,6 +144,31 @@ and writes reports under `functional-output/local-isolated/`. Override with:
 - `MV_CREATE_LOCAL_AAT_DOCS=false` to reuse IDs from `.local-aat-documents.env`
 - `E2E_PARALLEL_OUTPUT_ROOT=<path>` to change report location
 
+Each feature writes its own report directory, including:
+- `mv-e2e-result.html`
+- `mv-e2e-result.json`
+- `result.xml`
+
+The validated local AAT sequence is:
+
+```
+yarn check:aat-config
+yarn start:aat
+yarn smoke:local:aat
+yarn test:local:aat
+yarn test:functional:local:isolated
+```
+
+Expected `test:functional:local:isolated` feature groups:
+- `annotationsAndComments`
+- `bookMarks`
+- `redact`
+- `printAndDownload`
+- `rotate`
+- `search`
+- `zoomAndnavigation`
+- `imageViewerAnnotationsAndComments`
+
 For the strongest isolation proof, make each scenario upload and use its own document:
 
 ```

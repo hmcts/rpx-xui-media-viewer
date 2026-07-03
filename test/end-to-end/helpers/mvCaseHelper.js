@@ -296,10 +296,13 @@ async function executeTestsOnPreview(I, caseId, mediaType) {
     const localCaseId = process.env.MV_SMOKE_CASE_ID || `local-aat-${documentId}`;
     const viewerSelector = documentType === 'image' ? 'mv-image-viewer' : commonConfig.mvpdfviewer;
     await I.waitForText('Change document details', testConfig.TestTimeToWaitForText);
+    if (documentType === 'image') {
+      await I.click(commonConfig.imageTabButton);
+    }
     await I.click('Change document details');
-    await setInputValue(I, commonConfig.uploadDocumentUrl, `/documents/${documentId}/binary`);
-    await setInputValue(I, '#documentType', documentType);
-    await setInputValue(I, '#caseId', localCaseId);
+    await I.fillField(commonConfig.uploadDocumentUrl, `/documents/${documentId}/binary`);
+    await I.fillField('#documentType', documentType);
+    await I.fillField('#caseId', localCaseId);
     await I.click('Load document');
     await I.waitForElement(viewerSelector, testConfig.PageLoadTime);
     if (documentType === 'pdf') {
@@ -311,18 +314,6 @@ async function executeTestsOnPreview(I, caseId, mediaType) {
   }
   await I.waitForText(commonConfig.assertEnvTestData, testConfig.TestTimeToWaitForText);
   console.log('mvCaseHelper2', await I.grabCurrentUrl());
-}
-
-async function setInputValue(I, selector, value) {
-  await I.executeScript((inputSelector, inputValue) => {
-    const input = document.querySelector(inputSelector);
-    if (!input) {
-      throw new Error(`${inputSelector} input was not found`);
-    }
-    input.value = inputValue;
-    input.dispatchEvent(new Event('input', { bubbles: true }));
-    input.dispatchEvent(new Event('change', { bubbles: true }));
-  }, selector, value);
 }
 
 async function resolveLocalDocumentId(documentType) {
