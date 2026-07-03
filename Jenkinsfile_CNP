@@ -27,7 +27,7 @@ env.HRS_API_URL = "http://em-hrs-api-aat.service.core-compute-aat.internal"
 env.ANNOTATION_API_URL = "http://em-anno-aat.service.core-compute-aat.internal"
 env.ICP_API_URL = "https://em-icp.aat.platform.hmcts.net"
 env.NPA_URL = "http://em-npa-aat.service.core-compute-aat.internal"
-env.IDAM_URL = "http://idam-api.aat.platform.hmcts.net"
+env.IDAM_URL = "https://idam-api.aat.platform.hmcts.net"
 env.S2S_URL = "http://rpe-service-auth-provider-aat.service.core-compute-aat.internal"
 env.REDIRECT_URL = "https://xui-media-viewer-aat.service.core-compute-aat.internal/oauth2/callback"
 env.NODE_ENV="TEST"
@@ -66,25 +66,40 @@ withPipeline(type, product, component) {
   onPR{
   env.EXECUTE_E2E=true
   }
+  before('akschartsinstall') {
+    onPR {
+      if (!env.CHANGE_URL && env.BRANCH_NAME ==~ /^PR-\d+$/) {
+        env.CHANGE_ID = env.CHANGE_ID ?: env.BRANCH_NAME.replaceFirst('^PR-', '')
+        env.CHANGE_URL = "https://github.com/hmcts/rpx-xui-media-viewer/pull/${env.CHANGE_ID}"
+        echo "Filled missing Jenkins PR CHANGE_URL from BRANCH_NAME=${env.BRANCH_NAME}"
+      }
+      if (!env.CHANGE_BRANCH && env.GIT_COMMIT) {
+        env.CHANGE_BRANCH = env.GIT_COMMIT
+        echo "Filled missing Jenkins PR CHANGE_BRANCH from GIT_COMMIT"
+      }
+    }
+  }
   enableAksStagingDeployment()
   disableLegacyDeployment()
 
   afterSuccess('checkout') {
       env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
-      sh ("rm -rf node_modules")
-      sh ("yarn cache clean")
-      sh ('npm rebuild node-sass')
-      sh ('yarn install --check-cache')
-      yarnBuilder.yarn('setup')
+      stage('Yarn Install') {
+        sh ("rm -rf node_modules")
+        sh ("yarn cache clean")
+        sh ('npm rebuild node-sass')
+        sh ('yarn install --check-cache')
+      }
+      stage('Puppeteer Chrome Install') {
+        yarnBuilder.yarn('puppeteer:install')
+      }
+      stage('Media Viewer Setup') {
+        yarnBuilder.yarn('setup')
+      }
   }
 
   afterSuccess('build') {
     yarnBuilder.yarn('build')
-  }
-
-  before('test') {
-    sh ('rm -rf "$PUPPETEER_CACHE_DIR/chrome"')
-    yarnBuilder.yarn('puppeteer browsers install chrome')
   }
 
   afterAlways('smoketest:preview') {
@@ -92,7 +107,7 @@ withPipeline(type, product, component) {
       allowMissing         : true,
       alwaysLinkToLastBuild: true,
       keepAll              : true,
-      reportDir            : "functional-output/",
+      reportDir            : "smoke-output/",
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'PREVIEW Smoke Test'
     ])
@@ -103,8 +118,8 @@ withPipeline(type, product, component) {
               allowMissing         : true,
               alwaysLinkToLastBuild: true,
               keepAll              : true,
-              reportDir            : "functional-output/reports/html",
-              reportFiles          : 'index.html',
+              reportDir            : "functional-output/",
+              reportFiles          : 'mv-e2e-result.html',
               reportName           : 'PREVIEW Functional Test'
       ])
   }
@@ -114,7 +129,7 @@ withPipeline(type, product, component) {
       allowMissing         : true,
       alwaysLinkToLastBuild: true,
       keepAll              : true,
-      reportDir            : "functional-output/",
+      reportDir            : "smoke-output/",
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'AAT Smoke Test'
     ])
@@ -125,8 +140,8 @@ withPipeline(type, product, component) {
               allowMissing         : true,
               alwaysLinkToLastBuild: true,
               keepAll              : true,
-              reportDir            : "functional-output/reports/html",
-              reportFiles          : 'index.html',
+              reportDir            : "functional-output/",
+              reportFiles          : 'mv-e2e-result.html',
               reportName           : 'AAT Functional Test'
       ])
   }

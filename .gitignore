@@ -11,6 +11,12 @@ node_modules/
 projects/media-viewer/node_modules/
 **/**/node_modules/
 reports/
+test-results/
+playwright-report/
+mochawesome-report/
+.cache/
+logs/
+.sessions/
 
 # IDEs and editors
 /.idea
@@ -54,6 +60,8 @@ reports_json/
 .nyc_output/
 cb_reports/
 report.json
+payload.json
+payload.json.gz
 
 # stryker temp files
 .stryker-tmp

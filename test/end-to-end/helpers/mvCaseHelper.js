@@ -1,6 +1,10 @@
 const { mvData } = require("../pages/common/constants");
 const testConfig = require('./../../config');
 const commonConfig = require('../data/commonConfig.json');
+const {
+  defaultFixturePath,
+  uploadDocument
+} = require('../../../scripts/local-aat-document-fixtures');
 
 async function loginTest(I) {
   await I.authenticateWithIdam();
@@ -286,8 +290,44 @@ async function previewEnv() {
 
 async function executeTestsOnPreview(I, caseId, mediaType) {
   await I.amOnPage(testConfig.TestUrl, testConfig.PageLoadTime);
+  if (process.env.TEST_URL && process.env.TEST_URL.includes('localhost')) {
+    const documentType = mediaType === mvData.IMAGE_DOCUMENT ? 'image' : 'pdf';
+    const documentId = await resolveLocalDocumentId(documentType);
+    const localCaseId = process.env.MV_SMOKE_CASE_ID || `local-aat-${documentId}`;
+    const viewerSelector = documentType === 'image' ? 'mv-image-viewer' : commonConfig.mvpdfviewer;
+    await I.waitForText('Change document details', testConfig.TestTimeToWaitForText);
+    if (documentType === 'image') {
+      await I.click(commonConfig.imageTabButton);
+    }
+    await I.click('Change document details');
+    await I.fillField(commonConfig.uploadDocumentUrl, `/documents/${documentId}/binary`);
+    await I.fillField('#documentType', documentType);
+    await I.fillField('#caseId', localCaseId);
+    await I.click('Load document');
+    await I.waitForElement(viewerSelector, testConfig.PageLoadTime);
+    if (documentType === 'pdf') {
+      await I.waitForElement(commonConfig.pageNumber, testConfig.PageLoadTime);
+      await I.waitForElement('div.page[data-page-number="1"]', testConfig.PageLoadTime);
+    }
+    await I.waitForElement(commonConfig.moreOptionsButton, testConfig.PageLoadTime);
+    return;
+  }
   await I.waitForText(commonConfig.assertEnvTestData, testConfig.TestTimeToWaitForText);
   console.log('mvCaseHelper2', await I.grabCurrentUrl());
+}
+
+async function resolveLocalDocumentId(documentType) {
+  if (process.env.MV_CREATE_DOCUMENT_PER_SCENARIO === 'true') {
+    const documentId = await uploadDocument(defaultFixturePath(documentType));
+    process.env.MV_CURRENT_DOCUMENT_ID = documentId;
+    return documentId;
+  }
+
+  const documentId = documentType === 'image'
+    ? process.env.MV_SMOKE_IMAGE_DOCUMENT_ID || '69fb7313-5338-42c4-b94d-0ceb3b6ed18b'
+    : process.env.MV_SMOKE_PDF_DOCUMENT_ID || '04666097-eb32-4b2b-9bec-8e9ce8057560';
+  process.env.MV_CURRENT_DOCUMENT_ID = documentId;
+  return documentId;
 }
 
 async function uploadDocumentEvent(I, caseId, eventName) {
