@@ -1,17 +1,17 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.21",
+  "version": "4.2.22",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
     "PDF",
     "Annotation"
   ],
-  "homepage": "https://github.com/hmcts/rpa-annotation-ui-demo",
+  "homepage": "https://github.com/hmcts/rpx-xui-media-viewer",
   "license": "SEE LICENSE IN LICENSE",
   "repository": {
     "type": "git",
-    "url": "https://github.com/hmcts/em-media-viewer"
+    "url": "https://github.com/hmcts/rpx-xui-media-viewer"
   },
   "publishConfig": {
     "access": "public"

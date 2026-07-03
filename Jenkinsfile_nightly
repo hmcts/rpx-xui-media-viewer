@@ -70,11 +70,18 @@ withNightlyPipeline(type, product, component) {
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
-    sh ("rm -rf node_modules")
-    sh ("yarn cache clean")
-    sh ('npm rebuild node-sass')
-    sh ('yarn install --check-cache')
-    yarnBuilder.yarn('setup')
+    stage('Yarn Install') {
+      sh ("rm -rf node_modules")
+      sh ("yarn cache clean")
+      sh ('npm rebuild node-sass')
+      sh ('yarn install --check-cache')
+    }
+    stage('Puppeteer Chrome Install') {
+      yarnBuilder.yarn('puppeteer:install')
+    }
+    stage('Media Viewer Setup') {
+      yarnBuilder.yarn('setup')
+    }
   }
 
   afterSuccess('build') {

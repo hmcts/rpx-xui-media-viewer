@@ -3,33 +3,212 @@
 
 This is an angular library that can be used to view and annotate PDF documents and images
 
-## Running demo app
-- yarn package
-- yarn start:ng
+## Running the demo app locally
+For the static local demo:
+
+```
+yarn package
+yarn start:ng
+```
+
+For the AAT-connected standalone app, use the runbook below.
 
 ## Running locally against AAT
-The demo app can run locally while the bundled Express API proxies document, annotation, redaction, ICP, hearing-recording, and document-assembly calls to AAT.
+The standalone demo can run on your machine while its bundled Express API proxies Media Viewer calls to AAT. This is the local replacement path for the old `em-showcase` media-viewer checks.
 
-1. Copy `.env.example` to `.env`.
-2. Fill the blank secret values from the approved HMCTS secret source:
-   - `IDAM_SECRET`
-   - `IDAM_PASSWORD`
-   - `S2S_KEY`
-3. Run:
+Local URLs:
+- Angular app: `http://localhost:3000/`
+- Media Viewer route: `http://localhost:3000/#/media-viewer`
+- Retired DM Store compatibility route: `http://localhost:3000/#/dm-store`
+- Local API health: `http://localhost:1337/health`
+
+The local browser talks to Angular on port `3000`. Angular uses `proxy.config.js` to send `/documents`, `/em-anno`, `/api`, `/icp`, `/hearing-recordings`, and `/doc-assembly` to the local API on port `1337`. The local API then connects to AAT services.
+
+### Prerequisites
+- Azure CLI installed.
+- Logged in to the HMCTS Azure tenant with access to `rpx-aat` Key Vault.
+- Yarn dependencies installed for this repo.
+- Network access to AAT internal service URLs.
+
+Check Azure access:
 
 ```
-yarn start:aat
+az account show
+az keyvault secret show --vault-name rpx-aat --name show-oauth2-token --query id -o tsv
 ```
 
-The script compiles the API, starts it on `PORT` or `1337`, then starts the Angular demo with `proxy.config.js`. The `.env` file is ignored by git and must not be committed.
+### 1. Generate the local `.env`
+Generate `.env` from `.env.example` and `rpx-aat` Key Vault:
 
-To check only the AAT endpoint configuration without starting the app:
+```
+yarn env:populate:aat
+```
+
+The generated `.env` is ignored by git and must not be committed.
+
+The script populates:
+- `IDAM_SECRET` from `show-oauth2-token`
+- `IDAM_PASSWORD` from `password`
+- `S2S_KEY` from `microservicekey-em-gw`
+
+To write to a different file:
+
+```
+bash ./scripts/populate-env-from-keyvault.sh aat /tmp/media-viewer.env .env.example
+```
+
+### 2. Validate the AAT config
+Run this before starting the app if you only want to prove the endpoint wiring:
 
 ```
 yarn check:aat-config
 ```
 
-The default AAT redirect URI uses the registered `xui-media-viewer` callback. Override `REDIRECT_URL` only when the IdAM client registration supports the local callback you want to use.
+This compiles the local API and checks the resolved AAT targets for document assembly, DM Store, HRS, annotations, NPA, ICP, IdAM, and S2S.
+
+### 3. Start Media Viewer against AAT
+Start both the local API and Angular app:
+
+```
+yarn start:aat
+```
+
+This command:
+- loads `.env`
+- sets `MV_USE_AAT=true`
+- builds the Media Viewer library assets needed by the demo
+- compiles the local API into `dist/api`
+- starts the local API on `PORT` or `1337`
+- starts Angular with `proxy.config.js`
+
+Open:
+
+```
+http://localhost:3000/#/media-viewer
+```
+
+### 4. Smoke test a running local instance
+In another terminal, run:
+
+```
+yarn smoke:local:aat
+```
+
+The smoke check verifies:
+- `http://localhost:3000/`
+- `http://localhost:1337/health` returns `UP`
+
+Use a browser for route-level checks because `#/media-viewer` and `#/dm-store` are Angular hash routes, not server paths.
+
+For browser-level proof that the standalone viewer is using AAT-backed services, keep
+`yarn start:aat` running, then run:
+
+```
+yarn test:local:aat
+```
+
+This opens `http://localhost:3000/#/media-viewer`, loads
+`/documents/<MV_SMOKE_PDF_DOCUMENT_ID>/binary`, and waits for the rendered PDF viewer
+and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
+default AAT PDF document id.
+
+### 5. Create isolated AAT test documents
+For mutation-heavy functional tests, do not share one document across parallel workers.
+Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
+is running:
+
+```
+yarn local-aat:documents -- --pdf-count 7 --image-count 1 --output .local-aat-documents.env
+```
+
+This writes:
+- `MV_SMOKE_PDF_DOCUMENT_ID`
+- `MV_SMOKE_IMAGE_DOCUMENT_ID`
+- `MV_FUNCTIONAL_PDF_DOCUMENT_IDS`
+- `MV_FUNCTIONAL_IMAGE_DOCUMENT_IDS`
+
+The upload path mirrors em-showcase: multipart `files`, `classification=PUBLIC`,
+and civil/probate metadata are posted to `/documents`.
+
+### 6. Run isolated local functional tests
+With `yarn start:aat` still running, execute the functional groups with separate
+documents and separate reports:
+
+```
+yarn test:functional:local:isolated
+```
+
+By default this creates fresh documents, runs up to three feature files at a time,
+and writes reports under `functional-output/local-isolated/`. Override with:
+- `MV_LOCAL_PARALLEL_MAX_JOBS=1` to run the same isolated groups serially
+- `MV_CREATE_LOCAL_AAT_DOCS=false` to reuse IDs from `.local-aat-documents.env`
+- `E2E_PARALLEL_OUTPUT_ROOT=<path>` to change report location
+
+Each feature writes its own report directory, including:
+- `mv-e2e-result.html`
+- `mv-e2e-result.json`
+- `result.xml`
+
+The validated local AAT sequence is:
+
+```
+yarn check:aat-config
+yarn start:aat
+yarn smoke:local:aat
+yarn test:local:aat
+yarn test:functional:local:isolated
+```
+
+Expected `test:functional:local:isolated` feature groups:
+- `annotationsAndComments`
+- `bookMarks`
+- `redact`
+- `printAndDownload`
+- `rotate`
+- `search`
+- `zoomAndnavigation`
+- `imageViewerAnnotationsAndComments`
+
+For the strongest isolation proof, make each scenario upload and use its own document:
+
+```
+yarn test:functional:local:self-contained
+```
+
+This is slower because it creates a fresh AAT DM Store document for each scenario, but
+it is the best local check when diagnosing interference between bookmarks,
+annotations, comments, and redactions.
+
+### Useful overrides
+Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.
+
+Common overrides:
+- `PORT`: local API port, default `1337`
+- `DOCASSEMBLY_URL`
+- `DM_STORE_APP_URL`
+- `HRS_API_URL`
+- `ANNOTATION_API_URL`
+- `NPA_URL`
+- `ICP_API_URL`
+- `IDAM_URL`
+- `REDIRECT_URL`
+- `S2S_URL`
+
+The default `REDIRECT_URL` uses the registered AAT `xui-media-viewer` callback. Do not change it to a localhost callback unless the IdAM client registration supports that callback.
+
+### Troubleshooting
+- Missing `IDAM_SECRET`, `IDAM_PASSWORD`, or `S2S_KEY`: run `yarn env:populate:aat` again and confirm Azure access to `rpx-aat`.
+- IdAM token errors: confirm `IDAM_URL=https://idam-api.aat.platform.hmcts.net`.
+- Blank viewer or missing toolbar assets: restart with `yarn start:aat`; it runs `build:lib`, `copy:lib-js-dependencies`, and `copy:lib-assets` before serving.
+- Port conflict on `1337`: set `PORT` in `.env` and restart.
+- Service connectivity failures: check VPN/network access to AAT internal service URLs.
+
+## Replacing em-showcase media-viewer use
+This standalone app replaces `em-showcase` for Media Viewer validation against AAT. It keeps compatible local navigation for `/`, `#/media-viewer`, and `#/dm-store`.
+
+The `#/dm-store` route is intentionally a retired compatibility route. It points users back to the Media Viewer document ID flow instead of carrying the old DM Store showcase UI.
+
+Supported Media Viewer checks include document loading, annotations, redactions, redaction search, ICP, multimedia, hearing-recording, and document-assembly proxy paths.
 
 ## Integrating into your own Angular application
 add @hmcts/media-viewer as a dependency in package.json

@@ -62,10 +62,10 @@ exports.config = {
       },
       'mocha-junit-reporter': {
         stdout: '-',
-        options: { mochaFile: './functional-output/result.xml' }
+        options: { mochaFile: `${config.TestOutputDir}/result.xml` }
       },
       mochawesome: {
-        stdout: './functional-output/mv-e2e-mochawesome-stdout.log',
+        stdout: `${config.TestOutputDir}/mv-e2e-mochawesome-stdout.log`,
         options: {
           reportDir: config.TestOutputDir || './functional-output',
           reportFilename: 'mv-e2e-result',
