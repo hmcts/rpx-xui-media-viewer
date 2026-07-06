@@ -14,6 +14,7 @@ reports/
 test-results/
 playwright-report/
 mochawesome-report/
+smoke-output/
 .cache/
 logs/
 .sessions/
