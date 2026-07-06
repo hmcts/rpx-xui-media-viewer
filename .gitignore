@@ -40,6 +40,7 @@ logs/
 /.env
 /.env.*
 !/.env.example
+/.local-aat-documents.env
 /.angular/cache
 /.sass-cache
 /connect.lock
