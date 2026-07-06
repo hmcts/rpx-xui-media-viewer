@@ -54,10 +54,20 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 }
 
 withNightlyPipeline(type, product, component) {
-  env.TEST_URL = 'http://xui-media-viewer-aat.service.core-compute-aat.internal'
+  env.TEST_URL = 'http://localhost:3000'
   env.IDAM_URL = params.IDAM_API_URL
   env.S2S_PROVIDER = params.S2S_PROVIDER_URL
+  env.S2S_URL = params.S2S_PROVIDER_URL
   env.CCD_DATA_STORE_API_URL = params.CCD_DATA_STORE_URL
+  env.DOCASSEMBLY_URL = "http://dg-docassembly-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+  env.DM_STORE_APP_URL = "http://dm-store-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+  env.HRS_API_URL = "http://em-hrs-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+  env.ANNOTATION_API_URL = "http://em-anno-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+  env.NPA_URL = "http://em-npa-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
+  env.ICP_API_URL = "https://em-icp.${params.ENVIRONMENT}.platform.hmcts.net"
+  env.REDIRECT_URL = "https://xui-media-viewer-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal/oauth2/callback"
+  env.REFORM_ENVIRONMENT = params.ENVIRONMENT
+  env.NODE_ENV = "TEST"
   env.RUNNING_ENV = params.ENVIRONMENT
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
@@ -86,15 +96,35 @@ withNightlyPipeline(type, product, component) {
 
   afterSuccess('build') {
     yarnBuilder.yarn('build')
+    stage('Start local AAT media viewer') {
+      sh '''
+        set +x
+        export IDAM_PASSWORD="${IDAM_PASSWORD:-${CCD_CASEWORKER_E2E_PASSWORD:-}}"
+        export NODE_CONFIG="$(node -e "console.log(JSON.stringify({ secrets: { 'em-showcase': { 'show-oauth2-token': process.env.IDAM_SECRET, 'microservicekey-em-gw': process.env.S2S_KEY, password: process.env.IDAM_PASSWORD } } }))")"
+        nohup yarn start:api > local-aat-api.log 2>&1 &
+        nohup yarn start:ng --host 0.0.0.0 > local-aat-ng.log 2>&1 &
+        for attempt in $(seq 1 60); do
+          if curl -fsS http://localhost:3000/ >/dev/null && curl -fsS http://localhost:1337/health | grep -q '"status":"UP"'; then
+            echo "Local AAT media viewer is ready"
+            exit 0
+          fi
+          sleep 2
+        done
+        echo "Local AAT media viewer did not become ready" >&2
+        tail -100 local-aat-api.log >&2 || true
+        tail -100 local-aat-ng.log >&2 || true
+        exit 1
+      '''
+    }
   }
 
-  afterAlways('functionalTest') {
+  afterAlways('fullFunctionalTest') {
     publishHTML([
       allowMissing         : true,
       alwaysLinkToLastBuild: true,
       keepAll              : true,
-      reportDir            : "functional-output/reports/html",
-      reportFiles          : 'index.html',
+      reportDir            : "functional-output",
+      reportFiles          : 'mv-e2e-result.html',
       reportName           : 'Functional Tests'
     ])
   }
@@ -104,7 +134,7 @@ withNightlyPipeline(type, product, component) {
       allowMissing         : true,
       alwaysLinkToLastBuild: true,
       keepAll              : true,
-      reportDir            : "reports/tests/crossbrowser/",
+      reportDir            : "functional-output",
       reportFiles          : 'index.html',
       reportName           : 'Cross Browser Tests'
     ])
