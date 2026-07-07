@@ -116,16 +116,12 @@ withNightlyPipeline(type, product, component) {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
     env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
     stage('Yarn Install') {
-      sh ("rm -rf node_modules")
-      sh ("yarn cache clean")
-      sh ('npm rebuild node-sass')
-      sh ('yarn install --check-cache')
+      withEnv(playwrightBrowsersEnv()) {
+        yarnBuilder.yarn('install --immutable')
+      }
     }
-    stage('Puppeteer Chrome Install') {
-      yarnBuilder.yarn('puppeteer:install')
-    }
-    stage('Media Viewer Setup') {
-      yarnBuilder.yarn('setup')
+    stage('Media Viewer API Setup') {
+      yarnBuilder.yarn('setup:api')
     }
     stage('Playwright Install Chromium') {
       withEnv(playwrightBrowsersEnv()) {
@@ -137,6 +133,7 @@ withNightlyPipeline(type, product, component) {
 
   afterSuccess('build') {
     yarnBuilder.yarn('build')
+    yarnBuilder.yarn('copy:demo-files')
     stage('Start local AAT media viewer') {
       sh '''
         set +x
