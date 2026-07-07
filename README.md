@@ -114,9 +114,9 @@ default AAT PDF document id.
 
 ### 5. Run Playwright tests
 Media Viewer is starting its Playwright migration with the same runner and
-reporting shape used in MC and MO, scaled to the current baseline and smoke
-coverage. The legacy Protractor and CodeceptJS functional packs still exist;
-new browser coverage should be added under `playwright_tests/`.
+reporting shape used in MC and MO, scaled to the current smoke coverage. The
+legacy Protractor and CodeceptJS functional packs still exist; new browser
+coverage should be added under `playwright_tests/`.
 
 Current Playwright lanes:
 
@@ -128,12 +128,6 @@ Install Chromium once before local runs when the browser cache is empty:
 
 ```
 yarn test:setup:playwright-install-chromium
-```
-
-Run the runner list command when checking local Playwright discovery:
-
-```
-PLAYWRIGHT_REPORTERS=list yarn test:playwright:list
 ```
 
 Run the smoke project against a running standalone demo app. Start the app in

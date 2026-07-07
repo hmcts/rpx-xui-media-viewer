@@ -80,13 +80,6 @@ export default defineConfig({
   },
   projects: [
     {
-      name: 'chromium',
-      testIgnore: [smokeSpecPattern],
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-    {
       name: 'smoke',
       testMatch: [smokeSpecPattern],
       use: {
