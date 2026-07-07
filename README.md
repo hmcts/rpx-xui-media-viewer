@@ -112,45 +112,72 @@ This opens `http://localhost:3000/#/media-viewer`, loads
 and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
 default AAT PDF document id.
 
-### 5. Run the Playwright runner baseline
-Install the Chromium browser used by the initial Playwright project:
+### 5. Run Playwright tests
+Media Viewer is starting its Playwright migration with the same runner and
+reporting shape used in MC and MO, scaled to the current baseline and smoke
+coverage. The legacy Protractor and CodeceptJS functional packs still exist;
+new browser coverage should be added under `playwright_tests/`.
+
+Current Playwright lanes:
+
+| Lane | Config/project | Command | Scope |
+| --- | --- | --- | --- |
+| Runner baseline | `playwright.config.ts`, project `chromium` | `yarn test:playwright` | Proves the native Playwright runner, reporter setup and Jenkins artifact contract. |
+| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
+
+Install Chromium once before local runs when the browser cache is empty:
 
 ```
 yarn test:setup:playwright-install-chromium
 ```
 
-Run the native Playwright baseline:
+Run the baseline and list commands:
 
 ```
 yarn test:playwright
+PLAYWRIGHT_REPORTERS=list yarn test:playwright:list
 ```
 
-This currently proves the runner and reporting contract only. It does not replace the
-legacy Protractor functional suite.
-
-Run the Playwright smoke project against a running standalone demo app:
+Run the smoke project against a running standalone demo app. Start the app in
+one terminal:
 
 ```
 yarn start
+```
+
+Then run the smoke in another terminal:
+
+```
 yarn test:playwright:smoke
 ```
 
-The Playwright smoke opens `/#/media-viewer`, loads `assets/example.pdf`, and waits
-for the PDF viewer, page-number control and first rendered page. Override the smoke
-document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and `MV_SMOKE_CASE_ID`.
-`yarn test:smoke` now runs this Playwright smoke so Jenkins CNP uses the same smoke
-entrypoint as MC/MO. The previous CodeceptJS smoke remains available as
-`yarn test:smoke:legacy`.
+Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
+`MV_SMOKE_CASE_ID`. `yarn test:smoke` now runs the Playwright smoke so Jenkins
+CNP uses the same smoke entrypoint style as MC/MO. The previous CodeceptJS smoke
+remains available as `yarn test:smoke:legacy` while migration work continues.
 
-Default report artefacts:
-- Odhín: `functional-output/tests/playwright/odhin-report/xui-playwright.html`
-- HTML: `functional-output/tests/playwright/html-report/index.html`
-- JUnit: `functional-output/tests/playwright/playwright-junit.xml`
-- traces, screenshots, videos: `functional-output/tests/playwright/test-results`
-- Smoke Odhín: `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html`
-- Smoke HTML: `functional-output/tests/playwright-smoke/html-report/index.html`
-- Smoke JUnit: `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml`
-- Smoke traces, screenshots, videos: `functional-output/tests/playwright-smoke/test-results`
+Default Playwright evidence is written under `functional-output/tests`:
+
+| Lane | Odhín | HTML | JUnit | Trace, screenshot and video output |
+| --- | --- | --- | --- | --- |
+| Baseline | `functional-output/tests/playwright/odhin-report/xui-playwright.html` | `functional-output/tests/playwright/html-report/index.html` | `functional-output/tests/playwright/playwright-junit.xml` | `functional-output/tests/playwright/test-results` |
+| Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/html-report/index.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
+
+Reporting behavior follows the MC/MO pattern:
+
+- Odhín is produced through the patched `odhin-reports-playwright` reporter.
+- HTML, JUnit and Odhín reporters can run together.
+- Traces, screenshots and videos are kept on failure for diagnostics.
+- `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
+  local setup step has already installed Chromium.
+- Jenkins CNP and nightly pipelines publish the Odhín HTML reports, publish
+  JUnit XML, and archive the full Playwright output folders.
+
+The Jenkins setup path installs dependencies with `yarn install --immutable`,
+installs Chromium into the workspace-local `PLAYWRIGHT_BROWSERS_PATH`, and then
+sets `PLAYWRIGHT_SKIP_INSTALL=true` for Playwright lanes. Puppeteer is not
+installed globally for Playwright; the legacy functional script installs it only
+when that legacy path runs.
 
 Useful overrides:
 - `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`
@@ -163,6 +190,38 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in `yarn test:playwright`
+
+Use this local proof set before pushing Playwright documentation or pipeline
+changes:
+
+```
+yarn install --immutable
+yarn test:setup:playwright-install-chromium
+PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright --list
+```
+
+For a smoke behavior proof, start the app in one terminal:
+
+```
+yarn start
+```
+
+Then run the Playwright smoke in another terminal:
+
+```
+PLAYWRIGHT_SKIP_INSTALL=true yarn test:smoke
+```
+
+Migration boundaries:
+
+- Put new native Playwright specs under `playwright_tests/`.
+- Keep legacy Protractor and CodeceptJS coverage until replacement coverage and
+  Jenkins evidence are agreed.
+- Add stable report output paths for every new Playwright lane so Jenkins can
+  publish Odhín, HTML and JUnit without bespoke stage logic.
+- Prefer Playwright browser-level assertions for viewer readiness; do not treat
+  an error page, blank page, wrong route or service-down page as a valid ready
+  signal.
 
 ### 6. Create isolated AAT test documents
 For mutation-heavy functional tests, do not share one document across parallel workers.
