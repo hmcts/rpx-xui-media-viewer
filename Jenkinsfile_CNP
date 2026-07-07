@@ -20,9 +20,7 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
-def playwrightOutputRoot = 'functional-output/tests/playwright'
 def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
-def playwrightOdhinReportFile = 'xui-playwright.html'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 
 def playwrightBrowsersEnv = {
@@ -151,34 +149,9 @@ withPipeline(type, product, component) {
   afterSuccess('build') {
     yarnBuilder.yarn('build')
     yarnBuilder.yarn('copy:demo-files')
-    stage('Playwright Runner Baseline') {
-      withEnv(playwrightBrowsersEnv() + [
-        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightOutputRoot}/test-results",
-        "PLAYWRIGHT_HTML_REPORT=${playwrightOutputRoot}/html-report",
-        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightOutputRoot}/playwright-junit.xml",
-        "PLAYWRIGHT_REPORT_FOLDER=${playwrightOutputRoot}/odhin-report",
-        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightOdhinReportFile}",
-        "PLAYWRIGHT_REPORT_TITLE=RPX XUI Media Viewer Playwright Runner Baseline",
-        "PLAYWRIGHT_SKIP_INSTALL=true"
-      ]) {
-        try {
-          yarnBuilder.yarn('test:playwright')
-        } finally {
-          publishPlaywrightReport(playwrightOutputRoot, 'Playwright Runner Baseline', playwrightOdhinReportFile)
-        }
-      }
-    }
   }
 
   afterAlways('smoketest:preview') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "smoke-output/",
-      reportFiles          : 'mv-e2e-result.html',
-      reportName           : 'PREVIEW Smoke Test'
-    ])
     publishPlaywrightReport(playwrightSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
@@ -194,14 +167,6 @@ withPipeline(type, product, component) {
   }
 
   afterAlways('smoketest:aat') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "smoke-output/",
-      reportFiles          : 'mv-e2e-result.html',
-      reportName           : 'AAT Smoke Test'
-    ])
     publishPlaywrightReport(playwrightSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 

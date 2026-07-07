@@ -122,7 +122,6 @@ Current Playwright lanes:
 
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
-| Runner baseline | `playwright.config.ts`, project `chromium` | `yarn test:playwright` | Proves the native Playwright runner, reporter setup and Jenkins artifact contract. |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
 
 Install Chromium once before local runs when the browser cache is empty:
@@ -131,10 +130,9 @@ Install Chromium once before local runs when the browser cache is empty:
 yarn test:setup:playwright-install-chromium
 ```
 
-Run the baseline and list commands:
+Run the runner list command when checking local Playwright discovery:
 
 ```
-yarn test:playwright
 PLAYWRIGHT_REPORTERS=list yarn test:playwright:list
 ```
 
@@ -160,7 +158,6 @@ Default Playwright evidence is written under `functional-output/tests`:
 
 | Lane | Odhín | HTML | JUnit | Trace, screenshot and video output |
 | --- | --- | --- | --- | --- |
-| Baseline | `functional-output/tests/playwright/odhin-report/xui-playwright.html` | `functional-output/tests/playwright/html-report/index.html` | `functional-output/tests/playwright/playwright-junit.xml` | `functional-output/tests/playwright/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/html-report/index.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 
 Reporting behavior follows the MC/MO pattern:
@@ -189,7 +186,7 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
 - `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
-- `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in `yarn test:playwright`
+- `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 
 Use this local proof set before pushing Playwright documentation or pipeline
 changes:
@@ -197,7 +194,7 @@ changes:
 ```
 yarn install --immutable
 yarn test:setup:playwright-install-chromium
-PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright --list
+PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright:smoke:list
 ```
 
 For a smoke behavior proof, start the app in one terminal:

@@ -28,9 +28,7 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
-def playwrightOutputRoot = 'functional-output/tests/playwright'
 def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
-def playwrightOdhinReportFile = 'xui-playwright.html'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 
 def playwrightBrowsersEnv = {
@@ -166,24 +164,6 @@ withNightlyPipeline(type, product, component) {
         tail -100 local-aat-ng.log >&2 || true
         exit 1
       '''
-    }
-    stage('Playwright Runner Baseline') {
-      withEnv(playwrightBrowsersEnv() + [
-        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightOutputRoot}/test-results",
-        "PLAYWRIGHT_HTML_REPORT=${playwrightOutputRoot}/html-report",
-        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightOutputRoot}/playwright-junit.xml",
-        "PLAYWRIGHT_REPORT_FOLDER=${playwrightOutputRoot}/odhin-report",
-        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightOdhinReportFile}",
-        "PLAYWRIGHT_REPORT_TITLE=Nightly RPX XUI Media Viewer Playwright Runner Baseline",
-        "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
-        "PLAYWRIGHT_SKIP_INSTALL=true"
-      ]) {
-        try {
-          yarnBuilder.yarn('test:playwright')
-        } finally {
-          publishPlaywrightReport(playwrightOutputRoot, 'Nightly Playwright Runner Baseline', playwrightOdhinReportFile)
-        }
-      }
     }
     stage('Playwright Smoke Test') {
       withEnv(playwrightBrowsersEnv() + [
