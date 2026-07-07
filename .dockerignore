@@ -22,6 +22,8 @@ reports
 **/reports
 test-results
 **/test-results
+playwright_tests
+playwright.config.ts
 test
 **/test
 
@@ -38,8 +40,10 @@ node_modules
 Jenkinsfile*
 README.md
 playwright-report
+blob-report
 trace
 mochawesome-report
+smoke-output
 tmp
 .sessions
 logs

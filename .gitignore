@@ -13,6 +13,7 @@ projects/media-viewer/node_modules/
 reports/
 test-results/
 playwright-report/
+blob-report/
 mochawesome-report/
 smoke-output/
 .cache/
@@ -72,6 +73,7 @@ stryker.log
 /test/.local-test.env
 .vscode/launch.json
 functional-output/
+.playwright-cli/
 
 # yarn
 .yarn/*
