@@ -112,7 +112,37 @@ This opens `http://localhost:3000/#/media-viewer`, loads
 and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
 default AAT PDF document id.
 
-### 5. Create isolated AAT test documents
+### 5. Run the Playwright runner baseline
+Install the Chromium browser used by the initial Playwright project:
+
+```
+yarn test:setup:playwright-install-chromium
+```
+
+Run the native Playwright baseline:
+
+```
+yarn test:playwright
+```
+
+This currently proves the runner and reporting contract only. It does not replace the
+legacy CodeceptJS or Protractor smoke and functional suites yet.
+
+Default report artefacts:
+- HTML: `functional-output/tests/playwright/html-report/index.html`
+- JUnit: `functional-output/tests/playwright/playwright-junit.xml`
+- traces, screenshots, videos: `functional-output/tests/playwright/test-results`
+
+Useful overrides:
+- `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`
+- `PLAYWRIGHT_REPORTERS`: comma-separated reporter list, for example `list,html,junit`
+- `PLAYWRIGHT_DEFAULT_REPORTER`: terminal reporter when `PLAYWRIGHT_REPORTERS` is not set, default `list` locally and `dot` in CI
+- `PLAYWRIGHT_HTML_REPORT`: HTML report folder
+- `PLAYWRIGHT_JUNIT_OUTPUT`: JUnit XML path
+- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
+- `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in `yarn test:playwright`
+
+### 6. Create isolated AAT test documents
 For mutation-heavy functional tests, do not share one document across parallel workers.
 Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
 is running:
@@ -130,7 +160,7 @@ This writes:
 The upload path mirrors em-showcase: multipart `files`, `classification=PUBLIC`,
 and civil/probate metadata are posted to `/documents`.
 
-### 6. Run isolated local functional tests
+### 7. Run isolated local functional tests
 With `yarn start:aat` still running, execute the functional groups with separate
 documents and separate reports:
 
