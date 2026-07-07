@@ -16,7 +16,13 @@ async function assertLocalDemoReady(page) {
   await page.waitForFunction(() => document.body && document.body.innerText.includes('Change document details'), {
     timeout: timeoutMs
   });
-  await page.waitForFunction(() => document.body && document.body.innerText.includes('Load document'), {
+  await page.waitForFunction(() => {
+    const bodyText = document.body ? document.body.innerText : '';
+    return bodyText.includes('Load document') ||
+      document.querySelector('mv-pdf-viewer') ||
+      document.querySelector('mv-image-viewer') ||
+      document.querySelector('#pageNumber');
+  }, {
     timeout: timeoutMs
   });
 }
