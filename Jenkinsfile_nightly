@@ -44,7 +44,14 @@ def publishPlaywrightJUnit = { String testResults ->
   )
 }
 
-def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile ->
+def hasPlaywrightJUnit = { String outputRoot ->
+  steps.sh(
+    returnStatus: true,
+    script: "find '${outputRoot}' -type f -name '*junit.xml' -print -quit | grep -q ."
+  ) == 0
+}
+
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true ->
   steps.sh(
     "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}'"
   )
@@ -56,11 +63,17 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     reportFiles          : reportFile,
     reportName           : reportName
   ])
-  publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
   steps.archiveArtifacts(
     allowEmptyArchive: true,
     artifacts: "${outputRoot}/**"
   )
+  if (hasPlaywrightJUnit(outputRoot)) {
+    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+  } else if (requireJUnit) {
+    steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
+  } else {
+    echo "No Playwright JUnit XML found for ${reportName}; Odhín report publication was still completed."
+  }
 }
 
 def vaultOverrides = [

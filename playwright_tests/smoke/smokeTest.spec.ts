@@ -13,11 +13,16 @@ test(
     await page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
 
     await page.goto('/#/media-viewer');
+    const expectedDocumentUrl = new URL(documentUrl, page.url()).href;
     await page.getByText('Change document details').click();
     await page.getByLabel('document url').fill(documentUrl);
     await page.getByLabel('document type').fill('pdf');
     await page.getByLabel('case id').fill(caseId);
+    const documentResponse = page.waitForResponse(
+      (response) => response.url() === expectedDocumentUrl && response.status() === 200
+    );
     await page.getByRole('button', { name: 'Load document' }).click();
+    await documentResponse;
 
     await expect(page.locator('mv-pdf-viewer')).toBeVisible();
     await expect(page.locator('#pageNumber')).toBeVisible();
