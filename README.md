@@ -206,6 +206,8 @@ PLAYWRIGHT_SKIP_INSTALL=true yarn test:smoke
 Migration boundaries:
 
 - Put new native Playwright specs under `playwright_tests/`.
+- Keep screen interactions and reusable locators in page objects under
+  `playwright_tests/pages/`; keep assertions visible in specs.
 - Keep legacy Protractor and CodeceptJS coverage until replacement coverage and
   Jenkins evidence are agreed.
 - Add stable report output paths for every new Playwright lane so Jenkins can
