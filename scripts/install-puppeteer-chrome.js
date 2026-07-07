@@ -34,7 +34,12 @@ if (fs.existsSync(browserRoot) && !fs.existsSync(executablePath)) {
 
 if (!fs.existsSync(executablePath)) {
   const yarnBin = process.platform === 'win32' ? 'yarn.cmd' : 'yarn';
+  const installEnv = { ...process.env };
+  delete installEnv.PUPPETEER_SKIP_DOWNLOAD;
+  delete installEnv.PUPPETEER_SKIP_CHROME_DOWNLOAD;
+
   const result = spawnSync(yarnBin, ['puppeteer', 'browsers', 'install', 'chrome'], {
+    env: installEnv,
     stdio: 'inherit',
     shell: process.platform === 'win32'
   });
