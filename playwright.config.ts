@@ -3,6 +3,7 @@ import { defineConfig, devices } from '@playwright/test';
 type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list';
 
 const defaultOutputRoot = 'functional-output/tests/playwright';
+const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 
 const splitReporters = (raw: string | undefined): ReporterName[] =>
   (raw ?? '')
@@ -62,6 +63,14 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: [smokeSpecPattern],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'smoke',
+      testMatch: [smokeSpecPattern],
       use: {
         ...devices['Desktop Chrome'],
       },

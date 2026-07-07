@@ -128,10 +128,24 @@ yarn test:playwright
 This currently proves the runner and reporting contract only. It does not replace the
 legacy CodeceptJS or Protractor smoke and functional suites yet.
 
+Run the Playwright smoke project against a running standalone demo app:
+
+```
+yarn start
+yarn test:playwright:smoke
+```
+
+The Playwright smoke opens `/#/media-viewer`, loads `assets/example.pdf`, and waits
+for the PDF viewer, page-number control and first rendered page. Override the smoke
+document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and `MV_SMOKE_CASE_ID`.
+
 Default report artefacts:
 - HTML: `functional-output/tests/playwright/html-report/index.html`
 - JUnit: `functional-output/tests/playwright/playwright-junit.xml`
 - traces, screenshots, videos: `functional-output/tests/playwright/test-results`
+- Smoke HTML: `functional-output/tests/playwright-smoke/html-report/index.html`
+- Smoke JUnit: `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml`
+- Smoke traces, screenshots, videos: `functional-output/tests/playwright-smoke/test-results`
 
 Useful overrides:
 - `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`
