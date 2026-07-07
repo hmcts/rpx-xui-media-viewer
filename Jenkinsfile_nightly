@@ -81,6 +81,7 @@ withNightlyPipeline(type, product, component) {
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
+    env.PUPPETEER_SKIP_DOWNLOAD = 'true'
     stage('Yarn Install') {
       sh ("rm -rf node_modules")
       sh ("yarn cache clean")
