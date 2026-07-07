@@ -79,7 +79,6 @@ withNightlyPipeline(type, product, component) {
   enableSecurityScan()
   enableSlackNotifications(channel)
   enableFullFunctionalTest(60)
-  enableCrossBrowserTest()
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
@@ -170,17 +169,6 @@ withNightlyPipeline(type, product, component) {
       reportDir            : "functional-output",
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'Functional Tests'
-    ])
-  }
-
-  afterAlways('crossBrowserTest') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "functional-output",
-      reportFiles          : 'index.html',
-      reportName           : 'Cross Browser Tests'
     ])
   }
 
