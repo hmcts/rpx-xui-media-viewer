@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.22",
+  "version": "4.2.23",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
@@ -17,8 +17,8 @@
     "access": "public"
   },
   "dependencies": {
-    "@swimlane/ngx-datatable": "^20.0.0",
-    "moment-timezone": "^0.5.28",
+    "@swimlane/ngx-datatable": "^23.0.1",
+    "moment-timezone": "^0.6.2",
     "mutable-div": "^2.0.0",
     "pdfjs-dist": "^4.10.38",
     "socket.io-client": "^4.8.0",
@@ -38,7 +38,7 @@
     "@ngrx/store-devtools": "^20",
     "ngx-chips": "3.0.0",
     "rpx-xui-translation": "1.2.3",
-    "rxjs": "^7.8.1"
+    "rxjs": "^7.8.2"
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",
