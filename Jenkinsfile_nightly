@@ -1,14 +1,14 @@
 #!groovy
 
+def scheduledNightlyTriggers = env.BRANCH_NAME == 'master' ? [cron('H 17 * * *')] : []
+
 properties([
   [
   $class       : 'GithubProjectProperty',
   displayName  : 'MediaViewer',
   projectUrlStr: 'https://github.com/hmcts/rpx-xui-media-viewer/'
   ],
-  pipelineTriggers([
-    cron('H 17 * * *')
-  ]),
+  pipelineTriggers(scheduledNightlyTriggers),
   parameters([
     string(name: 'ENVIRONMENT', defaultValue: 'aat', description: 'Environment to test'),
     string(name: 'IDAM_API_URL', defaultValue: 'https://idam-api.aat.platform.hmcts.net', description: 'The Url of IDAM'),
