@@ -37,7 +37,6 @@ def secrets = [
   "rpx-${params.ENVIRONMENT}": [
     secret('microservicekey-em-gw', 'S2S_KEY'),
     secret('show-oauth2-token', 'IDAM_SECRET'),
-    secret('password', 'IDAM_PASSWORD'),
     secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
     secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
     secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),
@@ -67,15 +66,18 @@ withNightlyPipeline(type, product, component) {
   env.ANNOTATION_API_URL = "http://em-anno-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
   env.NPA_URL = "http://em-npa-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
   env.ICP_API_URL = "https://em-icp.${params.ENVIRONMENT}.platform.hmcts.net"
-  env.REDIRECT_URL = "https://em-show-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal/oauth2/callback"
+  env.REDIRECT_URL = "https://xui-media-viewer-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal/oauth2/callback"
   env.REFORM_ENVIRONMENT = params.ENVIRONMENT
+  env.NODE_ENV = "TEST"
   env.RUNNING_ENV = params.ENVIRONMENT
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
 
   disableLegacyDeployment()
+  enableSecurityScan()
   enableSlackNotifications(channel)
   enableFullFunctionalTest(60)
+  enableCrossBrowserTest()
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
@@ -99,7 +101,7 @@ withNightlyPipeline(type, product, component) {
       sh '''
         set +x
         export IDAM_PASSWORD="${IDAM_PASSWORD:-${CCD_CASEWORKER_E2E_PASSWORD:-}}"
-        export NODE_CONFIG="$(node -e "console.log(JSON.stringify({ secrets: { 'em-showcase': { 'show-oauth2-token': process.env.IDAM_SECRET, 'microservicekey-em-gw': process.env.S2S_KEY, password: process.env.IDAM_PASSWORD } } }))")"
+        export NODE_CONFIG="$(node -e "console.log(JSON.stringify({ secrets: { rpx: { 'show-oauth2-token': process.env.IDAM_SECRET, 'microservicekey-em-gw': process.env.S2S_KEY, password: process.env.IDAM_PASSWORD } } }))")"
         JENKINS_NODE_COOKIE=dontKillMe nohup yarn start:api > local-aat-api.log 2>&1 &
         JENKINS_NODE_COOKIE=dontKillMe nohup yarn start:ng --host 0.0.0.0 > local-aat-ng.log 2>&1 &
         for attempt in $(seq 1 60); do
@@ -128,5 +130,26 @@ withNightlyPipeline(type, product, component) {
     ])
   }
 
+  afterAlways('crossBrowserTest') {
+    publishHTML([
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "functional-output",
+      reportFiles          : 'index.html',
+      reportName           : 'Cross Browser Tests'
+    ])
+  }
+
+  afterAlways('securityScan') {
+    publishHTML([
+      allowMissing         : true,
+      alwaysLinkToLastBuild: true,
+      keepAll              : true,
+      reportDir            : "reports/tests/",
+      reportFiles          : 'activescan.html',
+      reportName           : 'ZAP Security Scan Report'
+    ])
+  }
 }
 }

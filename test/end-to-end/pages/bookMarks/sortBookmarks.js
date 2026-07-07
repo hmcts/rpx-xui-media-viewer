@@ -22,31 +22,16 @@ module.exports = async function () {
   await I.click(commonConfig.moveUp);
   await I.addNamedBookmark('page1');
 
-  let bookmarkNames = await waitForBookmarkNames(['page2', 'page3', 'page1']);
+  let bookmarkNames = await collectBookmarkNames();
   assert.deepEqual(bookmarkNames, ['page2', 'page3', 'page1']);
 
   await I.click(commonConfig.sortBookmarkPosition);
-  bookmarkNames = await waitForBookmarkNames(['page1', 'page2', 'page3']);
+  bookmarkNames = await collectBookmarkNames();
   assert.deepEqual(bookmarkNames, ['page1', 'page2', 'page3']);
 
   await I.click(commonConfig.sortBookmarkCustom);
-  bookmarkNames = await waitForBookmarkNames(['page2', 'page3', 'page1']);
+  bookmarkNames = await collectBookmarkNames();
   assert.deepEqual(bookmarkNames, ['page2', 'page3', 'page1']);
-
-  async function waitForBookmarkNames(expectedNames) {
-    const attempts = Number(process.env.MV_BOOKMARK_NAME_WAIT_ATTEMPTS || 20);
-    const waitSeconds = Number(process.env.MV_BOOKMARK_NAME_WAIT_SECONDS || 0.5);
-
-    for (let attempt = 0; attempt < attempts; attempt++) {
-      const names = await collectBookmarkNames();
-      if (JSON.stringify(names) === JSON.stringify(expectedNames)) {
-        return names;
-      }
-      await I.wait(waitSeconds);
-    }
-
-    return collectBookmarkNames();
-  }
 
   async function collectBookmarkNames() {
     let names = [];
