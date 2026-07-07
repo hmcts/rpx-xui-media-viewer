@@ -56,6 +56,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
     ]
 }
 
+timeout(time: 60, unit: 'MINUTES') {
 withPipeline(type, product, component) {
   enableSlackNotifications(channel)
   overrideVaultEnvironments(vaultOverrides)
@@ -145,4 +146,5 @@ withPipeline(type, product, component) {
               reportName           : 'AAT Functional Test'
       ])
   }
+}
 }

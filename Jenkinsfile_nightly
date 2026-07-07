@@ -54,6 +54,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
+timeout(time: 60, unit: 'MINUTES') {
 withNightlyPipeline(type, product, component) {
   env.TEST_URL = 'http://localhost:3000'
   env.IDAM_URL = params.IDAM_API_URL
@@ -127,4 +128,5 @@ withNightlyPipeline(type, product, component) {
     ])
   }
 
+}
 }
