@@ -1,20 +1,21 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
 
-type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list';
+type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list' | 'odhin';
 
 const defaultOutputRoot = 'functional-output/tests/playwright';
+const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 
 const splitReporters = (raw: string | undefined): ReporterName[] =>
   (raw ?? '')
     .split(',')
     .map((value) => value.trim())
-    .filter((value): value is ReporterName => ['dot', 'html', 'junit', 'line', 'list'].includes(value));
+    .filter((value): value is ReporterName => ['dot', 'html', 'junit', 'line', 'list', 'odhin'].includes(value));
 
-const resolveReporters = (env: NodeJS.ProcessEnv) => {
+const resolveReporters = (env: NodeJS.ProcessEnv): ReporterDescription[] => {
   const terminalReporter = (env.PLAYWRIGHT_DEFAULT_REPORTER as ReporterName | undefined) ?? (env.CI ? 'dot' : 'list');
   const requestedReporters = splitReporters(env.PLAYWRIGHT_REPORTERS);
-  const reporterNames = requestedReporters.length ? requestedReporters : [terminalReporter, 'html', 'junit'];
+  const reporterNames = requestedReporters.length ? requestedReporters : [terminalReporter, 'html', 'junit', 'odhin'];
   const uniqueReporterNames = [...new Set(reporterNames)];
 
   return uniqueReporterNames.map((reporterName) => {
@@ -33,6 +34,23 @@ const resolveReporters = (env: NodeJS.ProcessEnv) => {
         'junit',
         {
           outputFile: env.PLAYWRIGHT_JUNIT_OUTPUT ?? `${defaultOutputRoot}/playwright-junit.xml`,
+        },
+      ] as const;
+    }
+
+    if (reporterName === 'odhin') {
+      return [
+        './playwright_tests/common/reporters/odhin-adaptive.reporter.cjs',
+        {
+          outputFolder: env.PLAYWRIGHT_REPORT_FOLDER ?? `${defaultOutputRoot}/odhin-report`,
+          indexFilename: env.PLAYWRIGHT_REPORT_INDEX_FILENAME ?? defaultOdhinReportFile,
+          title: env.PLAYWRIGHT_REPORT_TITLE ?? 'RPX XUI Media Viewer Playwright',
+          project: env.PLAYWRIGHT_REPORT_PROJECT ?? 'RPX XUI Media Viewer',
+          release: env.PLAYWRIGHT_REPORT_RELEASE ?? 'local',
+          startServer: false,
+          consoleLog: Boolean(env.CI),
+          consoleError: Boolean(env.CI),
+          testOutput: 'only-on-failure',
         },
       ] as const;
     }

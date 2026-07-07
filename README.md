@@ -143,19 +143,24 @@ entrypoint as MC/MO. The previous CodeceptJS smoke remains available as
 `yarn test:smoke:legacy`.
 
 Default report artefacts:
+- Odhín: `functional-output/tests/playwright/odhin-report/xui-playwright.html`
 - HTML: `functional-output/tests/playwright/html-report/index.html`
 - JUnit: `functional-output/tests/playwright/playwright-junit.xml`
 - traces, screenshots, videos: `functional-output/tests/playwright/test-results`
+- Smoke Odhín: `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html`
 - Smoke HTML: `functional-output/tests/playwright-smoke/html-report/index.html`
 - Smoke JUnit: `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml`
 - Smoke traces, screenshots, videos: `functional-output/tests/playwright-smoke/test-results`
 
 Useful overrides:
 - `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`
-- `PLAYWRIGHT_REPORTERS`: comma-separated reporter list, for example `list,html,junit`
+- `PLAYWRIGHT_REPORTERS`: comma-separated reporter list, for example `list,html,junit,odhin`
 - `PLAYWRIGHT_DEFAULT_REPORTER`: terminal reporter when `PLAYWRIGHT_REPORTERS` is not set, default `list` locally and `dot` in CI
 - `PLAYWRIGHT_HTML_REPORT`: HTML report folder
 - `PLAYWRIGHT_JUNIT_OUTPUT`: JUnit XML path
+- `PLAYWRIGHT_REPORT_FOLDER`: Odhín report folder
+- `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
+- `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in `yarn test:playwright`
 

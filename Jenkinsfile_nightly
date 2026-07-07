@@ -30,6 +30,8 @@ def channel   = '#xui-pipeline'
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightOutputRoot = 'functional-output/tests/playwright'
 def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
+def playwrightOdhinReportFile = 'xui-playwright.html'
+def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -42,13 +44,16 @@ def publishPlaywrightJUnit = { String testResults ->
   )
 }
 
-def publishPlaywrightReport = { String outputRoot, String reportName ->
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile ->
+  steps.sh(
+    "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}'"
+  )
   publishHTML([
     allowMissing         : true,
     alwaysLinkToLastBuild: true,
     keepAll              : true,
-    reportDir            : "${outputRoot}/html-report",
-    reportFiles          : 'index.html',
+    reportDir            : "${outputRoot}/odhin-report",
+    reportFiles          : reportFile,
     reportName           : reportName
   ])
   publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
@@ -157,13 +162,16 @@ withNightlyPipeline(type, product, component) {
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightOutputRoot}/test-results",
         "PLAYWRIGHT_HTML_REPORT=${playwrightOutputRoot}/html-report",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightOutputRoot}/playwright-junit.xml",
+        "PLAYWRIGHT_REPORT_FOLDER=${playwrightOutputRoot}/odhin-report",
+        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightOdhinReportFile}",
+        "PLAYWRIGHT_REPORT_TITLE=Nightly RPX XUI Media Viewer Playwright Runner Baseline",
         "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
         "PLAYWRIGHT_SKIP_INSTALL=true"
       ]) {
         try {
           yarnBuilder.yarn('test:playwright')
         } finally {
-          publishPlaywrightReport(playwrightOutputRoot, 'Nightly Playwright Runner Baseline')
+          publishPlaywrightReport(playwrightOutputRoot, 'Nightly Playwright Runner Baseline', playwrightOdhinReportFile)
         }
       }
     }
@@ -172,13 +180,16 @@ withNightlyPipeline(type, product, component) {
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSmokeOutputRoot}/test-results",
         "PLAYWRIGHT_HTML_REPORT=${playwrightSmokeOutputRoot}/html-report",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSmokeOutputRoot}/playwright-smoke-junit.xml",
+        "PLAYWRIGHT_REPORT_FOLDER=${playwrightSmokeOutputRoot}/odhin-report",
+        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSmokeOdhinReportFile}",
+        "PLAYWRIGHT_REPORT_TITLE=Nightly RPX XUI Media Viewer Playwright Smoke",
         "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
         "PLAYWRIGHT_SKIP_INSTALL=true"
       ]) {
         try {
           yarnBuilder.yarn('test:playwright:smoke')
         } finally {
-          publishPlaywrightReport(playwrightSmokeOutputRoot, 'Nightly Playwright Smoke Test')
+          publishPlaywrightReport(playwrightSmokeOutputRoot, 'Nightly Playwright Smoke Test', playwrightSmokeOdhinReportFile)
         }
       }
     }

@@ -22,6 +22,8 @@ def channel   = '#xui-pipeline'
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightOutputRoot = 'functional-output/tests/playwright'
 def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
+def playwrightOdhinReportFile = 'xui-playwright.html'
+def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -34,13 +36,16 @@ def publishPlaywrightJUnit = { String testResults ->
   )
 }
 
-def publishPlaywrightReport = { String outputRoot, String reportName ->
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile ->
+  steps.sh(
+    "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}'"
+  )
   publishHTML([
     allowMissing         : true,
     alwaysLinkToLastBuild: true,
     keepAll              : true,
-    reportDir            : "${outputRoot}/html-report",
-    reportFiles          : 'index.html',
+    reportDir            : "${outputRoot}/odhin-report",
+    reportFiles          : reportFile,
     reportName           : reportName
   ])
   publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
@@ -141,12 +146,15 @@ withPipeline(type, product, component) {
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightOutputRoot}/test-results",
         "PLAYWRIGHT_HTML_REPORT=${playwrightOutputRoot}/html-report",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightOutputRoot}/playwright-junit.xml",
+        "PLAYWRIGHT_REPORT_FOLDER=${playwrightOutputRoot}/odhin-report",
+        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightOdhinReportFile}",
+        "PLAYWRIGHT_REPORT_TITLE=RPX XUI Media Viewer Playwright Runner Baseline",
         "PLAYWRIGHT_SKIP_INSTALL=true"
       ]) {
         try {
           yarnBuilder.yarn('test:playwright')
         } finally {
-          publishPlaywrightReport(playwrightOutputRoot, 'Playwright Runner Baseline')
+          publishPlaywrightReport(playwrightOutputRoot, 'Playwright Runner Baseline', playwrightOdhinReportFile)
         }
       }
     }
@@ -161,7 +169,7 @@ withPipeline(type, product, component) {
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'PREVIEW Smoke Test'
     ])
-    publishPlaywrightReport(playwrightSmokeOutputRoot, 'PREVIEW Playwright Smoke Test')
+    publishPlaywrightReport(playwrightSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile)
   }
 
   afterAlways('functionalTest:preview') {
@@ -184,7 +192,7 @@ withPipeline(type, product, component) {
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'AAT Smoke Test'
     ])
-    publishPlaywrightReport(playwrightSmokeOutputRoot, 'AAT Playwright Smoke Test')
+    publishPlaywrightReport(playwrightSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile)
   }
 
   afterAlways('functionalTest:aat') {
