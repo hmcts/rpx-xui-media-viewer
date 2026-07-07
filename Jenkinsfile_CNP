@@ -20,6 +20,35 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
+def playwrightOutputRoot = 'functional-output/tests/playwright'
+def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
+
+def playwrightBrowsersEnv = {
+  ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
+}
+
+def publishPlaywrightJUnit = { String testResults ->
+  steps.junit(
+    allowEmptyResults: false,
+    testResults: testResults
+  )
+}
+
+def publishPlaywrightReport = { String outputRoot, String reportName ->
+  publishHTML([
+    allowMissing         : true,
+    alwaysLinkToLastBuild: true,
+    keepAll              : true,
+    reportDir            : "${outputRoot}/html-report",
+    reportFiles          : 'index.html',
+    reportName           : reportName
+  ])
+  publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+  steps.archiveArtifacts(
+    allowEmptyArchive: true,
+    artifacts: "${outputRoot}/**"
+  )
+}
 
 env.DOCASSEMBLY_URL = "http://dg-docassembly-aat.service.core-compute-aat.internal"
 env.DM_STORE_APP_URL = "http://dm-store-aat.service.core-compute-aat.internal"
@@ -84,6 +113,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('checkout') {
       env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
+      env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
       stage('Yarn Install') {
         sh ("rm -rf node_modules")
         sh ("yarn cache clean")
@@ -96,10 +126,30 @@ withPipeline(type, product, component) {
       stage('Media Viewer Setup') {
         yarnBuilder.yarn('setup')
       }
+      stage('Playwright Install Chromium') {
+        withEnv(playwrightBrowsersEnv()) {
+          yarnBuilder.yarn('test:setup:playwright-install-chromium')
+          env.PLAYWRIGHT_SKIP_INSTALL = 'true'
+        }
+      }
   }
 
   afterSuccess('build') {
     yarnBuilder.yarn('build')
+    stage('Playwright Runner Baseline') {
+      withEnv(playwrightBrowsersEnv() + [
+        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightOutputRoot}/test-results",
+        "PLAYWRIGHT_HTML_REPORT=${playwrightOutputRoot}/html-report",
+        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightOutputRoot}/playwright-junit.xml",
+        "PLAYWRIGHT_SKIP_INSTALL=true"
+      ]) {
+        try {
+          yarnBuilder.yarn('test:playwright')
+        } finally {
+          publishPlaywrightReport(playwrightOutputRoot, 'Playwright Runner Baseline')
+        }
+      }
+    }
   }
 
   afterAlways('smoketest:preview') {
@@ -111,6 +161,7 @@ withPipeline(type, product, component) {
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'PREVIEW Smoke Test'
     ])
+    publishPlaywrightReport(playwrightSmokeOutputRoot, 'PREVIEW Playwright Smoke Test')
   }
 
   afterAlways('functionalTest:preview') {
@@ -133,6 +184,7 @@ withPipeline(type, product, component) {
       reportFiles          : 'mv-e2e-result.html',
       reportName           : 'AAT Smoke Test'
     ])
+    publishPlaywrightReport(playwrightSmokeOutputRoot, 'AAT Playwright Smoke Test')
   }
 
   afterAlways('functionalTest:aat') {

@@ -28,6 +28,35 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
+def playwrightOutputRoot = 'functional-output/tests/playwright'
+def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
+
+def playwrightBrowsersEnv = {
+  ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
+}
+
+def publishPlaywrightJUnit = { String testResults ->
+  steps.junit(
+    allowEmptyResults: false,
+    testResults: testResults
+  )
+}
+
+def publishPlaywrightReport = { String outputRoot, String reportName ->
+  publishHTML([
+    allowMissing         : true,
+    alwaysLinkToLastBuild: true,
+    keepAll              : true,
+    reportDir            : "${outputRoot}/html-report",
+    reportFiles          : 'index.html',
+    reportName           : reportName
+  ])
+  publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+  steps.archiveArtifacts(
+    allowEmptyArchive: true,
+    artifacts: "${outputRoot}/**"
+  )
+}
 
 def vaultOverrides = [
   'aat' : params.ENVIRONMENT,
@@ -80,6 +109,7 @@ withNightlyPipeline(type, product, component) {
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
+    env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
     stage('Yarn Install') {
       sh ("rm -rf node_modules")
       sh ("yarn cache clean")
@@ -91,6 +121,12 @@ withNightlyPipeline(type, product, component) {
     }
     stage('Media Viewer Setup') {
       yarnBuilder.yarn('setup')
+    }
+    stage('Playwright Install Chromium') {
+      withEnv(playwrightBrowsersEnv()) {
+        yarnBuilder.yarn('test:setup:playwright-install-chromium')
+        env.PLAYWRIGHT_SKIP_INSTALL = 'true'
+      }
     }
   }
 
@@ -115,6 +151,36 @@ withNightlyPipeline(type, product, component) {
         tail -100 local-aat-ng.log >&2 || true
         exit 1
       '''
+    }
+    stage('Playwright Runner Baseline') {
+      withEnv(playwrightBrowsersEnv() + [
+        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightOutputRoot}/test-results",
+        "PLAYWRIGHT_HTML_REPORT=${playwrightOutputRoot}/html-report",
+        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightOutputRoot}/playwright-junit.xml",
+        "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
+        "PLAYWRIGHT_SKIP_INSTALL=true"
+      ]) {
+        try {
+          yarnBuilder.yarn('test:playwright')
+        } finally {
+          publishPlaywrightReport(playwrightOutputRoot, 'Nightly Playwright Runner Baseline')
+        }
+      }
+    }
+    stage('Playwright Smoke Test') {
+      withEnv(playwrightBrowsersEnv() + [
+        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSmokeOutputRoot}/test-results",
+        "PLAYWRIGHT_HTML_REPORT=${playwrightSmokeOutputRoot}/html-report",
+        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSmokeOutputRoot}/playwright-smoke-junit.xml",
+        "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
+        "PLAYWRIGHT_SKIP_INSTALL=true"
+      ]) {
+        try {
+          yarnBuilder.yarn('test:playwright:smoke')
+        } finally {
+          publishPlaywrightReport(playwrightSmokeOutputRoot, 'Nightly Playwright Smoke Test')
+        }
+      }
     }
   }
 

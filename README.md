@@ -126,7 +126,7 @@ yarn test:playwright
 ```
 
 This currently proves the runner and reporting contract only. It does not replace the
-legacy CodeceptJS or Protractor smoke and functional suites yet.
+legacy Protractor functional suite.
 
 Run the Playwright smoke project against a running standalone demo app:
 
@@ -138,6 +138,9 @@ yarn test:playwright:smoke
 The Playwright smoke opens `/#/media-viewer`, loads `assets/example.pdf`, and waits
 for the PDF viewer, page-number control and first rendered page. Override the smoke
 document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and `MV_SMOKE_CASE_ID`.
+`yarn test:smoke` now runs this Playwright smoke so Jenkins CNP uses the same smoke
+entrypoint as MC/MO. The previous CodeceptJS smoke remains available as
+`yarn test:smoke:legacy`.
 
 Default report artefacts:
 - HTML: `functional-output/tests/playwright/html-report/index.html`
