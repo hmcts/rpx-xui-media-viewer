@@ -76,7 +76,6 @@ withNightlyPipeline(type, product, component) {
   loadVaultSecrets(secrets)
 
   disableLegacyDeployment()
-  enableSecurityScan()
   enableSlackNotifications(channel)
   enableFullFunctionalTest(60)
 
@@ -172,15 +171,5 @@ withNightlyPipeline(type, product, component) {
     ])
   }
 
-  afterAlways('securityScan') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "reports/tests/",
-      reportFiles          : 'activescan.html',
-      reportName           : 'ZAP Security Scan Report'
-    ])
-  }
 }
 }
