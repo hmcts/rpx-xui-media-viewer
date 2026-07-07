@@ -89,6 +89,7 @@ withNightlyPipeline(type, product, component) {
     }
     stage('Puppeteer Chrome Install') {
       yarnBuilder.yarn('puppeteer:install')
+      env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
     }
     stage('Media Viewer Setup') {
       yarnBuilder.yarn('setup')
@@ -133,6 +134,11 @@ withNightlyPipeline(type, product, component) {
           tail -200 local-aat-api.log >&2 || true
           exit 1
         fi
+
+        node scripts/create-local-aat-test-documents.js \
+          --pdf-count 1 \
+          --image-count 1 \
+          --output .local-aat-documents.env >/dev/null
 
         JENKINS_NODE_COOKIE=dontKillMe nohup yarn start:ng --host 0.0.0.0 > local-aat-ng.log 2>&1 &
         ng_pid=$!
