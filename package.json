@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.23",
+  "version": "4.2.24",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -89,7 +89,7 @@
     "@ngrx/store": "^20",
     "@ngrx/store-devtools": "^20",
     "@swimlane/ngx-datatable": "^23.0.1",
-    "axios": "^1.16.0",
+    "axios": "^1.18.1",
     "body-parser": "^2.2.2",
     "config": "^4.4.1",
     "core-js": "^3.49.0",
