@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.24",
+  "version": "4.2.25",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -73,7 +73,6 @@
     "@angular/animations": "20.3.19",
     "@angular/cdk": "^17.3.8",
     "@angular/common": "20.3.19",
-    "@angular/compiler": "20.3.19",
     "@angular/core": "20.3.19",
     "@angular/forms": "20.3.19",
     "@angular/material": "^17.3.8",
@@ -101,7 +100,7 @@
     "nunjucks": "^3.2.4",
     "otp": "^2.0.1",
     "pdfjs-dist": "^4.10.38",
-    "rpx-xui-translation": "1.2.3",
+    "rpx-xui-translation": "1.2.7",
     "rxjs": "^7.8.2",
     "sass": "^1.99.1",
     "socket.io-client": "^4.8.3",
@@ -149,6 +148,7 @@
     "@angular-eslint/schematics": "20.3.0",
     "@angular-eslint/template-parser": "20.3.0",
     "@angular/cli": "20.3.19",
+    "@angular/compiler": "20.3.19",
     "@angular/compiler-cli": "20.3.19",
     "@angular/language-service": "20.3.19",
     "@ngrx/schematics": "^20",
