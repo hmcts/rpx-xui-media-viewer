@@ -191,7 +191,7 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
 - `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
-- `FUNCTIONAL_TESTS_WORKERS`: positive-integer worker-count override, default `7`
+- `FUNCTIONAL_TESTS_WORKERS`: worker-count override from `1` to `64`, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 
 Use this local proof set before pushing Playwright documentation or pipeline

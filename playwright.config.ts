@@ -6,6 +6,7 @@ const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
+const maxWorkerCount = 64;
 
 const resolveWorkerCount = (raw: string | undefined): number => {
   const configured = raw?.trim();
@@ -13,9 +14,13 @@ const resolveWorkerCount = (raw: string | undefined): number => {
     return 7;
   }
   if (!/^[1-9]\d*$/.test(configured)) {
-    throw new Error('FUNCTIONAL_TESTS_WORKERS must be a positive integer');
+    throw new Error(`FUNCTIONAL_TESTS_WORKERS must be an integer between 1 and ${maxWorkerCount}`);
   }
-  return Number(configured);
+  const workers = Number(configured);
+  if (!Number.isSafeInteger(workers) || workers > maxWorkerCount) {
+    throw new Error(`FUNCTIONAL_TESTS_WORKERS must be an integer between 1 and ${maxWorkerCount}`);
+  }
+  return workers;
 };
 
 const splitReporters = (raw: string | undefined): ReporterName[] =>
