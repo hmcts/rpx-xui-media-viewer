@@ -5,6 +5,7 @@ type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list' | 'odhin' | 'odhi
 const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
+const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 
 const splitReporters = (raw: string | undefined): ReporterName[] =>
   (raw ?? '')
@@ -99,6 +100,13 @@ export default defineConfig({
     {
       name: 'smoke',
       testMatch: [smokeSpecPattern],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'support',
+      testMatch: [supportSpecPattern],
       use: {
         ...devices['Desktop Chrome'],
       },
