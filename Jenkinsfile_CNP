@@ -20,6 +20,62 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
+def playwrightPreviewSmokeOutputRoot = 'functional-output/tests/playwright-smoke/preview'
+def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat'
+def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
+
+def playwrightBrowsersEnv = {
+  ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
+}
+
+def configurePlaywrightSmoke = { String outputRoot, String reportTitle ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
+  env.PLAYWRIGHT_HTML_REPORT = "${outputRoot}/html-report"
+  env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-smoke-junit.xml"
+  env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
+  env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightSmokeOdhinReportFile
+  env.PLAYWRIGHT_REPORT_TITLE = reportTitle
+}
+
+def publishPlaywrightJUnit = { String testResults ->
+  steps.junit(
+    allowEmptyResults: false,
+    testResults: testResults
+  )
+}
+
+def hasPlaywrightJUnit = { String outputRoot ->
+  steps.sh(
+    returnStatus: true,
+    script: "find '${outputRoot}' -type f -name '*junit.xml' -print -quit | grep -q ."
+  ) == 0
+}
+
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true ->
+  steps.sh(
+    "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}'"
+  )
+  publishHTML([
+    allowMissing         : true,
+    alwaysLinkToLastBuild: true,
+    keepAll              : true,
+    reportDir            : "${outputRoot}/odhin-report",
+    reportFiles          : reportFile,
+    reportName           : reportName
+  ])
+  steps.archiveArtifacts(
+    allowEmptyArchive: true,
+    artifacts: "${outputRoot}/**"
+  )
+  if (hasPlaywrightJUnit(outputRoot)) {
+    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+  } else if (requireJUnit) {
+    steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
+  } else {
+    echo "No Playwright JUnit XML found for ${reportName}; Odhín report publication was still completed."
+  }
+}
 
 env.DOCASSEMBLY_URL = "http://dg-docassembly-aat.service.core-compute-aat.internal"
 env.DM_STORE_APP_URL = "http://dm-store-aat.service.core-compute-aat.internal"
@@ -84,33 +140,36 @@ withPipeline(type, product, component) {
 
   afterSuccess('checkout') {
       env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
-      stage('Yarn Install') {
-        sh ("rm -rf node_modules")
-        sh ("yarn cache clean")
-        sh ('npm rebuild node-sass')
-        sh ('yarn install --check-cache')
+      env.PUPPETEER_SKIP_DOWNLOAD = 'true'
+      env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
+      stage('Media Viewer API Setup') {
+        withEnv(playwrightBrowsersEnv()) {
+          yarnBuilder.yarn('setup:api')
+        }
       }
       stage('Puppeteer Chrome Install') {
         yarnBuilder.yarn('puppeteer:install')
+        env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
       }
-      stage('Media Viewer Setup') {
-        yarnBuilder.yarn('setup')
+      stage('Playwright Install Chromium') {
+        withEnv(playwrightBrowsersEnv()) {
+          yarnBuilder.yarn('test:setup:playwright-install-chromium')
+          env.PLAYWRIGHT_SKIP_INSTALL = 'true'
+        }
       }
   }
 
   afterSuccess('build') {
     yarnBuilder.yarn('build')
+    yarnBuilder.yarn('copy:demo-files')
+  }
+
+  before('smoketest:preview') {
+    configurePlaywrightSmoke(playwrightPreviewSmokeOutputRoot, 'PREVIEW RPX XUI Media Viewer Playwright Smoke')
   }
 
   afterAlways('smoketest:preview') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "smoke-output/",
-      reportFiles          : 'mv-e2e-result.html',
-      reportName           : 'PREVIEW Smoke Test'
-    ])
+    publishPlaywrightReport(playwrightPreviewSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
   afterAlways('functionalTest:preview') {
@@ -124,15 +183,12 @@ withPipeline(type, product, component) {
       ])
   }
 
+  before('smoketest:aat') {
+    configurePlaywrightSmoke(playwrightAatSmokeOutputRoot, 'AAT RPX XUI Media Viewer Playwright Smoke')
+  }
+
   afterAlways('smoketest:aat') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "smoke-output/",
-      reportFiles          : 'mv-e2e-result.html',
-      reportName           : 'AAT Smoke Test'
-    ])
+    publishPlaywrightReport(playwrightAatSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
   afterAlways('functionalTest:aat') {

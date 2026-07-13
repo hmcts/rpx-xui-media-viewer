@@ -28,6 +28,51 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
+def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
+def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
+
+def playwrightBrowsersEnv = {
+  ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
+}
+
+def publishPlaywrightJUnit = { String testResults ->
+  steps.junit(
+    allowEmptyResults: false,
+    testResults: testResults
+  )
+}
+
+def hasPlaywrightJUnit = { String outputRoot ->
+  steps.sh(
+    returnStatus: true,
+    script: "find '${outputRoot}' -type f -name '*junit.xml' -print -quit | grep -q ."
+  ) == 0
+}
+
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true ->
+  steps.sh(
+    "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}'"
+  )
+  publishHTML([
+    allowMissing         : true,
+    alwaysLinkToLastBuild: true,
+    keepAll              : true,
+    reportDir            : "${outputRoot}/odhin-report",
+    reportFiles          : reportFile,
+    reportName           : reportName
+  ])
+  steps.archiveArtifacts(
+    allowEmptyArchive: true,
+    artifacts: "${outputRoot}/**"
+  )
+  if (hasPlaywrightJUnit(outputRoot)) {
+    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+  } else if (requireJUnit) {
+    steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
+  } else {
+    echo "No Playwright JUnit XML found for ${reportName}; Odhín report publication was still completed."
+  }
+}
 
 def vaultOverrides = [
   'aat' : params.ENVIRONMENT,
@@ -81,24 +126,28 @@ withNightlyPipeline(type, product, component) {
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
+    env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
     env.PUPPETEER_SKIP_DOWNLOAD = 'true'
-    stage('Yarn Install') {
-      sh ("rm -rf node_modules")
-      sh ("yarn cache clean")
-      sh ('npm rebuild node-sass')
-      sh ('yarn install --check-cache')
+    stage('Media Viewer API Setup') {
+      withEnv(playwrightBrowsersEnv()) {
+        yarnBuilder.yarn('setup:api')
+      }
     }
     stage('Puppeteer Chrome Install') {
       yarnBuilder.yarn('puppeteer:install')
       env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
     }
-    stage('Media Viewer Setup') {
-      yarnBuilder.yarn('setup')
+    stage('Playwright Install Chromium') {
+      withEnv(playwrightBrowsersEnv()) {
+        yarnBuilder.yarn('test:setup:playwright-install-chromium')
+        env.PLAYWRIGHT_SKIP_INSTALL = 'true'
+      }
     }
   }
 
   afterSuccess('build') {
     yarnBuilder.yarn('build')
+    yarnBuilder.yarn('copy:demo-files')
     stage('Start local AAT media viewer') {
       sh '''
         set +x
@@ -108,7 +157,6 @@ withNightlyPipeline(type, product, component) {
         rm -f local-aat-api.log local-aat-ng.log
         JENKINS_NODE_COOKIE=dontKillMe nohup yarn start:api > local-aat-api.log 2>&1 &
         api_pid=$!
-
         for attempt in $(seq 1 60); do
           if ! kill -0 "$api_pid" 2>/dev/null; then
             echo "Local AAT API exited before becoming ready" >&2
@@ -164,6 +212,25 @@ withNightlyPipeline(type, product, component) {
         tail -200 local-aat-ng.log >&2 || true
         exit 1
       '''
+    }
+    stage('Playwright Smoke Test') {
+      steps.sh("rm -rf -- '${playwrightSmokeOutputRoot}'")
+      withEnv(playwrightBrowsersEnv() + [
+        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSmokeOutputRoot}/test-results",
+        "PLAYWRIGHT_HTML_REPORT=${playwrightSmokeOutputRoot}/html-report",
+        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSmokeOutputRoot}/playwright-smoke-junit.xml",
+        "PLAYWRIGHT_REPORT_FOLDER=${playwrightSmokeOutputRoot}/odhin-report",
+        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSmokeOdhinReportFile}",
+        "PLAYWRIGHT_REPORT_TITLE=Nightly RPX XUI Media Viewer Playwright Smoke",
+        "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
+        "PLAYWRIGHT_SKIP_INSTALL=true"
+      ]) {
+        try {
+          yarnBuilder.yarn('test:playwright:smoke')
+        } finally {
+          publishPlaywrightReport(playwrightSmokeOutputRoot, 'Nightly Playwright Smoke Test', playwrightSmokeOdhinReportFile)
+        }
+      }
     }
   }
 
