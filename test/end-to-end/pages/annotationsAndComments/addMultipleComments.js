@@ -8,7 +8,8 @@ module.exports = async function () {
   await I.click(commonConfig.highLightTextCount);
   await I.retry(2).click(commonConfig.commentPopup);
   await I.fillField(commonConfig.firstCommentXp, commonConfig.firstComment1);
-  await I.retry(3).click('//button[@class="govuk-button" and contains(text(), "Save")]');
+  await I.waitForClickable(commonConfig.saveButton);
+  await I.retry(3).click(commonConfig.saveButton);
   await I.wait(testConfig.BookmarksAndAnnotationsWait);
   await I.nonTextualHighlightAndComment();
 }
