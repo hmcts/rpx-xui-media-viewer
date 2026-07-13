@@ -12,6 +12,7 @@ import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.ser
 import { ToolbarEventService } from '../toolbar-event.service';
 import { ToolbarFocusService } from '../toolbar-focus.service';
 import { RouterTestingModule } from '@angular/router/testing';
+import { SharedModule } from '../../shared/shared.module';
 
 
 describe('MainToolbarComponent', () => {
@@ -33,6 +34,7 @@ describe('MainToolbarComponent', () => {
         StoreModule.forRoot({}),
         OverlayModule,
         RouterTestingModule,
+        SharedModule,
         RpxTranslationModule.forRoot({
           baseUrl: '',
           debounceTimeMs: 300,

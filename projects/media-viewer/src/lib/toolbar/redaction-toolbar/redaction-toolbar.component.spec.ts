@@ -9,6 +9,7 @@ import { SearchType, ToolbarEventService } from '../toolbar-event.service';
 import { ToolbarFocusService } from '../toolbar-focus.service';
 import { RedactionSearch } from '../redaction-search-bar/redaction-search.model';
 import { Subject } from 'rxjs';
+import { SharedModule } from '../../shared/shared.module';
 
 describe('RedactionToolbarComponent', () => {
   let component: RedactionToolbarComponent;
@@ -36,6 +37,7 @@ describe('RedactionToolbarComponent', () => {
         FormsModule,
         StoreModule.forFeature('media-viewer', reducers),
         StoreModule.forRoot({}),
+        SharedModule,
         RpxTranslationModule.forRoot({
           baseUrl: '',
           debounceTimeMs: 300,
