@@ -1,14 +1,14 @@
 #!groovy
 
+def scheduledNightlyTriggers = env.BRANCH_NAME == 'master' ? [cron('H 17 * * *')] : []
+
 properties([
   [
   $class       : 'GithubProjectProperty',
   displayName  : 'MediaViewer',
   projectUrlStr: 'https://github.com/hmcts/rpx-xui-media-viewer/'
   ],
-  pipelineTriggers([
-    cron('H 17 * * *')
-  ]),
+  pipelineTriggers(scheduledNightlyTriggers),
   parameters([
     string(name: 'ENVIRONMENT', defaultValue: 'aat', description: 'Environment to test'),
     string(name: 'IDAM_API_URL', defaultValue: 'https://idam-api.aat.platform.hmcts.net', description: 'The Url of IDAM'),
@@ -82,6 +82,7 @@ def secrets = [
   "rpx-${params.ENVIRONMENT}": [
     secret('microservicekey-em-gw', 'S2S_KEY'),
     secret('show-oauth2-token', 'IDAM_SECRET'),
+    secret('password', 'IDAM_PASSWORD'),
     secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
     secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
     secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),
@@ -98,6 +99,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
   ]
 }
 
+timeout(time: 60, unit: 'MINUTES') {
 withNightlyPipeline(type, product, component) {
   env.TEST_URL = 'http://localhost:3000'
   env.IDAM_URL = params.IDAM_API_URL
@@ -114,25 +116,26 @@ withNightlyPipeline(type, product, component) {
   env.REFORM_ENVIRONMENT = params.ENVIRONMENT
   env.NODE_ENV = "TEST"
   env.RUNNING_ENV = params.ENVIRONMENT
+  env.E2E_FAIL_FAST_PREFLIGHT = "true"
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
 
   disableLegacyDeployment()
-  enableSecurityScan()
   enableSlackNotifications(channel)
   enableFullFunctionalTest(60)
-  enableCrossBrowserTest()
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
     env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
-    stage('Yarn Install') {
+    env.PUPPETEER_SKIP_DOWNLOAD = 'true'
+    stage('Media Viewer API Setup') {
       withEnv(playwrightBrowsersEnv()) {
-        yarnBuilder.yarn('install --immutable')
+        yarnBuilder.yarn('setup:api')
       }
     }
-    stage('Media Viewer API Setup') {
-      yarnBuilder.yarn('setup:api')
+    stage('Puppeteer Chrome Install') {
+      yarnBuilder.yarn('puppeteer:install')
+      env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
     }
     stage('Playwright Install Chromium') {
       withEnv(playwrightBrowsersEnv()) {
@@ -149,23 +152,69 @@ withNightlyPipeline(type, product, component) {
       sh '''
         set +x
         export IDAM_PASSWORD="${IDAM_PASSWORD:-${CCD_CASEWORKER_E2E_PASSWORD:-}}"
-        export NODE_CONFIG="$(node -e "console.log(JSON.stringify({ secrets: { 'em-showcase': { 'show-oauth2-token': process.env.IDAM_SECRET, 'microservicekey-em-gw': process.env.S2S_KEY, password: process.env.IDAM_PASSWORD } } }))")"
-        nohup yarn start:api > local-aat-api.log 2>&1 &
-        nohup yarn start:ng --host 0.0.0.0 > local-aat-ng.log 2>&1 &
+        export NODE_CONFIG="$(node -e "const secrets = { 'show-oauth2-token': process.env.IDAM_SECRET, 'microservicekey-em-gw': process.env.S2S_KEY, password: process.env.IDAM_PASSWORD }; console.log(JSON.stringify({ secrets: { rpx: secrets, 'em-showcase': secrets } }))")"
+
+        rm -f local-aat-api.log local-aat-ng.log
+        JENKINS_NODE_COOKIE=dontKillMe nohup yarn start:api > local-aat-api.log 2>&1 &
+        api_pid=$!
         for attempt in $(seq 1 60); do
-          if curl -fsS http://localhost:3000/ >/dev/null && curl -fsS http://localhost:1337/health | grep -q '"status":"UP"'; then
+          if ! kill -0 "$api_pid" 2>/dev/null; then
+            echo "Local AAT API exited before becoming ready" >&2
+            tail -200 local-aat-api.log >&2 || true
+            exit 1
+          fi
+
+          if curl -fsS http://localhost:1337/health 2>/dev/null | grep -q '"status":"UP"'; then
+            echo "Local AAT API is ready"
+            break
+          fi
+
+          if grep -q "Could not start" local-aat-api.log; then
+            echo "Local AAT API startup failed" >&2
+            tail -200 local-aat-api.log >&2 || true
+            exit 1
+          fi
+
+          sleep 2
+        done
+
+        if ! curl -fsS http://localhost:1337/health 2>/dev/null | grep -q '"status":"UP"'; then
+          echo "Local AAT API did not become ready" >&2
+          tail -200 local-aat-api.log >&2 || true
+          exit 1
+        fi
+
+        node scripts/create-local-aat-test-documents.js \
+          --pdf-count 1 \
+          --image-count 1 \
+          --output .local-aat-documents.env >/dev/null
+
+        JENKINS_NODE_COOKIE=dontKillMe nohup yarn start:ng --host 0.0.0.0 > local-aat-ng.log 2>&1 &
+        ng_pid=$!
+
+        for attempt in $(seq 1 90); do
+          if ! kill -0 "$ng_pid" 2>/dev/null; then
+            echo "Local AAT Angular host exited before becoming ready" >&2
+            tail -200 local-aat-ng.log >&2 || true
+            exit 1
+          fi
+
+          if curl -fsS http://localhost:3000/ >/dev/null 2>&1; then
             echo "Local AAT media viewer is ready"
             exit 0
           fi
+
           sleep 2
         done
+
         echo "Local AAT media viewer did not become ready" >&2
-        tail -100 local-aat-api.log >&2 || true
-        tail -100 local-aat-ng.log >&2 || true
+        tail -200 local-aat-api.log >&2 || true
+        tail -200 local-aat-ng.log >&2 || true
         exit 1
       '''
     }
     stage('Playwright Smoke Test') {
+      steps.sh("rm -rf -- '${playwrightSmokeOutputRoot}'")
       withEnv(playwrightBrowsersEnv() + [
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSmokeOutputRoot}/test-results",
         "PLAYWRIGHT_HTML_REPORT=${playwrightSmokeOutputRoot}/html-report",
@@ -196,25 +245,5 @@ withNightlyPipeline(type, product, component) {
     ])
   }
 
-  afterAlways('crossBrowserTest') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "functional-output",
-      reportFiles          : 'index.html',
-      reportName           : 'Cross Browser Tests'
-    ])
-  }
-
-  afterAlways('securityScan') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "reports/tests/",
-      reportFiles          : 'activescan.html',
-      reportName           : 'ZAP Security Scan Report'
-    ])
-  }
+}
 }

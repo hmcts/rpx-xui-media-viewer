@@ -1,6 +1,6 @@
 import { defineConfig, devices, type ReporterDescription } from '@playwright/test';
 
-type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list' | 'odhin';
+type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list' | 'odhin' | 'odhin-progress';
 
 const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
@@ -10,12 +10,16 @@ const splitReporters = (raw: string | undefined): ReporterName[] =>
   (raw ?? '')
     .split(',')
     .map((value) => value.trim())
-    .filter((value): value is ReporterName => ['dot', 'html', 'junit', 'line', 'list', 'odhin'].includes(value));
+    .filter((value): value is ReporterName =>
+      ['dot', 'html', 'junit', 'line', 'list', 'odhin', 'odhin-progress'].includes(value)
+    );
 
 const resolveReporters = (env: NodeJS.ProcessEnv): ReporterDescription[] => {
   const terminalReporter = (env.PLAYWRIGHT_DEFAULT_REPORTER as ReporterName | undefined) ?? (env.CI ? 'dot' : 'list');
   const requestedReporters = splitReporters(env.PLAYWRIGHT_REPORTERS);
-  const reporterNames = requestedReporters.length ? requestedReporters : [terminalReporter, 'html', 'junit', 'odhin'];
+  const reporterNames = requestedReporters.length
+    ? requestedReporters
+    : [terminalReporter, 'html', 'junit', 'odhin-progress', 'odhin'];
   const uniqueReporterNames = [...new Set(reporterNames)];
 
   return uniqueReporterNames.map((reporterName) => {
@@ -51,6 +55,19 @@ const resolveReporters = (env: NodeJS.ProcessEnv): ReporterDescription[] => {
           consoleLog: Boolean(env.CI),
           consoleError: Boolean(env.CI),
           testOutput: 'only-on-failure',
+        },
+      ] as const;
+    }
+
+    if (reporterName === 'odhin-progress') {
+      return [
+        './playwright_tests/common/reporters/odhin-progress.reporter.cjs',
+        {
+          enabled: Boolean(env.CI),
+          graceMs: 1_500,
+          intervalMs: 5_000,
+          hardTimeoutMs: 0,
+          forceExitOnCompletion: Boolean(env.CI),
         },
       ] as const;
     }

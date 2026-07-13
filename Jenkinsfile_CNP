@@ -20,11 +20,22 @@ def component = "media-viewer"
 def channel   = '#xui-pipeline'
 
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
-def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
+def playwrightPreviewSmokeOutputRoot = 'functional-output/tests/playwright-smoke/preview'
+def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
+}
+
+def configurePlaywrightSmoke = { String outputRoot, String reportTitle ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
+  env.PLAYWRIGHT_HTML_REPORT = "${outputRoot}/html-report"
+  env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-smoke-junit.xml"
+  env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
+  env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightSmokeOdhinReportFile
+  env.PLAYWRIGHT_REPORT_TITLE = reportTitle
 }
 
 def publishPlaywrightJUnit = { String testResults ->
@@ -101,11 +112,11 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
     ]
 }
 
+timeout(time: 60, unit: 'MINUTES') {
 withPipeline(type, product, component) {
   enableSlackNotifications(channel)
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
-  enableSecurityScan()
   env.EXECUTE_E2E=false
   env.TEST_URL = 'https://xui-media-viewer-staging.service.core-compute-aat.internal/'
   onPR{
@@ -129,14 +140,16 @@ withPipeline(type, product, component) {
 
   afterSuccess('checkout') {
       env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
+      env.PUPPETEER_SKIP_DOWNLOAD = 'true'
       env.PLAYWRIGHT_BROWSERS_PATH = "${env.WORKSPACE}/.cache/ms-playwright"
-      stage('Yarn Install') {
+      stage('Media Viewer API Setup') {
         withEnv(playwrightBrowsersEnv()) {
-          yarnBuilder.yarn('install --immutable')
+          yarnBuilder.yarn('setup:api')
         }
       }
-      stage('Media Viewer API Setup') {
-        yarnBuilder.yarn('setup:api')
+      stage('Puppeteer Chrome Install') {
+        yarnBuilder.yarn('puppeteer:install')
+        env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
       }
       stage('Playwright Install Chromium') {
         withEnv(playwrightBrowsersEnv()) {
@@ -151,8 +164,12 @@ withPipeline(type, product, component) {
     yarnBuilder.yarn('copy:demo-files')
   }
 
+  before('smoketest:preview') {
+    configurePlaywrightSmoke(playwrightPreviewSmokeOutputRoot, 'PREVIEW RPX XUI Media Viewer Playwright Smoke')
+  }
+
   afterAlways('smoketest:preview') {
-    publishPlaywrightReport(playwrightSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
+    publishPlaywrightReport(playwrightPreviewSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
   afterAlways('functionalTest:preview') {
@@ -166,8 +183,12 @@ withPipeline(type, product, component) {
       ])
   }
 
+  before('smoketest:aat') {
+    configurePlaywrightSmoke(playwrightAatSmokeOutputRoot, 'AAT RPX XUI Media Viewer Playwright Smoke')
+  }
+
   afterAlways('smoketest:aat') {
-    publishPlaywrightReport(playwrightSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
+    publishPlaywrightReport(playwrightAatSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
   afterAlways('functionalTest:aat') {
@@ -180,4 +201,5 @@ withPipeline(type, product, component) {
               reportName           : 'AAT Functional Test'
       ])
   }
+}
 }

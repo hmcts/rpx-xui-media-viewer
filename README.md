@@ -154,9 +154,15 @@ Default Playwright evidence is written under `functional-output/tests`:
 | --- | --- | --- | --- | --- |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/html-report/index.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 
+Those are the default local and nightly paths. CNP keeps preview and AAT
+evidence separate under `functional-output/tests/playwright-smoke/preview` and
+`functional-output/tests/playwright-smoke/aat` so results cannot be reused
+across environments.
+
 Reporting behavior follows the MC/MO pattern:
 
 - Odhín is produced through the patched `odhin-reports-playwright` reporter.
+- CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - HTML, JUnit and Odhín reporters can run together.
 - Traces, screenshots and videos are kept on failure for diagnostics.
 - `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
@@ -164,11 +170,10 @@ Reporting behavior follows the MC/MO pattern:
 - Jenkins CNP and nightly pipelines publish the Odhín HTML reports, publish
   JUnit XML, and archive the full Playwright output folders.
 
-The Jenkins setup path installs dependencies with `yarn install --immutable`,
-installs Chromium into the workspace-local `PLAYWRIGHT_BROWSERS_PATH`, and then
-sets `PLAYWRIGHT_SKIP_INSTALL=true` for Playwright lanes. Puppeteer is not
-installed globally for Playwright; the legacy functional script installs it only
-when that legacy path runs.
+The Jenkins `YarnBuilder` performs its immutable dependency install before the
+first setup task. The pipeline then installs Puppeteer Chrome once for legacy
+tests and Chromium into the workspace-local `PLAYWRIGHT_BROWSERS_PATH`, and sets
+`PLAYWRIGHT_SKIP_INSTALL=true` so Playwright lanes do not reinstall it.
 
 Useful overrides:
 - `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`

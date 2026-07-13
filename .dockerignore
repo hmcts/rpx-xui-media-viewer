@@ -46,6 +46,7 @@ mochawesome-report
 smoke-output
 tmp
 .sessions
+.playwright-cli
 logs
 dummy.pdf
 *.iml
