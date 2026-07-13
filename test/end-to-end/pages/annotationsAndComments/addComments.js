@@ -11,7 +11,7 @@ module.exports = async function (commentText) {
   await I.retry(2).click(commonConfig.commentPopup);
   await I.waitForElement(commonConfig.firstCommentXp);  
   await I.fillField(commonConfig.firstCommentXp, commentText);
-  await I.waitForElement(commonConfig.saveButton);
+  await I.waitForClickable(commonConfig.saveButton);
   await I.retry(3).click(commonConfig.saveButton);
   await I.waitNumberOfVisibleElements(commonConfig.commentsCount, comments + 1);
 }

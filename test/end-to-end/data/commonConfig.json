@@ -90,7 +90,7 @@
   "redactTextCss": "div.textLayer",
   "previewRedactTextCss": "div:nth-child(1) > div.textLayer",
   "assertEnvTestData": "Document load result",
-  "saveButton": "//button[@class=\"govuk-button\" and contains(text(), \"Save\")]",
+  "saveButton": "textarea[name=\"content\"] ~ .commentBtns > button:first-child",
   "nonTextualHighlightCss": "//div[@class =\"rectangle\" and (@tabindex=\"0\")]",
   "drawBox": "#mvDrawBtn",
   "redactFromSearchBtn": "#mvRedactFromSearchBtn",
