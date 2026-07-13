@@ -11,7 +11,6 @@ import { reducers } from '../../store/reducers/reducers';
 import { ToolbarEventService } from '../toolbar-event.service';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { ToolbarFocusService } from '../toolbar-focus.service';
-import { SharedModule } from '../../shared/shared.module';
 
 describe('HighlightToolbarComponent', () => {
   let component: HighlightToolbarComponent;
@@ -29,7 +28,6 @@ describe('HighlightToolbarComponent', () => {
         FormsModule,
         StoreModule.forFeature('media-viewer', reducers),
         StoreModule.forRoot({}),
-        SharedModule,
         RpxTranslationModule.forRoot({
           baseUrl: '',
           debounceTimeMs: 300,
