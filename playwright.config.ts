@@ -7,6 +7,17 @@ const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 
+const resolveWorkerCount = (raw: string | undefined): number => {
+  const configured = raw?.trim();
+  if (!configured) {
+    return 7;
+  }
+  if (!/^[1-9]\d*$/.test(configured)) {
+    throw new Error('FUNCTIONAL_TESTS_WORKERS must be a positive integer');
+  }
+  return Number(configured);
+};
+
 const splitReporters = (raw: string | undefined): ReporterName[] =>
   (raw ?? '')
     .split(',')
@@ -84,7 +95,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: Number.parseInt(process.env.FUNCTIONAL_TESTS_WORKERS ?? '7', 10),
+  workers: resolveWorkerCount(process.env.FUNCTIONAL_TESTS_WORKERS),
   timeout: 60_000,
   expect: {
     timeout: 10_000,
