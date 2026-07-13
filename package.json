@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.25",
+  "version": "4.2.26-pdfjs-dist-update",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -104,7 +104,7 @@
     "ngx-chips": "3.0.0",
     "nunjucks": "^3.2.4",
     "otp": "^2.0.1",
-    "pdfjs-dist": "^4.10.38",
+    "pdfjs-dist": "^6.1.200",
     "rpx-xui-translation": "1.2.7",
     "rxjs": "^7.8.2",
     "sass": "^1.99.1",
