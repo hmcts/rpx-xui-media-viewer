@@ -123,6 +123,12 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
+| Viewer support | `playwright.config.ts`, project `support` | `PLAYWRIGHT_SKIP_INSTALL=true npx playwright test --config=playwright.config.ts --project=support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
+
+The Playwright config runs tests fully in parallel with seven workers. Each test
+gets its own browser context and page-scoped route mocks. Tests must not depend
+on execution order or share mutable documents; mutation-heavy AAT journeys must
+provision a document per test or reset it before reuse.
 
 Install Chromium once before local runs when the browser cache is empty:
 
@@ -185,6 +191,7 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
 - `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
+- `FUNCTIONAL_TESTS_WORKERS`: worker-count override, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 
 Use this local proof set before pushing Playwright documentation or pipeline
@@ -194,6 +201,7 @@ changes:
 yarn install --immutable
 yarn test:setup:playwright-install-chromium
 PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright:smoke:list
+PLAYWRIGHT_SKIP_INSTALL=true npx playwright test --config=playwright.config.ts
 ```
 
 For a smoke behavior proof, start the app in one terminal:
@@ -222,7 +230,7 @@ Migration boundaries:
   signal.
 
 ### 6. Create isolated AAT test documents
-For mutation-heavy functional tests, do not share one document across parallel workers.
+For mutation-heavy functional tests, do not share one document across parallel tests.
 Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
 is running:
 

@@ -84,7 +84,7 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
-  workers: process.env.CI ? 2 : undefined,
+  workers: Number.parseInt(process.env.FUNCTIONAL_TESTS_WORKERS ?? '7', 10),
   timeout: 60_000,
   expect: {
     timeout: 10_000,
