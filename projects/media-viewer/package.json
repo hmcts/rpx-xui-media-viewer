@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.23",
+  "version": "4.2.25",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
@@ -37,7 +37,7 @@
     "@ngrx/store": "^20",
     "@ngrx/store-devtools": "^20",
     "ngx-chips": "3.0.0",
-    "rpx-xui-translation": "1.2.3",
+    "rpx-xui-translation": "1.2.7",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
