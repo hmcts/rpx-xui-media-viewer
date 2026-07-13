@@ -1,4 +1,4 @@
-import type { Locator, Page } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { DocumentLoadState } from '../components/documentLoadState';
 import { MediaViewerSidePanels } from '../components/mediaViewerSidePanels';
 import { MediaViewerToolbar } from '../components/mediaViewerToolbar';
@@ -9,9 +9,6 @@ import { ZoomControls } from '../components/zoomControls';
 import type { MediaAsset } from '../fixtures/mediaAssets';
 
 export class MediaViewerPage {
-  readonly pdfViewer: Locator;
-  readonly pageNumberInput: Locator;
-  readonly firstPdfPage: Locator;
   readonly loadState: DocumentLoadState;
   readonly toolbar: MediaViewerToolbar;
   readonly navigation: PageNavigation;
@@ -28,9 +25,6 @@ export class MediaViewerPage {
     this.rotation = new RotationControls(page);
     this.search = new SearchControls(page);
     this.sidePanels = new MediaViewerSidePanels(page);
-    this.pdfViewer = this.loadState.pdfViewer;
-    this.pageNumberInput = this.navigation.pageNumberInput;
-    this.firstPdfPage = this.loadState.firstPdfPage;
   }
 
   async stubAnnotationResponses(): Promise<void> {
@@ -42,7 +36,9 @@ export class MediaViewerPage {
 
   async goto(): Promise<void> {
     const response = await this.page.goto('/#/media-viewer', { waitUntil: 'domcontentloaded' });
-    if (!response?.ok()) {
+    const isViewerRoute = new URL(this.page.url()).hash === '#/media-viewer';
+    const responseFailed = response !== null && !response.ok() && response.status() !== 304;
+    if (!isViewerRoute || responseFailed) {
       throw new Error(`Media viewer route failed: ${response?.status() ?? 'no response'} ${this.page.url()}`);
     }
   }
@@ -64,7 +60,7 @@ export class MediaViewerPage {
     });
     await this.page.getByRole('button', { name: 'Load document' }).click();
     const response = await documentResponse;
-    if (!response.ok()) {
+    if (!response.ok() && response.status() !== 304) {
       throw new Error(`Document request failed: ${response.status()} ${expectedDocumentUrl}`);
     }
   }
