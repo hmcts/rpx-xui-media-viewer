@@ -221,7 +221,6 @@ withNightlyPipeline(type, product, component) {
       steps.sh("rm -rf -- '${playwrightSmokeOutputRoot}'")
       withEnv(playwrightBrowsersEnv() + [
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSmokeOutputRoot}/test-results",
-        "PLAYWRIGHT_HTML_REPORT=${playwrightSmokeOutputRoot}/html-report",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSmokeOutputRoot}/playwright-smoke-junit.xml",
         "PLAYWRIGHT_REPORT_FOLDER=${playwrightSmokeOutputRoot}/odhin-report",
         "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSmokeOdhinReportFile}",
@@ -241,7 +240,6 @@ withNightlyPipeline(type, product, component) {
       steps.sh("rm -rf -- '${playwrightSupportOutputRoot}'")
       withEnv(playwrightBrowsersEnv() + [
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSupportOutputRoot}/test-results",
-        "PLAYWRIGHT_HTML_REPORT=${playwrightSupportOutputRoot}/html-report",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSupportOutputRoot}/playwright-support-junit.xml",
         "PLAYWRIGHT_REPORT_FOLDER=${playwrightSupportOutputRoot}/odhin-report",
         "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",

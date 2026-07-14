@@ -36,7 +36,6 @@ def playwrightBrowsersEnv = {
 def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
   steps.sh("rm -rf -- '${outputRoot}'")
   env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
-  env.PLAYWRIGHT_HTML_REPORT = "${outputRoot}/html-report"
   env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-smoke-junit.xml"
   env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
   env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightSmokeOdhinReportFile
@@ -87,7 +86,6 @@ def runPlaywrightSupportTests = { String outputRoot, String reportName, String t
   steps.sh("rm -rf -- '${outputRoot}'")
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
-    "PLAYWRIGHT_HTML_REPORT=${outputRoot}/html-report",
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-junit.xml",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",
