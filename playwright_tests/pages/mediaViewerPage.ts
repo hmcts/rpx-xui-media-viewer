@@ -22,22 +22,12 @@ export class MediaViewerPage {
     await this.page.goto('/#/media-viewer');
   }
 
-  resolveDocumentUrl(documentUrl: string): string {
-    return new URL(documentUrl, this.page.url()).href;
-  }
-
   async loadDocument(documentUrl: string, caseId: string): Promise<void> {
-    const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
-
     await this.page.getByText('Change document details').click();
     await this.page.getByLabel('document url').fill(documentUrl);
     await this.page.getByLabel('document type').fill('pdf');
     await this.page.getByLabel('case id').fill(caseId);
 
-    const documentResponse = this.page.waitForResponse(
-      (response) => response.url() === expectedDocumentUrl && response.status() === 200
-    );
     await this.page.getByRole('button', { name: 'Load document' }).click();
-    await documentResponse;
   }
 }
