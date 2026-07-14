@@ -131,7 +131,7 @@ Current Playwright lanes:
 
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
-| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
+| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Loads standalone PDF and image fixtures and verifies rendered-document readiness, PDF zoom and navigation, image rotation and deterministic PDF search. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The Playwright config runs tests fully in parallel with seven workers. Each test
@@ -187,7 +187,8 @@ Reporting behavior follows the MC/MO pattern:
   count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - Odhín is the only standard human-readable report. JUnit is retained for
-  Jenkins ingestion, and traces, screenshots and videos are kept on failure.
+  Jenkins ingestion. Screenshots and videos are kept on failure; traces are
+  captured on the first retry.
   The standard Playwright HTML reporter is not supported.
 - `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
   local setup step has already installed Chromium.

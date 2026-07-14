@@ -20,4 +20,8 @@ export class DocumentLoadState {
   pdfPage(pageNumber: number): Locator {
     return this.pdfViewer.locator(`div.page[data-page-number="${pageNumber}"]`);
   }
+
+  pdfCanvas(pageNumber: number): Locator {
+    return this.pdfPage(pageNumber).locator('canvas[role="presentation"]');
+  }
 }
