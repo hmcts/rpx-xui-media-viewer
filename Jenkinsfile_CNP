@@ -26,19 +26,22 @@ def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
+def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
+def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
 }
 
-def configurePlaywrightSmoke = { String outputRoot, String reportTitle ->
+def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
   steps.sh("rm -rf -- '${outputRoot}'")
   env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
   env.PLAYWRIGHT_HTML_REPORT = "${outputRoot}/html-report"
   env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-smoke-junit.xml"
   env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
   env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightSmokeOdhinReportFile
-  env.PLAYWRIGHT_REPORT_TITLE = reportTitle
+  env.PLAYWRIGHT_REPORT_TITLE = playwrightSmokeOdhinTitle
+  env.TEST_TYPE = targetEnvironment
 }
 
 def publishPlaywrightJUnit = { String testResults ->
@@ -80,7 +83,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
   }
 }
 
-def runPlaywrightSupportTests = { String outputRoot, String reportTitle ->
+def runPlaywrightSupportTests = { String outputRoot, String reportName, String targetEnvironment ->
   steps.sh("rm -rf -- '${outputRoot}'")
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
@@ -88,13 +91,14 @@ def runPlaywrightSupportTests = { String outputRoot, String reportTitle ->
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-junit.xml",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",
-    "PLAYWRIGHT_REPORT_TITLE=${reportTitle}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightSupportOdhinTitle}",
+    "TEST_TYPE=${targetEnvironment}",
     'PLAYWRIGHT_SKIP_INSTALL=true'
   ]) {
     try {
       yarnBuilder.yarn('test:playwright:support')
     } finally {
-      publishPlaywrightReport(outputRoot, reportTitle, playwrightSupportOdhinReportFile)
+      publishPlaywrightReport(outputRoot, reportName, playwrightSupportOdhinReportFile)
     }
   }
 }
@@ -187,7 +191,7 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:preview') {
-    configurePlaywrightSmoke(playwrightPreviewSmokeOutputRoot, 'PREVIEW RPX XUI Media Viewer Playwright Smoke')
+    configurePlaywrightSmoke(playwrightPreviewSmokeOutputRoot, 'preview')
   }
 
   afterAlways('smoketest:preview') {
@@ -196,7 +200,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('smoketest:preview') {
     stage('Playwright Viewer Support Test - preview') {
-      runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test')
+      runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
     }
   }
 
@@ -212,7 +216,7 @@ withPipeline(type, product, component) {
   }
 
   before('smoketest:aat') {
-    configurePlaywrightSmoke(playwrightAatSmokeOutputRoot, 'AAT RPX XUI Media Viewer Playwright Smoke')
+    configurePlaywrightSmoke(playwrightAatSmokeOutputRoot, 'aat')
   }
 
   afterAlways('smoketest:aat') {
@@ -221,7 +225,7 @@ withPipeline(type, product, component) {
 
   afterSuccess('smoketest:aat') {
     stage('Playwright Viewer Support Test - AAT') {
-      runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test')
+      runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
     }
   }
 

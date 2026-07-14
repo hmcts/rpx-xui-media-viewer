@@ -170,6 +170,9 @@ and `functional-output/tests/playwright-support/aat`. Smoke evidence remains und
 Reporting behavior follows the MC/MO pattern:
 
 - Odhín is produced through the patched `odhin-reports-playwright` reporter.
+- Each successfully generated Odhín report uses a stable suite title and includes the application
+  version, branch, target environment, CI or local context, worker count, CPU
+  count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - HTML, JUnit and Odhín reporters can run together.
 - Traces, screenshots and videos are kept on failure for diagnostics.
@@ -196,6 +199,11 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_FOLDER`: Odhín report folder
 - `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
 - `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
+- `PLAYWRIGHT_REPORT_PROJECT`: Odhín project label
+- `PLAYWRIGHT_REPORT_RELEASE`: Odhín release label, default `<version> | branch=<branch>`
+- `PLAYWRIGHT_REPORT_BRANCH`: branch override used by the default release label
+- `PLAYWRIGHT_REPORT_TEST_ENVIRONMENT` or `PW_ODHIN_ENV`: complete Odhín test-environment label override
+- `TEST_TYPE`: target-environment label, otherwise inferred from the test URL
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
 - `FUNCTIONAL_TESTS_WORKERS`: worker-count override from `1` to `64`, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
