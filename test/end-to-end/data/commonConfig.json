@@ -90,7 +90,7 @@
   "redactTextCss": "div.textLayer",
   "previewRedactTextCss": "div:nth-child(1) > div.textLayer",
   "assertEnvTestData": "Document load result",
-  "saveButton": ".comments-panel.expanded textarea[name=\"content\"] ~ .commentBtns > button:first-child",
+  "saveButton": "//textarea[@name='content']/following-sibling::div[contains(concat(' ', normalize-space(@class), ' '), ' commentBtns ')]/button[1]",
   "nonTextualHighlightCss": "//div[@class =\"rectangle\" and (@tabindex=\"0\")]",
   "drawBox": "#mvDrawBtn",
   "redactFromSearchBtn": "#mvRedactFromSearchBtn",

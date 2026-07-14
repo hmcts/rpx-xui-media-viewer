@@ -81,6 +81,15 @@ This command:
 - starts the local API on `PORT` or `1337`
 - starts Angular with `proxy.config.js`
 
+When Angular is already running and only the local API needs restarting, use:
+
+```
+yarn start:api:aat
+```
+
+Do not use `yarn start:api` directly for an AAT-backed run. It deliberately has no
+environment bootstrap and will otherwise target the non-AAT local proxy defaults.
+
 Open:
 
 ```
