@@ -132,6 +132,12 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
+| Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
+
+The Playwright config runs tests fully in parallel with seven workers. Each test
+gets its own browser context and page-scoped route mocks. Tests must not depend
+on execution order or share mutable documents; mutation-heavy AAT journeys must
+provision a document per test or reset it before reuse.
 
 Install Chromium once before local runs when the browser cache is empty:
 
@@ -157,20 +163,28 @@ Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
 CNP uses the same smoke entrypoint style as MC/MO. The previous CodeceptJS smoke
 remains available as `yarn test:smoke:legacy` while migration work continues.
 
-Default Playwright evidence is written under `functional-output/tests`:
+The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
 | Lane | Odhín | HTML | JUnit | Trace, screenshot and video output |
 | --- | --- | --- | --- | --- |
+| Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/html-report/index.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/html-report/index.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 
-Those are the default local and nightly paths. CNP keeps preview and AAT
-evidence separate under `functional-output/tests/playwright-smoke/preview` and
-`functional-output/tests/playwright-smoke/aat` so results cannot be reused
-across environments.
+Those are the default lane-specific paths. CNP keeps preview and AAT viewer
+support evidence separate under `functional-output/tests/playwright-support/preview`
+and `functional-output/tests/playwright-support/aat`. Smoke evidence remains under
+`functional-output/tests/playwright-smoke/preview` and
+`functional-output/tests/playwright-smoke/aat`.
+
+The raw aggregate `npx playwright test --config=playwright.config.ts` command
+uses `functional-output/tests/playwright` unless the report paths are overridden.
 
 Reporting behavior follows the MC/MO pattern:
 
 - Odhín is produced through the patched `odhin-reports-playwright` reporter.
+- Each successfully generated Odhín report uses a stable suite title and includes the application
+  version, branch, target environment, CI or local context, worker count, CPU
+  count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - HTML, JUnit and Odhín reporters can run together.
 - Traces, screenshots and videos are kept on failure for diagnostics.
@@ -178,6 +192,10 @@ Reporting behavior follows the MC/MO pattern:
   local setup step has already installed Chromium.
 - Jenkins CNP and nightly pipelines publish the Odhín HTML reports, publish
   JUnit XML, and archive the full Playwright output folders.
+- The classic Jenkins build page exposes viewer-support reports as `PREVIEW
+  Playwright Viewer Support Test`, `AAT Playwright Viewer Support Test`, or
+  `Nightly Playwright Viewer Support Test`. Blue Ocean does not reliably show
+  HTML Publisher links.
 
 The Jenkins `YarnBuilder` performs its immutable dependency install before the
 first setup task. The pipeline then installs Puppeteer Chrome once for legacy
@@ -193,7 +211,13 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_FOLDER`: Odhín report folder
 - `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
 - `PLAYWRIGHT_REPORT_TITLE`: Odhín report title
+- `PLAYWRIGHT_REPORT_PROJECT`: Odhín project label
+- `PLAYWRIGHT_REPORT_RELEASE`: Odhín release label, default `<version> | branch=<branch>`
+- `PLAYWRIGHT_REPORT_BRANCH`: branch override used by the default release label
+- `PLAYWRIGHT_REPORT_TEST_ENVIRONMENT` or `PW_ODHIN_ENV`: complete Odhín test-environment label override
+- `TEST_TYPE`: target-environment label, otherwise inferred from the test URL
 - `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
+- `FUNCTIONAL_TESTS_WORKERS`: worker-count override from `1` to `64`, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 
 Use this local proof set before pushing Playwright documentation or pipeline
@@ -203,6 +227,7 @@ changes:
 yarn install --immutable
 yarn test:setup:playwright-install-chromium
 PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright:smoke:list
+PLAYWRIGHT_SKIP_INSTALL=true npx playwright test --config=playwright.config.ts
 ```
 
 For a smoke behavior proof, start the app in one terminal:
@@ -231,7 +256,7 @@ Migration boundaries:
   signal.
 
 ### 6. Create isolated AAT test documents
-For mutation-heavy functional tests, do not share one document across parallel workers.
+For mutation-heavy functional tests, do not share one document across parallel tests.
 Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
 is running:
 

@@ -13,8 +13,8 @@ test(
     await mediaViewerPage.goto();
     await mediaViewerPage.loadDocument(documentUrl, caseId);
 
-    await expect(mediaViewerPage.pdfViewer).toBeVisible();
-    await expect(mediaViewerPage.pageNumberInput).toBeVisible();
-    await expect(mediaViewerPage.firstPdfPage).toBeVisible();
+    await expect(mediaViewerPage.loadState.pdfViewer).toBeVisible();
+    await expect(mediaViewerPage.navigation.pageNumberInput).toBeVisible();
+    await expect(mediaViewerPage.loadState.firstPdfPage).toBeVisible();
   }
 );
