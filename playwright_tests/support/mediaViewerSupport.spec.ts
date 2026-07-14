@@ -45,8 +45,9 @@ test.describe('media viewer Playwright support layer', () => {
     await expect(mediaViewer.goto()).rejects.toThrow('Media viewer route failed: 503');
   });
 
-  test('reports a failed document request with its asset URL', async ({ mediaViewer }) => {
+  test('reports a failed document request with its asset URL', async ({ mediaViewer, page }) => {
     await mediaViewer.goto();
+    await page.route('**/assets/missing.pdf', async (route) => route.fulfill({ status: 404 }));
 
     await expect(mediaViewer.loadDocument('assets/missing.pdf', 'missing-asset')).rejects.toThrow(
       'Document request failed: 404'
