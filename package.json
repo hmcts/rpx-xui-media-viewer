@@ -10,6 +10,7 @@
     "makefile": "yarn package && yarn start:ng;",
     "start:ng": "ng serve --proxy-config proxy.config.js",
     "start:api": "node ./dist/api/server.js",
+    "start:api:aat": "bash scripts/start-local-aat-api.sh",
     "start:aat": "bash scripts/start-local-aat.sh",
     "env:populate": "bash ./scripts/populate-env-from-keyvault.sh",
     "env:populate:aat": "bash ./scripts/populate-env-from-keyvault.sh aat",
