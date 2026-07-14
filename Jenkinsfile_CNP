@@ -23,6 +23,9 @@ def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightPreviewSmokeOutputRoot = 'functional-output/tests/playwright-smoke/preview'
 def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
+def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
+def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
+def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -74,6 +77,25 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
   } else {
     echo "No Playwright JUnit XML found for ${reportName}; Odhín report publication was still completed."
+  }
+}
+
+def runPlaywrightSupportTests = { String outputRoot, String reportTitle ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_HTML_REPORT=${outputRoot}/html-report",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${reportTitle}",
+    'PLAYWRIGHT_SKIP_INSTALL=true'
+  ]) {
+    try {
+      yarnBuilder.yarn('test:playwright:support')
+    } finally {
+      publishPlaywrightReport(outputRoot, reportTitle, playwrightSupportOdhinReportFile)
+    }
   }
 }
 
@@ -172,6 +194,12 @@ withPipeline(type, product, component) {
     publishPlaywrightReport(playwrightPreviewSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
+  afterSuccess('smoketest:preview') {
+    stage('Playwright Viewer Support Test - preview') {
+      runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test')
+    }
+  }
+
   afterAlways('functionalTest:preview') {
       publishHTML([
               allowMissing         : true,
@@ -189,6 +217,12 @@ withPipeline(type, product, component) {
 
   afterAlways('smoketest:aat') {
     publishPlaywrightReport(playwrightAatSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
+  }
+
+  afterSuccess('smoketest:aat') {
+    stage('Playwright Viewer Support Test - AAT') {
+      runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test')
+    }
   }
 
   afterAlways('functionalTest:aat') {

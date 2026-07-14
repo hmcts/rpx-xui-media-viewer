@@ -123,7 +123,7 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
-| Viewer support | `playwright.config.ts`, project `support` | `PLAYWRIGHT_SKIP_INSTALL=true npx playwright test --config=playwright.config.ts --project=support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
+| Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The Playwright config runs tests fully in parallel with seven workers. Each test
 gets its own browser context and page-scoped route mocks. Tests must not depend
@@ -158,12 +158,14 @@ Default Playwright evidence is written under `functional-output/tests`:
 
 | Lane | Odhín | HTML | JUnit | Trace, screenshot and video output |
 | --- | --- | --- | --- | --- |
+| Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/html-report/index.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/html-report/index.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 
-Those are the default local and nightly paths. CNP keeps preview and AAT
-evidence separate under `functional-output/tests/playwright-smoke/preview` and
-`functional-output/tests/playwright-smoke/aat` so results cannot be reused
-across environments.
+Those are the default lane-specific paths. CNP keeps preview and AAT viewer
+support evidence separate under `functional-output/tests/playwright-support/preview`
+and `functional-output/tests/playwright-support/aat`. Smoke evidence remains under
+`functional-output/tests/playwright-smoke/preview` and
+`functional-output/tests/playwright-smoke/aat`.
 
 Reporting behavior follows the MC/MO pattern:
 
@@ -175,6 +177,10 @@ Reporting behavior follows the MC/MO pattern:
   local setup step has already installed Chromium.
 - Jenkins CNP and nightly pipelines publish the Odhín HTML reports, publish
   JUnit XML, and archive the full Playwright output folders.
+- The classic Jenkins build page exposes viewer-support reports as `PREVIEW
+  Playwright Viewer Support Test`, `AAT Playwright Viewer Support Test`, or
+  `Nightly Playwright Viewer Support Test`. Blue Ocean does not reliably show
+  HTML Publisher links.
 
 The Jenkins `YarnBuilder` performs its immutable dependency install before the
 first setup task. The pipeline then installs Puppeteer Chrome once for legacy
