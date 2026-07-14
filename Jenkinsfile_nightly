@@ -30,6 +30,10 @@ def channel   = '#xui-pipeline'
 def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
+def playwrightSupportOutputRoot = 'functional-output/tests/playwright-support'
+def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
+def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
+def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -221,7 +225,8 @@ withNightlyPipeline(type, product, component) {
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSmokeOutputRoot}/playwright-smoke-junit.xml",
         "PLAYWRIGHT_REPORT_FOLDER=${playwrightSmokeOutputRoot}/odhin-report",
         "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSmokeOdhinReportFile}",
-        "PLAYWRIGHT_REPORT_TITLE=Nightly RPX XUI Media Viewer Playwright Smoke",
+        "PLAYWRIGHT_REPORT_TITLE=${playwrightSmokeOdhinTitle}",
+        "TEST_TYPE=${params.ENVIRONMENT}",
         "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
         "PLAYWRIGHT_SKIP_INSTALL=true"
       ]) {
@@ -229,6 +234,26 @@ withNightlyPipeline(type, product, component) {
           yarnBuilder.yarn('test:playwright:smoke')
         } finally {
           publishPlaywrightReport(playwrightSmokeOutputRoot, 'Nightly Playwright Smoke Test', playwrightSmokeOdhinReportFile)
+        }
+      }
+    }
+    stage('Playwright Viewer Support Test') {
+      steps.sh("rm -rf -- '${playwrightSupportOutputRoot}'")
+      withEnv(playwrightBrowsersEnv() + [
+        "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSupportOutputRoot}/test-results",
+        "PLAYWRIGHT_HTML_REPORT=${playwrightSupportOutputRoot}/html-report",
+        "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSupportOutputRoot}/playwright-support-junit.xml",
+        "PLAYWRIGHT_REPORT_FOLDER=${playwrightSupportOutputRoot}/odhin-report",
+        "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",
+        "PLAYWRIGHT_REPORT_TITLE=${playwrightSupportOdhinTitle}",
+        "TEST_TYPE=${params.ENVIRONMENT}",
+        "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
+        "PLAYWRIGHT_SKIP_INSTALL=true"
+      ]) {
+        try {
+          yarnBuilder.yarn('test:playwright:support')
+        } finally {
+          publishPlaywrightReport(playwrightSupportOutputRoot, 'Nightly Playwright Viewer Support Test', playwrightSupportOdhinReportFile)
         }
       }
     }
