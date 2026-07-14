@@ -21,8 +21,8 @@ const resolveBranchName = (env: EnvMap): string => {
     env.CHANGE_BRANCH ||
     env.GIT_BRANCH ||
     env.BRANCH_NAME ||
-    env.GITHUB_REF_NAME ||
     env.GITHUB_HEAD_REF ||
+    env.GITHUB_REF_NAME ||
     env.BUILD_SOURCEBRANCHNAME;
   if (envBranch) {
     return envBranch.replace(/^(?:refs\/heads\/|origin\/)/, '').trim();

@@ -150,6 +150,8 @@ withPipeline(type, product, component) {
   }
   before('akschartsinstall') {
     onPR {
+      env.PLAYWRIGHT_REPORT_BRANCH = env.PLAYWRIGHT_REPORT_BRANCH ?:
+        env.CHANGE_BRANCH ?: env.GIT_BRANCH ?: env.BRANCH_NAME ?: env.GIT_COMMIT
       if (!env.CHANGE_URL && env.BRANCH_NAME ==~ /^PR-\d+$/) {
         env.CHANGE_ID = env.CHANGE_ID ?: env.BRANCH_NAME.replaceFirst('^PR-', '')
         env.CHANGE_URL = "https://github.com/hmcts/rpx-xui-media-viewer/pull/${env.CHANGE_ID}"

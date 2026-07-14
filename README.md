@@ -163,7 +163,7 @@ Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
 CNP uses the same smoke entrypoint style as MC/MO. The previous CodeceptJS smoke
 remains available as `yarn test:smoke:legacy` while migration work continues.
 
-Default Playwright evidence is written under `functional-output/tests`:
+The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
 | Lane | Odhín | HTML | JUnit | Trace, screenshot and video output |
 | --- | --- | --- | --- | --- |
@@ -175,6 +175,9 @@ support evidence separate under `functional-output/tests/playwright-support/prev
 and `functional-output/tests/playwright-support/aat`. Smoke evidence remains under
 `functional-output/tests/playwright-smoke/preview` and
 `functional-output/tests/playwright-smoke/aat`.
+
+The raw aggregate `npx playwright test --config=playwright.config.ts` command
+uses `functional-output/tests/playwright` unless the report paths are overridden.
 
 Reporting behavior follows the MC/MO pattern:
 
