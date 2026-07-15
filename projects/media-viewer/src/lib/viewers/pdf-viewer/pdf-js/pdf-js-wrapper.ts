@@ -2,13 +2,13 @@ import { Outline } from './../side-bar/outline-item/outline.model';
 import { RedactionSearch } from './../../../toolbar/redaction-search-bar/redaction-search.model';
 import * as pdfjs from 'pdfjs-dist';
 import { DownloadManager, PDFLinkService, PDFViewer } from 'pdfjs-dist/web/pdf_viewer.mjs';
-import 'pdfjs-dist/build/pdf.worker';
+import 'pdfjs-dist/build/pdf.worker.mjs';
 import 'pdfjs-dist/build/pdf.mjs';
 import { Subject } from 'rxjs';
 import { SearchOperation, SearchResultsCount, ToolbarEventService } from '../../../toolbar/toolbar-event.service';
 import { PdfPosition } from '../../../store/reducers/document.reducer';
 
-pdfjs.GlobalWorkerOptions.workerSrc = '/assets/build/pdf.worker.min.js';
+pdfjs.GlobalWorkerOptions.workerSrc = '/assets/build/pdf.worker.mjs';
 
 /**
  * Values of the state field returned by the find events
@@ -186,10 +186,9 @@ export class PdfJsWrapper {
   private createLoadingTask(documentUrl: string) {
     return pdfjs.getDocument({
       url: documentUrl,
-      cMapUrl: 'assets/minified/cmaps',
+      cMapUrl: 'assets/minified/cmaps/',
       cMapPacked: true,
-      withCredentials: true,
-      isEvalSupported: false
+      withCredentials: true
     });
   }
 
