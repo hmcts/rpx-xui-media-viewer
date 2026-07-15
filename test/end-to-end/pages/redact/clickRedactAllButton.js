@@ -9,10 +9,17 @@ module.exports = async function () {
   const countValue = Number(countValueString.trim());
 
   await I.checkElementExist(commonConfig.redactAllBtn)
+  await I.waitForEnabled(commonConfig.redactAllBtn, testConfig.TestTimeToWaitForText);
   await I.click(commonConfig.redactAllBtn)
-  await I.wait(testConfig.BookmarksAndAnnotationsWait);
 
-  await I.retry(3).seeNumberOfElements(commonConfig.rectangleClass, countValue);
+  for (let attempt = 0; attempt < testConfig.TestTimeToWaitForText; attempt++) {
+    const rectangleCount = await I.grabNumberOfVisibleElements(commonConfig.rectangleClass);
+    if (rectangleCount === countValue) {
+      return;
+    }
+    await I.wait(1);
+  }
+
+  await I.seeNumberOfVisibleElements(commonConfig.rectangleClass, countValue);
 }
-
 
