@@ -186,6 +186,7 @@
                   tabindex="0"
                   data-l10n-id="page"
                   (change)="onPageNumberInputChange(pageNumberInput.value)"
+                  (keydown.enter)="onPageNumberInputChange(pageNumberInput.value)"
                   [disabled]="redactAllInProgress"
                   #pageNumberInput
                 />

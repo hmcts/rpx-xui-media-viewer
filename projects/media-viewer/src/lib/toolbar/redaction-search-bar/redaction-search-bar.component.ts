@@ -231,6 +231,11 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     this.rotate = parseInt(this.allPages[page].scaleRotation.rotation, 10);
     const selectedHighLightedElements = document.getElementsByClassName('highlight selected');
     if (selectedHighLightedElements && selectedHighLightedElements.length > 0) {
+      const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(selectedHighLightedElements[0]?.parentElement?.parentElement);
+      const elementRectangles = this.getRectanglesFromHighlightedElements(selectedHighLightedElements, parentRect);
+      if (elementRectangles.length > 0) {
+        return elementRectangles;
+      }
       const docRange = document.createRange();
       if (some(selectedHighLightedElements, element => element.className === 'highlight begin selected' || element.className === 'highlight end selected')) {
         docRange.setStart(selectedHighLightedElements[0], 0);
@@ -248,7 +253,6 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
         const clientRects = range.getClientRects();
 
         if (clientRects) {
-          const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(selectedHighLightedElements[0]?.parentElement?.parentElement);
           const selectionRectangles: Rectangle[] = [];
           for (let i = 0; i < clientRects.length; i++) {
             const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
@@ -264,6 +268,27 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  private getRectanglesFromHighlightedElements(selectedHighLightedElements: HTMLCollectionOf<Element>, parentRect: any): Rectangle[] {
+    const selectionRectangles: Rectangle[] = [];
+    for (let elementIndex = 0; elementIndex < selectedHighLightedElements.length; elementIndex++) {
+      const highlightedElement = selectedHighLightedElements[elementIndex] as HTMLElement;
+      if (!highlightedElement.getClientRects) {
+        continue;
+      }
+      const clientRects = highlightedElement.getClientRects();
+      for (let rectIndex = 0; rectIndex < clientRects.length; rectIndex++) {
+        const selectionRectangle = this.createTextRectangle(clientRects[rectIndex], parentRect);
+        const duplicateRectangle = selectionRectangles.find(
+          (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
+        );
+        if (!duplicateRectangle) {
+          selectionRectangles.push(selectionRectangle);
+        }
+      }
+    }
+    return selectionRectangles;
   }
 
   private createTextRectangle(rect: DOMRect, parentRect: any): Rectangle {
