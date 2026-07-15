@@ -68,11 +68,10 @@ export class PdfJsWrapper {
     if (event.state !== FindState.PENDING) {
       const result = { ...event.matchesCount, isPrevious: event?.source?.state?.findPrevious } as SearchResultsCount
       this.toolbarEvents.searchResultsCountSubject.next(result);
-      const selected = event?.source?.selected || (this.pdfViewer as any)?.findController?.selected;
-      if (selected?.pageIdx !== -1 && event.matchesCount.total > 0) {
+      if (event?.source?.selected?.pageIdx !== -1 && event.matchesCount.total > 0) {
         this.toolbarEvents.redactionSerachSubject.next({
-          page: selected?.pageIdx,
-          matchedIndex: selected?.matchIdx,
+          page: event?.source?.selected?.pageIdx,
+          matchedIndex: event?.source?.selected?.matchIdx,
           matchesCount: event.matchesCount.total
         } as RedactionSearch
         );
