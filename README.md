@@ -131,7 +131,7 @@ Current Playwright lanes:
 
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
-| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Opens the standalone Media Viewer demo, loads `assets/example.pdf`, and verifies the PDF viewer, page-number control and first rendered page. |
+| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Loads standalone PDF and image fixtures and verifies rendered-document readiness, PDF zoom and navigation, image rotation and deterministic PDF search. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The Playwright config runs tests fully in parallel with seven workers. Each test
@@ -165,10 +165,10 @@ remains available as `yarn test:smoke:legacy` while migration work continues.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
-| Lane | Odhín | HTML | JUnit | Trace, screenshot and video output |
-| --- | --- | --- | --- | --- |
-| Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/html-report/index.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
-| Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/html-report/index.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
+| Lane | Odhín | JUnit | Trace, screenshot and video output |
+| --- | --- | --- | --- |
+| Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
+| Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 
 Those are the default lane-specific paths. CNP keeps preview and AAT viewer
 support evidence separate under `functional-output/tests/playwright-support/preview`
@@ -186,8 +186,10 @@ Reporting behavior follows the MC/MO pattern:
   version, branch, target environment, CI or local context, worker count, CPU
   count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
-- HTML, JUnit and Odhín reporters can run together.
-- Traces, screenshots and videos are kept on failure for diagnostics.
+- Odhín is the only standard human-readable report. JUnit is retained for
+  Jenkins ingestion. Screenshots and videos are kept on failure; traces are
+  captured on the first retry.
+  The standard Playwright HTML reporter is not supported.
 - `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
   local setup step has already installed Chromium.
 - Jenkins CNP and nightly pipelines publish the Odhín HTML reports, publish
@@ -204,9 +206,8 @@ tests and Chromium into the workspace-local `PLAYWRIGHT_BROWSERS_PATH`, and sets
 
 Useful overrides:
 - `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`
-- `PLAYWRIGHT_REPORTERS`: comma-separated reporter list, for example `list,html,junit,odhin`
+- `PLAYWRIGHT_REPORTERS`: comma-separated reporter list, for example `list,junit,odhin`
 - `PLAYWRIGHT_DEFAULT_REPORTER`: terminal reporter when `PLAYWRIGHT_REPORTERS` is not set, default `list` locally and `dot` in CI
-- `PLAYWRIGHT_HTML_REPORT`: HTML report folder
 - `PLAYWRIGHT_JUNIT_OUTPUT`: JUnit XML path
 - `PLAYWRIGHT_REPORT_FOLDER`: Odhín report folder
 - `PLAYWRIGHT_REPORT_INDEX_FILENAME`: Odhín report file name
@@ -250,7 +251,8 @@ Migration boundaries:
 - Keep legacy Protractor and CodeceptJS coverage until replacement coverage and
   Jenkins evidence are agreed.
 - Add stable report output paths for every new Playwright lane so Jenkins can
-  publish Odhín, HTML and JUnit without bespoke stage logic.
+  publish Odhín and JUnit and archive failure diagnostics without bespoke stage
+  logic.
 - Prefer Playwright browser-level assertions for viewer readiness; do not treat
   an error page, blank page, wrong route or service-down page as a valid ready
   signal.

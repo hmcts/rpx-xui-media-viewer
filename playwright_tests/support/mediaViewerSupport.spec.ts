@@ -26,6 +26,35 @@ test.describe('media viewer Playwright support layer', () => {
     await expect(mediaViewer.loadState.successMessage).toBeVisible();
   });
 
+  test('loads a fixture when no previous PDF page has rendered', async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
+
+    await mediaViewer.loadDocument(
+      mediaAssets.unsupported.url,
+      'standalone-media-viewer-no-previous-page',
+      mediaAssets.unsupported.contentType
+    );
+
+    await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
+    await expect(mediaViewer.loadState.unsupportedViewer).toBeVisible();
+  });
+
+  test('replaces an already rendered PDF fixture', async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
+
+    await mediaViewer.loadDocument(
+      mediaAssets.replacementPdf.url,
+      'standalone-media-viewer-replacement',
+      mediaAssets.replacementPdf.contentType
+    );
+
+    await expect(mediaViewer.navigation.pageCount).toHaveText('/ 6');
+    await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.loadState.pdfCanvas(1)).toHaveAttribute('width', /^[1-9]\d*$/);
+  });
+
   test('reports the unsupported fixture through the viewer state', async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.unsupported);
 
