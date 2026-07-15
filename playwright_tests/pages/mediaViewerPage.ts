@@ -49,7 +49,7 @@ export class MediaViewerPage {
 
   async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
     const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
-    const previousFirstPage = await this.loadState.firstPdfPage.elementHandle();
+    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
     const documentUrlInput = this.page.getByLabel('document url');
 
     if (!(await documentUrlInput.isVisible())) {
