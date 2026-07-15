@@ -5,7 +5,7 @@ test(
   'loads a PDF document in the standalone media viewer',
   { tag: ['@e2e-smoke'] },
   async ({ page }) => {
-    const documentUrl = process.env.MV_SMOKE_PDF_DOCUMENT_URL ?? '04666097-eb32-4b2b-9bec-8e9ce8057560';
+    const documentUrl = process.env.MV_SMOKE_PDF_DOCUMENT_URL ?? 'assets/example.pdf';
     const caseId = process.env.MV_SMOKE_CASE_ID ?? 'standalone-media-viewer-smoke';
     const mediaViewerPage = new MediaViewerPage(page);
 
