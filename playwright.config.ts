@@ -3,7 +3,7 @@ import { execSync } from 'node:child_process';
 import { cpus, totalmem } from 'node:os';
 import { version as appVersion } from './package.json';
 
-type ReporterName = 'dot' | 'html' | 'junit' | 'line' | 'list' | 'odhin' | 'odhin-progress';
+type ReporterName = 'dot' | 'junit' | 'line' | 'list' | 'odhin' | 'odhin-progress';
 type EnvMap = NodeJS.ProcessEnv;
 
 const defaultOutputRoot = 'functional-output/tests/playwright';
@@ -88,28 +88,27 @@ const splitReporters = (raw: string | undefined): ReporterName[] =>
     .split(',')
     .map((value) => value.trim())
     .filter((value): value is ReporterName =>
-      ['dot', 'html', 'junit', 'line', 'list', 'odhin', 'odhin-progress'].includes(value)
+      ['dot', 'junit', 'line', 'list', 'odhin', 'odhin-progress'].includes(value)
     );
 
+const resolveTerminalReporter = (env: EnvMap): ReporterName => {
+  const configured = env.PLAYWRIGHT_DEFAULT_REPORTER;
+  return configured && ['dot', 'line', 'list'].includes(configured)
+    ? (configured as ReporterName)
+    : env.CI
+      ? 'dot'
+      : 'list';
+};
+
 const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription[] => {
-  const terminalReporter = (env.PLAYWRIGHT_DEFAULT_REPORTER as ReporterName | undefined) ?? (env.CI ? 'dot' : 'list');
+  const terminalReporter = resolveTerminalReporter(env);
   const requestedReporters = splitReporters(env.PLAYWRIGHT_REPORTERS);
   const reporterNames = requestedReporters.length
     ? requestedReporters
-    : [terminalReporter, 'html', 'junit', 'odhin-progress', 'odhin'];
+    : [terminalReporter, 'junit', 'odhin-progress', 'odhin'];
   const uniqueReporterNames = [...new Set(reporterNames)];
 
   return uniqueReporterNames.map((reporterName) => {
-    if (reporterName === 'html') {
-      return [
-        'html',
-        {
-          outputFolder: env.PLAYWRIGHT_HTML_REPORT ?? `${defaultOutputRoot}/html-report`,
-          open: 'never',
-        },
-      ] as const;
-    }
-
     if (reporterName === 'junit') {
       return [
         'junit',
