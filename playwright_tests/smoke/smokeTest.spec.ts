@@ -27,19 +27,34 @@ test(
     await mediaViewer.openDocument(mediaAssets.pdf);
 
     const firstPage = mediaViewer.loadState.pdfPage(1);
+    const canvas = firstPage.locator('canvas').first();
+
     await expect(firstPage).toBeVisible();
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
-    const initialPageWidth = await firstPage.evaluate((element) => getComputedStyle(element).width);
-    expect(Number.parseFloat(initialPageWidth)).toBeGreaterThan(0);
+    await expect(canvas).toBeVisible();
+
+    const initialCanvasWidth = await canvas.evaluate(
+      (el: HTMLCanvasElement) => el.width
+    );
 
     await mediaViewer.zoom.zoomIn();
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1.1');
-    await expect(firstPage).not.toHaveCSS('width', initialPageWidth);
+
+    await expect.poll(async () =>
+      canvas.evaluate((el: HTMLCanvasElement) => el.width)
+    ).toBeGreaterThan(initialCanvasWidth);
+
+    const zoomedCanvasWidth = await canvas.evaluate(
+      (el: HTMLCanvasElement) => el.width
+    );
 
     await mediaViewer.zoom.zoomOut();
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
-    await expect(firstPage).toHaveCSS('width', initialPageWidth);
+
+    await expect.poll(async () =>
+      canvas.evaluate((el: HTMLCanvasElement) => el.width)
+    ).toBeLessThan(zoomedCanvasWidth);
   }
 );
 

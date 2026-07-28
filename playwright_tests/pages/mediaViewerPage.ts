@@ -43,13 +43,33 @@ export class MediaViewerPage {
     }
   }
 
+  resolveDocumentUrl(documentUrl: string): string {
+    return new URL(documentUrl, this.page.url()).href;
+  }
+
   async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
-    await this.page.getByText('Change document details').click();
-    await this.page.getByLabel('document url').fill(documentUrl);
+    const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
+    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
+    const documentUrlInput = this.page.getByLabel('document url');
+
+    if (!(await documentUrlInput.isVisible())) {
+      await this.page.getByText('Change document details').click();
+    }
+    await documentUrlInput.fill(documentUrl);
     await this.page.getByLabel('document type').fill(contentType);
     await this.page.getByLabel('case id').fill(caseId);
 
+    const documentResponse = this.page.waitForResponse((response) => response.url() === expectedDocumentUrl).catch((error) => {
+      throw new Error(`Document request was not observed: ${expectedDocumentUrl}`, { cause: error });
+    });
     await this.page.getByRole('button', { name: 'Load document' }).click();
+    const response = await documentResponse;
+    if (!response.ok() && response.status() !== 304) {
+      throw new Error(`Document request failed: ${response.status()} ${expectedDocumentUrl}`);
+    }
+    if (previousFirstPage) {
+      await this.page.waitForFunction((element) => !element.isConnected, previousFirstPage);
+    }
   }
 
   async openDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {

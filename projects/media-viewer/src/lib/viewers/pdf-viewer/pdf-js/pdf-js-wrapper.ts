@@ -270,6 +270,10 @@ export class PdfJsWrapper {
 
   public stepZoom(zoomValue: number): void {
     this.pdfViewer.currentScaleValue = this.getZoomValue((+this.pdfViewer.currentScaleValue) + zoomValue).toString();
+    console.log('After', {
+    currentScale: this.pdfViewer.currentScale,
+    currentScaleValue: this.pdfViewer.currentScaleValue,
+  });
     this.zoomValue = +this.pdfViewer.currentScaleValue;
     this.toolbarEvents.zoomValueSubject.next(this.zoomValue);
   }
