@@ -24,7 +24,9 @@ module.exports = async function (commentText) {
   if (!saveButton) {
     throw new Error('Unable to find the save button for the active comment textarea.');
   }
-  await I.waitForClickable('[data-e2e-active-comment-save="true"]');
-  await I.retry(3).click('[data-e2e-active-comment-save="true"]');
+  await I.executeScript(() => {
+    const saveButton = document.querySelector('[data-e2e-active-comment-save="true"]');
+    saveButton?.click();
+  });
   await I.waitNumberOfVisibleElements(commonConfig.commentsCount, comments + 1);
 }

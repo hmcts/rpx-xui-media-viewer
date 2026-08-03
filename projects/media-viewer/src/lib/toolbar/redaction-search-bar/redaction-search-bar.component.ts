@@ -164,7 +164,7 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
   private redactAllSearched(results: RedactionSearch): void {
     const $this = this;
     const intervalId = setInterval(() => {
-      const highlightElement = document.getElementsByClassName('highlight selected');
+      const highlightElement = this.getSelectedHighlightElements();
       if (highlightElement && highlightElement.length > 0) {
         clearInterval(intervalId);
         $this.redactAllSearchedTick(results);
@@ -174,7 +174,7 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
 
 
   private redactAllSearchedTick(results: RedactionSearch): void {
-    const highlightElement = document.getElementsByClassName('highlight selected');
+    const highlightElement = this.getSelectedHighlightElements();
     if (highlightElement && highlightElement.length > 0) {
       this.resultCount = results.matchesCount;
       const pageNumber = results.page + 1;
@@ -229,10 +229,10 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     this.pageWidth = this.allPages[page].styles.width;
     this.zoom = parseFloat(this.allPages[page].scaleRotation.scale);
     this.rotate = parseInt(this.allPages[page].scaleRotation.rotation, 10);
-    const selectedHighLightedElements = document.getElementsByClassName('highlight selected');
+    const selectedHighLightedElements = this.getSelectedHighlightElements();
     if (selectedHighLightedElements && selectedHighLightedElements.length > 0) {
       const docRange = document.createRange();
-      if (some(selectedHighLightedElements, element => element.className === 'highlight begin selected' || element.className === 'highlight end selected')) {
+      if (some(selectedHighLightedElements, element => this.isRangeBoundaryHighlight(element))) {
         docRange.setStart(selectedHighLightedElements[0], 0);
         const endNode = selectedHighLightedElements[selectedHighLightedElements.length - 1];
         docRange.setEnd(endNode, endNode.childNodes.length);
@@ -264,6 +264,26 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  private getSelectedHighlightElements(): HTMLElement[] {
+    const selectedHighlights = Array.from(document.querySelectorAll<HTMLElement>('.highlight.selected'));
+    return selectedHighlights.length
+      ? selectedHighlights
+      : Array.from(document.getElementsByClassName('highlight selected')) as HTMLElement[];
+  }
+
+  private isRangeBoundaryHighlight(element: Element): boolean {
+    if (element.classList) {
+      return element.classList.contains('highlight') &&
+        element.classList.contains('selected') &&
+        (element.classList.contains('begin') || element.classList.contains('end'));
+    }
+
+    const classNames = `${element.className}`.split(/\s+/);
+    return classNames.includes('highlight') &&
+      classNames.includes('selected') &&
+      (classNames.includes('begin') || classNames.includes('end'));
   }
 
   private createTextRectangle(rect: DOMRect, parentRect: any): Rectangle {
