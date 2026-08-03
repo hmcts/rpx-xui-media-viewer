@@ -18,5 +18,5 @@ module.exports = async function () {
   const countValueString = countText.replace('results founds', '')
   const countValue = Number(countValueString.trim());
   await I.clickRedactAllButton();
-  await I.seeNumberOfVisibleElements(commonConfig.highLightTextCount, highlights + countValue);
+  await I.retry(10).seeNumberOfVisibleElements(commonConfig.highLightTextCount, highlights + countValue);
 }

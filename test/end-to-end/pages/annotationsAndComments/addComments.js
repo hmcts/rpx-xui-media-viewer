@@ -11,15 +11,20 @@ module.exports = async function (commentText) {
   await I.retry(2).click(commonConfig.commentPopup);
   await I.waitForVisible(commonConfig.firstCommentXp);
   await I.fillField(commonConfig.firstCommentXp, commentText);
-  await I.executeScript(() => {
+  const saveButton = await I.executeScript(() => {
     const textarea = [...document.querySelectorAll('textarea[name="content"]')]
       .find((element) => element.offsetParent !== null);
     const saveButton = textarea?.parentElement?.querySelector('.commentBtns > button:first-child');
     if (saveButton) {
       saveButton.scrollIntoView({ block: 'center', inline: 'nearest' });
+      saveButton.setAttribute('data-e2e-active-comment-save', 'true');
     }
+    return Boolean(saveButton);
   });
-  await I.waitForClickable(commonConfig.saveButton);
-  await I.retry(3).click(commonConfig.saveButton);
+  if (!saveButton) {
+    throw new Error('Unable to find the save button for the active comment textarea.');
+  }
+  await I.waitForClickable('[data-e2e-active-comment-save="true"]');
+  await I.retry(3).click('[data-e2e-active-comment-save="true"]');
   await I.waitNumberOfVisibleElements(commonConfig.commentsCount, comments + 1);
 }

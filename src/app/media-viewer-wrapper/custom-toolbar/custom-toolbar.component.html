@@ -20,7 +20,8 @@
                name="event-name"
                [value]="currentPageNumber"
                type="number"
-               (change)="enterPage(+pageInput.value)">
+               (change)="enterPage(+pageInput.value)"
+               (keydown.enter)="enterPage(+pageInput.value)">
       </div>
       <app-search-bar *ngIf="search"
                       [toolbarEvents]="toolbarEvents"></app-search-bar>
