@@ -49,9 +49,13 @@ export class MediaViewerPage {
 
   async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
     const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
+    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
+    const documentUrlInput = this.page.getByLabel('document url');
 
-    await this.page.getByText('Change document details').click();
-    await this.page.getByLabel('document url').fill(documentUrl);
+    if (!(await documentUrlInput.isVisible())) {
+      await this.page.getByText('Change document details').click();
+    }
+    await documentUrlInput.fill(documentUrl);
     await this.page.getByLabel('document type').fill(contentType);
     await this.page.getByLabel('case id').fill(caseId);
 
@@ -62,6 +66,9 @@ export class MediaViewerPage {
     const response = await documentResponse;
     if (!response.ok() && response.status() !== 304) {
       throw new Error(`Document request failed: ${response.status()} ${expectedDocumentUrl}`);
+    }
+    if (previousFirstPage) {
+      await this.page.waitForFunction((element) => !element.isConnected, previousFirstPage);
     }
   }
 
