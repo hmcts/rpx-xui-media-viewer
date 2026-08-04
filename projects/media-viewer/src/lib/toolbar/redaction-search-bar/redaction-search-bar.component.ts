@@ -12,7 +12,6 @@ import * as fromDocument from '../../store/selectors/document.selectors';
 import * as fromRedactionActions from '../../store/actions/redaction.actions';
 import { v4 as uuid } from 'uuid';
 import { HighlightCreateService } from '../../annotations/annotation-set/annotation-create/highlight-create/highlight-create.service';
-import { some } from 'lodash';
 import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.helper';
 
 @Component({
@@ -232,7 +231,7 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     const selectedHighLightedElements = this.getSelectedHighlightElements();
     if (selectedHighLightedElements && selectedHighLightedElements.length > 0) {
       const docRange = document.createRange();
-      if (some(selectedHighLightedElements, element => this.isRangeBoundaryHighlight(element))) {
+      if (selectedHighLightedElements.some(element => this.isRangeBoundaryHighlight(element))) {
         docRange.setStart(selectedHighLightedElements[0], 0);
         const endNode = selectedHighLightedElements[selectedHighLightedElements.length - 1];
         docRange.setEnd(endNode, endNode.childNodes.length);
@@ -280,10 +279,10 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
         (element.classList.contains('begin') || element.classList.contains('end'));
     }
 
-    const classNames = `${element.className}`.split(/\s+/);
-    return classNames.includes('highlight') &&
-      classNames.includes('selected') &&
-      (classNames.includes('begin') || classNames.includes('end'));
+    const classNames = new Set(`${element.className}`.split(/\s+/));
+    return classNames.has('highlight') &&
+      classNames.has('selected') &&
+      (classNames.has('begin') || classNames.has('end'));
   }
 
   private createTextRectangle(rect: DOMRect, parentRect: any): Rectangle {
