@@ -93,56 +93,54 @@
               </div>
             </form>
           </ng-container>
-          <ng-container *ngIf="comments[0]">
-            <ngx-datatable
-              [rows]="comments"
-              rowHeight="auto"
-              headerHeight="auto"
-              [columnMode]="'flex'"
-              [sorts]="[{ prop: 'date', dir: 'desc' }]"
+          <ngx-datatable
+            [rows]="comments"
+            rowHeight="auto"
+            [headerHeight]="50"
+            [columnMode]="'flex'"
+            [sorts]="[{ prop: 'date', dir: 'desc' }]"
+          >
+            <ngx-datatable-column
+              name="{{ 'User' | rpxTranslate }}"
+              [flexGrow]="1"
+              [sortable]="false"
+            ></ngx-datatable-column>
+            <ngx-datatable-column
+              name="{{ 'Page' | rpxTranslate }}"
+              [flexGrow]="1"
             >
-              <ngx-datatable-column
-                name="{{ 'User' | rpxTranslate }}"
-                [flexGrow]="1"
-                [sortable]="false"
-              ></ngx-datatable-column>
-              <ngx-datatable-column
-                name="{{ 'Page' | rpxTranslate }}"
-                [flexGrow]="1"
-              >
-                <ng-template ngx-datatable-cell-template let-value="value">
-                  <a
-                    [routerLink]="[]"
-                    class="comment-summary_pages"
-                    (click)="navigateToPage(value)"
-                    >{{ value }}</a
-                  >
-                </ng-template>
-              </ngx-datatable-column>
-              <ngx-datatable-column
-                name="{{ 'Date' | rpxTranslate }}"
-                [flexGrow]="1"
-              ></ngx-datatable-column>
-              <ngx-datatable-column
-                name="{{ 'Comment' | rpxTranslate }}"
-                [flexGrow]="3"
-                [sortable]="false"
-              ></ngx-datatable-column>
-              <ngx-datatable-column
-                name="{{ 'Tags' | rpxTranslate }}"
-                [flexGrow]="1"
-                [sortable]="false"
-              >
-                <ng-template ngx-datatable-cell-template let-value="value">
-                  <span class="hmcts-badge" *ngFor="let tag of value">{{
-                    tag.label
-                  }}</span>
-                </ng-template>
-              </ngx-datatable-column>
-            </ngx-datatable>
-          </ng-container>
+              <ng-template ngx-datatable-cell-template let-value="value">
+                <a
+                  [routerLink]="[]"
+                  class="comment-summary_pages"
+                  (click)="navigateToPage(value)"
+                  >{{ value }}</a
+                >
+              </ng-template>
+            </ngx-datatable-column>
+            <ngx-datatable-column
+              name="{{ 'Date' | rpxTranslate }}"
+              [flexGrow]="1"
+            ></ngx-datatable-column>
+            <ngx-datatable-column
+              name="{{ 'Comment' | rpxTranslate }}"
+              [flexGrow]="3"
+              [sortable]="false"
+            ></ngx-datatable-column>
+            <ngx-datatable-column
+              name="{{ 'Tags' | rpxTranslate }}"
+              [flexGrow]="1"
+              [sortable]="false"
+            >
+              <ng-template ngx-datatable-cell-template let-value="value">
+                <span class="hmcts-badge" *ngFor="let tag of value">{{
+                  tag.label
+                }}</span>
+              </ng-template>
+            </ngx-datatable-column>
+          </ngx-datatable>
         </ng-container>
-        <ng-container *ngIf="!comments[0]">
+        <ng-container *ngIf="!comments.length">
           <h3 class="govuk-heading-s">
             {{
               "No comments available. Select text to add a highlight or comment."
