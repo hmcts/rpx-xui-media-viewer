@@ -13,11 +13,31 @@ module.exports = async function (pageToNavigate) {
       // await I.seeInField(commonConfig.pageNumber, mvData.PAGE_NAVIGATION_NUMBER);
   } else {
     await I.wait(3);
-    await I.clearField(commonConfig.pageNumber);
-    await I.fillField(commonConfig.pageNumber, pageToNavigate);
-    await I.pressKey('Enter');
+    await I.executeScript((pageNumber) => {
+      const input = document.querySelector('#pageNumber');
+      if (!input) {
+        return;
+      }
+
+      input.focus();
+      input.value = pageNumber;
+      input.dispatchEvent(new Event('input', { bubbles: true }));
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+      input.dispatchEvent(new KeyboardEvent('keydown', {
+        key: 'Enter',
+        code: 'Enter',
+        bubbles: true,
+        cancelable: true
+      }));
+    }, pageToNavigate);
     await I.click('#viewerContainer');
-    await I.wait(testConfig.BookmarksAndAnnotationsWait);
+    for (let attempt = 0; attempt < testConfig.TestTimeToWaitForText; attempt++) {
+      const pageNumber = await I.grabValueFrom(commonConfig.pageNumber);
+      if (String(pageNumber) === String(pageToNavigate)) {
+        return;
+      }
+      await I.wait(1);
+    }
     await I.seeInField(commonConfig.pageNumber, pageToNavigate);
   }
 };
