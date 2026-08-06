@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.27",
+  "version": "4.2.27-4951",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
@@ -23,7 +23,7 @@
     "pdfjs-dist": "^4.10.38",
     "socket.io-client": "^4.8.0",
     "tslib": "^2.3.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.1.1"
   },
   "peerDependencies": {
     "@angular/animations": "^20.0.0",
