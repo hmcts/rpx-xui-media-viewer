@@ -245,12 +245,15 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
       if (selection.rangeCount && !selection.isCollapsed) {
         const range = selection.getRangeAt(0).cloneRange();
         const clientRects = range.getClientRects();
+        const rectangles = clientRects.length
+          ? clientRects
+          : this.getSelectedHighlightClientRects(selectedHighLightedElements);
 
-        if (clientRects) {
+        if (rectangles.length) {
           const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(selectedHighLightedElements[0]?.parentElement?.parentElement);
           const selectionRectangles: Rectangle[] = [];
-          for (let i = 0; i < clientRects.length; i++) {
-            const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
+          for (let i = 0; i < rectangles.length; i++) {
+            const selectionRectangle = this.createTextRectangle(rectangles[i], parentRect);
             const findSelecttionRectangle = selectionRectangles.find(
               (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
             );
@@ -263,6 +266,12 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
         }
       }
     }
+  }
+
+  private getSelectedHighlightClientRects(selectedHighLightedElements: HTMLElement[]): DOMRect[] {
+    return selectedHighLightedElements
+      .map(element => Array.from(element.getClientRects()))
+      .reduce((rectangles, elementRectangles) => rectangles.concat(elementRectangles), [] as DOMRect[]);
   }
 
   private getSelectedHighlightElements(): HTMLElement[] {

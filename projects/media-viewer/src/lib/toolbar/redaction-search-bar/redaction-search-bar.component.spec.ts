@@ -302,6 +302,16 @@ describe('RedactionSearchBarComponent', () => {
     expect((component as any).isRangeBoundaryHighlight(highlight)).toBeTrue();
   });
 
+  it('should use selected highlight element rectangles when range rectangles are unavailable', () => {
+    const highlight = document.createElement('span');
+    const domRect = jasmine.createSpyObj<DOMRect>('DOMRect', [], { x: 10, y: 20, height: 30, width: 40 });
+    spyOn(highlight, 'getClientRects').and.returnValue([domRect] as any);
+
+    const rectangles = (component as any).getSelectedHighlightClientRects([highlight]);
+
+    expect(rectangles).toEqual([domRect]);
+  });
+
   it('should set highlight text', fakeAsync(() => {
     component.inProgressText = '';
     component.titleText = '';

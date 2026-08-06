@@ -68,10 +68,11 @@ export class PdfJsWrapper {
     if (event.state !== FindState.PENDING) {
       const result = { ...event.matchesCount, isPrevious: event?.source?.state?.findPrevious } as SearchResultsCount
       this.toolbarEvents.searchResultsCountSubject.next(result);
-      if (event?.source?.selected?.pageIdx !== -1 && event.matchesCount.total > 0) {
+      const selected = event?.source?.selected ?? event?.source?._selected;
+      if (selected?.pageIdx >= 0 && event.matchesCount.total > 0) {
         this.toolbarEvents.redactionSerachSubject.next({
-          page: event?.source?.selected?.pageIdx,
-          matchedIndex: event?.source?.selected?.matchIdx,
+          page: selected.pageIdx,
+          matchedIndex: selected.matchIdx,
           matchesCount: event.matchesCount.total
         } as RedactionSearch
         );
@@ -270,10 +271,6 @@ export class PdfJsWrapper {
 
   public stepZoom(zoomValue: number): void {
     this.pdfViewer.currentScaleValue = this.getZoomValue((+this.pdfViewer.currentScaleValue) + zoomValue).toString();
-    console.log('After', {
-    currentScale: this.pdfViewer.currentScale,
-    currentScaleValue: this.pdfViewer.currentScaleValue,
-  });
     this.zoomValue = +this.pdfViewer.currentScaleValue;
     this.toolbarEvents.zoomValueSubject.next(this.zoomValue);
   }
