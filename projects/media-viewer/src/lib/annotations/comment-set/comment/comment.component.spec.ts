@@ -125,6 +125,17 @@ describe('CommentComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('should expose selected state for comment locators', () => {
+    const commentElement = nativeElement.querySelector('.aui-comment');
+
+    expect(commentElement.getAttribute('data-selected')).toBe('true');
+
+    component.selected = false;
+    fixture.detectChanges();
+
+    expect(commentElement.getAttribute('data-selected')).toBeNull();
+  });
+
 
   it('should set comment if date modified exists', () => {
     component.comment = { ...mockComment };
