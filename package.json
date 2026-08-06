@@ -110,7 +110,7 @@
     "pdfjs-dist": "^4.10.38",
     "rpx-xui-translation": "1.2.7",
     "rxjs": "^7.8.2",
-    "sass": "^1.99.1",
+    "sass": "^1.102.0",
     "socket.io-client": "^4.8.3",
     "uuid": "^11.0.3",
     "zone.js": "0.16.2"
