@@ -48,11 +48,11 @@ export class RedactionEffects {
   saveBulkRedaction$ = createEffect(() =>
     this.actions$.pipe(
     ofType(redactionActions.SAVE_BULK_REDACTION),
-    map((action: redactionActions.SaveRedaction) => action.payload),
+    map((action: redactionActions.SaveBulkRedaction) => action.payload),
     exhaustMap((redaction) => {
       return this.redactionApiService.saveBulkRedaction(redaction).pipe(
         tap(() => this.toolbarEvents.redactAllInProgressSubject.next(false))).pipe(map(resp => {
-          return new redactionActions.SaveBulkRedactionSuccess(resp);
+          return new redactionActions.SaveBulkRedactionSuccess(resp || redaction);
         }),
           catchError(error => {
             return of(new redactionActions.SaveBulkRedactionFailure(error));
@@ -108,4 +108,3 @@ export class RedactionEffects {
     }))
   );
 }
-

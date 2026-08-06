@@ -1,4 +1,4 @@
-import { Observable } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Injectable } from '@angular/core';
 import { catchError, map } from 'rxjs/operators';
@@ -33,8 +33,8 @@ export class RedactionApiService {
     return this.httpClient
       .post<BulkRedaction>(this.markupsSearchApiUrl, body, { observe: 'response', withCredentials: true })
       .pipe(
-        map(response => response.body),
-        catchError(() => [])
+        map(response => response.body || body),
+        catchError(() => of(body))
       );
   }
 

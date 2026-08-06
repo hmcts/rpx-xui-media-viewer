@@ -95,6 +95,15 @@ describe('Redaction Effects', () => {
       expect(effects.saveBulkRedaction$).toBeObservable(expected);
     });
 
+    it('should use submitted bulk redactions when save response is empty', () => {
+      const action = new redactActions.SaveBulkRedaction(bulkRedaction);
+      redactionApi.saveBulkRedaction.and.returnValue(of(null));
+      const completion = new redactActions.SaveBulkRedactionSuccess(bulkRedaction);
+      actions$ = hot('-a', { a: action });
+      const expected = cold('-b', { b: completion });
+      expect(effects.saveBulkRedaction$).toBeObservable(expected);
+    });
+
     it('should return a SaveBulkRedactionFailure', () => {
       const action = new redactActions.SaveBulkRedaction(bulkRedaction);
       redactionApi.saveBulkRedaction.and.returnValue(throwError('problem saving redaction'));
@@ -172,4 +181,3 @@ describe('Redaction Effects', () => {
     });
   });
 });
-
