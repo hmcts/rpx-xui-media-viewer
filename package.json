@@ -128,7 +128,7 @@
     "xmlhttprequest-ssl": "^1.6.2",
     "@xmldom/xmldom": "^0.9.0",
     "yargs-parser": "^20.2.7",
-    "lodash": "^4.17.23",
+    "lodash": "^4.18.1",
     "xml2j": "^0.5.0",
     "webdriver/got": "11.8.6",
     "got": "^14.0.0",
