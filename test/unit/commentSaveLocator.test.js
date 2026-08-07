@@ -7,11 +7,11 @@ const { test } = require('node:test');
 
 const duplicateCommentMarkup = `
   <div class="comments-panel expanded">
-    <div class="aui-comment" data-selected="false">
+    <div class="aui-comment" style="z-index: 0">
       <textarea name="content"></textarea>
       <div class="commentBtns"><button>Save hidden</button></div>
     </div>
-    <div class="aui-comment" data-selected="true">
+    <div class="aui-comment" style="z-index: 100">
       <textarea name="content"></textarea>
       <div class="commentBtns"><button>Save selected</button></div>
     </div>
@@ -20,7 +20,7 @@ const duplicateCommentMarkup = `
 
 test('Save locator selects the selected comment when duplicate editors exist', () => {
   const document = parse(duplicateCommentMarkup);
-  const oldSelector = '.comments-panel.expanded textarea[name="content"] ~ .commentBtns > button:first-child';
+  const oldSelector = '.comments-panel.expanded .aui-comment textarea[name="content"] ~ .commentBtns > button:first-child';
   const buttons = document.querySelectorAll(commonConfig.saveButton);
   const oldButtons = document.querySelectorAll(oldSelector);
 
