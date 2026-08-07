@@ -125,6 +125,7 @@ describe('CommentComponent', () => {
     expect(component).toBeTruthy();
   });
 
+
   it('should set comment if date modified exists', () => {
     component.comment = { ...mockComment };
 
