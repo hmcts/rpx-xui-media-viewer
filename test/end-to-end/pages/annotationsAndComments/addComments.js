@@ -12,8 +12,9 @@ module.exports = async function (commentText) {
   await I.waitForVisible(commonConfig.firstCommentXp);
   await I.fillField(commonConfig.firstCommentXp, commentText);
   await I.executeScript(() => {
-    const textarea = [...document.querySelectorAll('textarea[name="content"]')]
-      .find((element) => element.offsetParent !== null);
+    const textarea = [...document.querySelectorAll(
+      '.comments-panel.expanded .aui-comment[style*="z-index: 100"] textarea[name="content"]'
+    )].find((element) => element.offsetParent !== null);
     const saveButton = textarea?.parentElement?.querySelector('.commentBtns > button:first-child');
     if (saveButton) {
       saveButton.scrollIntoView({ block: 'center', inline: 'nearest' });
