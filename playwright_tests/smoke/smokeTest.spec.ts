@@ -1,7 +1,5 @@
 import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
 
-const examplePdfPageCount = 14;
-
 test(
   'loads a PDF document in the standalone media viewer',
   { tag: ['@e2e-smoke'] },
@@ -84,14 +82,14 @@ test(
 
     await expect(mediaViewer.toolbar.root).toBeVisible();
     await expect(mediaViewer.toolbar.moreOptionsButton).toBeVisible();
-    await expect(mediaViewer.navigation.pageCount).toHaveText(`/ ${examplePdfPageCount}`);
+    await expect(mediaViewer.navigation.pageCount).toHaveText(`/ ${mediaAssets.pdf.pageCount}`);
     await expect(mediaViewer.navigation.previousPageButton).toBeDisabled();
     await expect(mediaViewer.navigation.nextPageButton).toBeEnabled();
 
-    await mediaViewer.navigation.goToPage(examplePdfPageCount);
-    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue(String(examplePdfPageCount));
-    await expect(mediaViewer.loadState.pdfPage(examplePdfPageCount)).toBeVisible();
-    await expect(mediaViewer.loadState.pdfPage(examplePdfPageCount)).toHaveAttribute('data-loaded', 'true');
+    await mediaViewer.navigation.goToPage(mediaAssets.pdf.pageCount);
+    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue(String(mediaAssets.pdf.pageCount));
+    await expect(mediaViewer.loadState.pdfPage(mediaAssets.pdf.pageCount)).toBeVisible();
+    await expect(mediaViewer.loadState.pdfPage(mediaAssets.pdf.pageCount)).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.navigation.previousPageButton).toBeEnabled();
     await expect(mediaViewer.navigation.nextPageButton).toBeDisabled();
   }
