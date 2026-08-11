@@ -5,7 +5,7 @@ import * as path from 'node:path';
 import { createIdamSessionCapture } from '../common/idamSessionCapture';
 import { SessionManager } from '../common/sessionManagement';
 
-const targetUrl = 'http://localhost:3000/#/media-viewer';
+const targetUrl = 'http://app.localhost:3000/#/media-viewer';
 const identity = { key: 'capture-user', email: 'capture-user@example.test' };
 
 test('captures an IDAM login and restores it for the media-viewer route', async ({ page }) => {
@@ -14,13 +14,13 @@ test('captures an IDAM login and restores it for the media-viewer route', async 
   let authenticatedPageRequests = 0;
 
   try {
-    await page.route('http://localhost:3000/**', async (route) => {
+    await page.route('http://app.localhost:3000/**', async (route) => {
       const request = route.request();
       const url = new URL(request.url());
       if (url.pathname === '/' && !request.headers().cookie?.includes('session=opaque')) {
         await route.fulfill({
           headers: { 'content-type': 'text/html' },
-          body: '<script>location.replace("/login")</script>',
+          body: '<script>location.replace("http://idam.localhost:3000/login")</script>',
         });
         return;
       }
@@ -38,10 +38,14 @@ test('captures an IDAM login and restores it for the media-viewer route', async 
         return;
       }
 
+      await route.fulfill({ headers: { 'content-type': 'text/html' }, body: '<main>unexpected unauthenticated app response</main>' });
+    });
+    await page.route('http://idam.localhost:3000/**', async (route) => {
+      const url = new URL(route.request().url());
       if (url.pathname === '/login') loginPageRequests += 1;
       await route.fulfill({
         headers: { 'content-type': 'text/html' },
-        body: '<form action="/signed-in"><label>Username<input name="username"></label><label>Password<input name="password" type="password"></label><button type="submit">Sign in</button></form>',
+        body: '<form action="http://app.localhost:3000/signed-in"><label>Username<input name="username"></label><label>Password<input name="password" type="password"></label><button type="submit">Sign in</button></form>',
       });
     });
 
@@ -68,8 +72,8 @@ test('captures an already-authenticated media-viewer state without using the log
   const storageDir = fs.mkdtempSync(path.join(os.tmpdir(), 'idam-session-capture-'));
 
   try {
-    await page.context().addCookies([{ name: 'session', value: 'opaque', domain: 'localhost', path: '/' }]);
-    await page.route('http://localhost:3000/**', (route) => route.fulfill({
+    await page.context().addCookies([{ name: 'session', value: 'opaque', domain: 'app.localhost', path: '/' }]);
+    await page.route('http://app.localhost:3000/**', (route) => route.fulfill({
       headers: { 'content-type': 'text/html' },
       body: '<main data-authenticated>media viewer</main>',
     }));
