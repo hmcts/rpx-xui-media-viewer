@@ -139,7 +139,10 @@ The current migration slice is deliberately separated from smoke: smoke proves
 the application is ready, functional proves user-facing viewer behaviour, and
 support proves the reusable automation contracts. There is no API or mocked
 integration project in this slice because the migrated contracts are browser
-rendering and interaction behaviour owned by the standalone viewer.
+rendering and interaction behaviour owned by the standalone viewer. Every
+Playwright Odhín report also includes a capability inventory showing covered,
+partially covered and legacy-only Media Viewer areas, with the remaining
+assurance gap for each capability.
 
 The Playwright config runs tests fully in parallel with seven workers. Each test
 gets its own browser context and page-scoped route mocks. Tests must not depend
