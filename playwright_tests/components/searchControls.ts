@@ -28,4 +28,16 @@ export class SearchControls {
     await this.input.fill(term);
     await this.input.press('Enter');
   }
+
+  async nextResult(): Promise<void> {
+    await this.nextResultButton.click();
+  }
+
+  async previousResult(): Promise<void> {
+    await this.previousResultButton.click();
+  }
+
+  async close(): Promise<void> {
+    await this.closeButton.click();
+  }
 }

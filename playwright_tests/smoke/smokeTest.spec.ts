@@ -44,6 +44,28 @@ test(
 );
 
 test(
+  'keeps PDF zoom within the supported scale range',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    await mediaViewer.zoom.select(0.1);
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('0.1');
+    await expect(mediaViewer.zoom.zoomOutButton).toBeDisabled();
+
+    await mediaViewer.zoom.select(0.25);
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('0.25');
+
+    await mediaViewer.zoom.select(5);
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('5');
+    await expect(mediaViewer.zoom.zoomInButton).toBeDisabled();
+
+    await mediaViewer.zoom.zoomOut();
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('4.9');
+  }
+);
+
+test(
   'navigates between PDF pages',
   { tag: ['@e2e-smoke'] },
   async ({ mediaViewer }) => {
@@ -117,6 +139,42 @@ test(
 );
 
 test(
+  'rotates a PDF page and restores its original orientation',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    const firstPage = mediaViewer.loadState.pdfPage(1);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+
+    const initialOrientation = await firstPage.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return Number.parseFloat(style.width) < Number.parseFloat(style.height) ? 'portrait' : 'landscape';
+    });
+
+    await mediaViewer.rotation.clockwise();
+    await expect
+      .poll(() =>
+        firstPage.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return Number.parseFloat(style.width) < Number.parseFloat(style.height) ? 'portrait' : 'landscape';
+        })
+      )
+      .not.toBe(initialOrientation);
+
+    await mediaViewer.rotation.counterclockwise();
+    await expect
+      .poll(() =>
+        firstPage.evaluate((element) => {
+          const style = getComputedStyle(element);
+          return Number.parseFloat(style.width) < Number.parseFloat(style.height) ? 'portrait' : 'landscape';
+        })
+      )
+      .toBe(initialOrientation);
+  }
+);
+
+test(
   'finds a term in a PDF document',
   { tag: ['@e2e-smoke'] },
   async ({ mediaViewer }) => {
@@ -127,5 +185,29 @@ test(
 
     await mediaViewer.search.searchFor('Based');
     await expect(mediaViewer.search.results).toHaveText('Found 1 of 24');
+  }
+);
+
+test(
+  'navigates search results and reports an empty search',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    await mediaViewer.search.searchFor('Based');
+    await expect(mediaViewer.search.results).toHaveText('Found 1 of 24');
+
+    await mediaViewer.search.nextResult();
+    await expect(mediaViewer.search.results).toHaveText('Found 2 of 24');
+
+    await mediaViewer.search.previousResult();
+    await expect(mediaViewer.search.results).toHaveText('Found 1 of 24');
+
+    await mediaViewer.search.searchFor('term-that-does-not-exist');
+    await expect(mediaViewer.search.results).toHaveText('No results found');
+    await expect(mediaViewer.search.nextResultButton).toHaveCount(0);
+
+    await mediaViewer.search.close();
+    await expect(mediaViewer.search.input).toBeHidden();
   }
 );
