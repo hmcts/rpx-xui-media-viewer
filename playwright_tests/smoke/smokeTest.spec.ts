@@ -44,6 +44,27 @@ test(
 );
 
 test(
+  'zooms an image document in and out',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.image);
+
+    await expect(mediaViewer.loadState.image).toBeVisible();
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
+    const initialImageWidth = await mediaViewer.loadState.image.evaluate((element) => getComputedStyle(element).width);
+    expect(Number.parseFloat(initialImageWidth)).toBeGreaterThan(0);
+
+    await mediaViewer.zoom.zoomIn();
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1.1');
+    await expect(mediaViewer.loadState.image).not.toHaveCSS('width', initialImageWidth);
+
+    await mediaViewer.zoom.zoomOut();
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
+    await expect(mediaViewer.loadState.image).toHaveCSS('width', initialImageWidth);
+  }
+);
+
+test(
   'keeps PDF zoom within the supported scale range',
   { tag: ['@e2e-smoke'] },
   async ({ mediaViewer }) => {
@@ -209,5 +230,19 @@ test(
 
     await mediaViewer.search.close();
     await expect(mediaViewer.search.input).toBeHidden();
+  }
+);
+
+test(
+  'recovers from empty search results to a positive match',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    await mediaViewer.search.searchFor('term-that-does-not-exist');
+    await expect(mediaViewer.search.results).toHaveText('No results found');
+
+    await mediaViewer.search.searchFor('Based');
+    await expect(mediaViewer.search.results).toHaveText('Found 1 of 24');
   }
 );
