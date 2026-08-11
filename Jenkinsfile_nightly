@@ -31,9 +31,12 @@ def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightSmokeOutputRoot = 'functional-output/tests/playwright-smoke'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 def playwrightSupportOutputRoot = 'functional-output/tests/playwright-support'
+def playwrightFunctionalOutputRoot = 'functional-output/tests/playwright-functional'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
+def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
+def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -75,6 +78,26 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
   } else {
     echo "No Playwright JUnit XML found for ${reportName}; Odhín report publication was still completed."
+  }
+}
+
+def runPlaywrightFunctionalTests = { String outputRoot, String reportName ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-functional-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightFunctionalOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightFunctionalOdhinTitle}",
+    "TEST_TYPE=${params.ENVIRONMENT}",
+    "PLAYWRIGHT_BASE_URL=http://localhost:3000/",
+    "PLAYWRIGHT_SKIP_INSTALL=true"
+  ]) {
+    try {
+      yarnBuilder.yarn('test:playwright:functional')
+    } finally {
+      publishPlaywrightReport(outputRoot, reportName, playwrightFunctionalOdhinReportFile)
+    }
   }
 }
 
@@ -254,6 +277,9 @@ withNightlyPipeline(type, product, component) {
           publishPlaywrightReport(playwrightSupportOutputRoot, 'Nightly Playwright Viewer Support Test', playwrightSupportOdhinReportFile)
         }
       }
+    }
+    stage('Playwright Viewer Functional Test') {
+      runPlaywrightFunctionalTests(playwrightFunctionalOutputRoot, 'Nightly Playwright Viewer Functional Test')
     }
   }
 
