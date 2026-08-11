@@ -75,6 +75,27 @@ test(
 );
 
 test(
+  'keeps page navigation within document bounds and exposes the viewer toolbar',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    await expect(mediaViewer.toolbar.root).toBeVisible();
+    await expect(mediaViewer.toolbar.moreOptionsButton).toBeVisible();
+    await expect(mediaViewer.navigation.pageCount).toHaveText(`/ ${mediaAssets.pdf.pageCount}`);
+    await expect(mediaViewer.navigation.previousPageButton).toBeDisabled();
+    await expect(mediaViewer.navigation.nextPageButton).toBeEnabled();
+
+    await mediaViewer.navigation.goToPage(mediaAssets.pdf.pageCount);
+    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue(String(mediaAssets.pdf.pageCount));
+    await expect(mediaViewer.loadState.pdfPage(mediaAssets.pdf.pageCount)).toBeVisible();
+    await expect(mediaViewer.loadState.pdfPage(mediaAssets.pdf.pageCount)).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.navigation.previousPageButton).toBeEnabled();
+    await expect(mediaViewer.navigation.nextPageButton).toBeDisabled();
+  }
+);
+
+test(
   'rotates an image clockwise and back',
   { tag: ['@e2e-smoke'] },
   async ({ mediaViewer }) => {
