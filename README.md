@@ -309,7 +309,6 @@ Expected `test:functional:local:isolated` feature groups:
 - `bookMarks`
 - `redact`
 - `printAndDownload`
-- `search`
 - `imageViewerAnnotationsAndComments`
 
 For the strongest isolation proof, make each scenario upload and use its own document:

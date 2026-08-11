@@ -234,6 +234,23 @@ test(
 );
 
 test(
+  'moves to the next search result when Enter activates the focused result link',
+  { tag: ['@e2e-smoke'] },
+  async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    await mediaViewer.search.open();
+    await mediaViewer.search.input.fill('Based');
+    await mediaViewer.search.submitSearch();
+    await expect(mediaViewer.search.results).toHaveText('Found 1 of 24');
+
+    await expect(mediaViewer.search.nextResultButton).toBeFocused();
+    await mediaViewer.search.pressEnterOnFocusedResult();
+    await expect(mediaViewer.search.results).toHaveText('Found 2 of 24');
+  }
+);
+
+test(
   'recovers from empty search results to a positive match',
   { tag: ['@e2e-smoke'] },
   async ({ mediaViewer }) => {

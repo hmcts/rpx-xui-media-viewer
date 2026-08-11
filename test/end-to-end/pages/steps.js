@@ -12,7 +12,6 @@ module.exports = () => {
     uploadPdfDoc: steps.dmStore.uploadPdfDocument,
     uploadImage: steps.dmStore.uploadImageJpeg,
     uploadWordDoc: steps.dmStore.uploadWordDocument,
-    enterShouldJumpViewerToNextSearchResult: steps.search.enterShouldJumpViewerToNextSearchResults,
     openCaseDocumentsInMV: steps.openCaseDocsInMv.openCaseDocsInMV,
     downloadPdfDocument: steps.printAndDownload.mvDownload,
     mvPrintDocument: steps.printAndDownload.mvPrint,

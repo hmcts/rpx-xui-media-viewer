@@ -35,11 +35,6 @@ async function loadNewDocument(I, caseId, mediaType, newCaseId) {
   await I.loadDocumentAndCheckSuccessLoad(newCaseId)
 }
 
-async function enterShouldJumpViewerToNextSearchResultsTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.enterShouldJumpViewerToNextSearchResult(searchKeyword, noOfFindings);
-}
-
 async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.downloadPdfDocument();
@@ -328,7 +323,6 @@ module.exports = {
   uploadWorDoc,
   downloadPdfDocFromMVTest,
   printDocumentFromMVTest,
-  enterShouldJumpViewerToNextSearchResultsTest,
   createBookmarkTest,
   deleteBookmarkTest,
   updateBookmarkTest,

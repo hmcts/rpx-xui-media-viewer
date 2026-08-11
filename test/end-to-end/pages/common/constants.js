@@ -9,13 +9,7 @@ const states = {
 
 const mvData = {
   "CASE_ID": '1668060663599319',
-  "INDEX_AND_OUTLINE": '1670929989411639',
   "IMAGE_VIEWER_CASE": "1653642705436811",
-  "CONTENT_SEARCH_KEYWORD": 'Applicant',
-  "NUMBER_OF_FINDINGS": 'Found 1 of 11',
-  "VALIDATE_SEARCH_RESULTS_COUNT": 'Found 2 of 11',
-  "SEARCH_RESULTS_NOT_FOUND": 'DTS EM',
-  "NO_RESULTS_FOUND": 'No results found',
   "PDF_DOCUMENT": 'example.pdf',
   "IMAGE_DOCUMENT": 'Quote.jpg',
   "AUDIO_MP3": "nicemelody.mp3",
