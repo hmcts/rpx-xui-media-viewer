@@ -1,6 +1,7 @@
 import type { Page } from '@playwright/test';
 import { DocumentLoadState } from '../components/documentLoadState';
 import { MediaViewerSidePanels } from '../components/mediaViewerSidePanels';
+import { CommentsPanel } from '../components/commentsPanel';
 import { MediaViewerToolbar } from '../components/mediaViewerToolbar';
 import { PageNavigation } from '../components/pageNavigation';
 import { RotationControls } from '../components/rotationControls';
@@ -16,6 +17,7 @@ export class MediaViewerPage {
   readonly rotation: RotationControls;
   readonly search: SearchControls;
   readonly sidePanels: MediaViewerSidePanels;
+  readonly comments: CommentsPanel;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -25,10 +27,48 @@ export class MediaViewerPage {
     this.rotation = new RotationControls(page);
     this.search = new SearchControls(page);
     this.sidePanels = new MediaViewerSidePanels(page);
+    this.comments = new CommentsPanel(page);
   }
 
-  async stubAnnotationResponses(): Promise<void> {
-    await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => route.fulfill({ json: [] }));
+  async stubAnnotationResponses(annotationSet: unknown[] | Record<string, unknown> = []): Promise<void> {
+    let currentAnnotationSet: any = annotationSet;
+    await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
+      await route.fulfill({ status: 200, json: currentAnnotationSet });
+    });
+    await this.page.route('**/em-anno/annotation-sets', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+      currentAnnotationSet = await route.request().postDataJSON();
+      await route.fulfill({ status: 200, json: currentAnnotationSet });
+    });
+    await this.page.route('**/em-anno/annotations', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+      const updatedAnnotation = await route.request().postDataJSON();
+      if (currentAnnotationSet?.annotations) {
+        currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
+          annotation.id === updatedAnnotation.id ? updatedAnnotation : annotation
+        );
+      }
+      await route.fulfill({ status: 200, json: updatedAnnotation });
+    });
+    await this.page.route('**/em-anno/annotations/*', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.continue();
+        return;
+      }
+      const annotationId = route.request().url().split('/').pop();
+      if (currentAnnotationSet?.annotations) {
+        currentAnnotationSet.annotations = currentAnnotationSet.annotations.filter(
+          (annotation: { id: string }) => annotation.id !== annotationId
+        );
+      }
+      await route.fulfill({ status: 200, body: 'null' });
+    });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/**/bookmarks', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
