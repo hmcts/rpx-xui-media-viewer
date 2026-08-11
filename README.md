@@ -309,9 +309,7 @@ Expected `test:functional:local:isolated` feature groups:
 - `bookMarks`
 - `redact`
 - `printAndDownload`
-- `rotate`
 - `search`
-- `zoomAndnavigation`
 - `imageViewerAnnotationsAndComments`
 
 For the strongest isolation proof, make each scenario upload and use its own document:

@@ -22,8 +22,6 @@ pdf_features=(
   "redact.js"
   "search.js"
   "printAndDownload.js"
-  "rotate.js"
-  "zoomAndnavigation.js"
 )
 
 image_features=(

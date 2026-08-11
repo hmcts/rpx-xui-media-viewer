@@ -35,34 +35,9 @@ async function loadNewDocument(I, caseId, mediaType, newCaseId) {
   await I.loadDocumentAndCheckSuccessLoad(newCaseId)
 }
 
-async function contentSearchTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executeContentSearch(searchKeyword, noOfFindings);
-}
-
-async function navigateSearchResultsUsingPreviousNextLinksTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.searchResultsNavigationUsingPreviousAndNextLinks(searchKeyword, noOfFindings);
-}
-
-async function searchResultsNotFoundTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executeContentSearch(searchKeyword, noOfFindings);
-}
-
 async function enterShouldJumpViewerToNextSearchResultsTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.enterShouldJumpViewerToNextSearchResult(searchKeyword, noOfFindings);
-}
-
-async function pdfViewerPageNavigationTest(I, caseId, mediaType, pageNoToNavigate) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.pdfViewerPageNavigation(pageNoToNavigate);
-}
-
-async function pdfViewerZoomInOutTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executePdfViewerZoom();
 }
 
 async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
@@ -73,11 +48,6 @@ async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
 async function printDocumentFromMVTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.mvPrintDocument();
-}
-
-async function pdfAndImageRotationTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.rotatePdfAndJpg();
 }
 
 async function createBookmarkTest(I, caseId, mediaType) {
@@ -356,14 +326,8 @@ module.exports = {
   uploadPdf,
   uploadJpeg,
   uploadWorDoc,
-  contentSearchTest,
-  searchResultsNotFoundTest,
   downloadPdfDocFromMVTest,
-  pdfViewerZoomInOutTest,
   printDocumentFromMVTest,
-  pdfViewerPageNavigationTest,
-  pdfAndImageRotationTest,
-  navigateSearchResultsUsingPreviousNextLinksTest,
   enterShouldJumpViewerToNextSearchResultsTest,
   createBookmarkTest,
   deleteBookmarkTest,
