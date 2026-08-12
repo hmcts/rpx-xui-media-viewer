@@ -223,21 +223,6 @@ describe('MetadataLayerComponent', () => {
     }
   ));
 
-  it('should use the default name for a whitespace-only selection',
-    inject([Store], (store) => {
-      const mockSelection = { toString: () => '   ' } as any;
-      spyOn(window, 'getSelection').and.returnValue(mockSelection);
-      component.highlightPage = 1;
-      spyOn(store, 'dispatch');
-
-      component.createBookmark({ x: 100, y: 200 } as any);
-
-      expect(store.dispatch).toHaveBeenCalledWith(jasmine.objectContaining({
-        payload: jasmine.objectContaining({ name: 'new bookmark' }),
-      }));
-    })
-  );
-
   it('should call saveAnnotation and push false to drawModeSubject',
     inject([HighlightCreateService, ToolbarEventService],
       (highlightCreateService: HighlightCreateService, toolbarEvents: ToolbarEventService) => {

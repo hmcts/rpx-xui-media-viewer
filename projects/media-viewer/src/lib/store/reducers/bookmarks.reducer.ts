@@ -70,25 +70,14 @@ export function bookmarksReducer(state = initialBookmarksState,
     }
 
     case fromBookmarks.MOVE_BOOKMARK_SUCCESS: {
-      const movedBookmarks = action.payload.reduce((entities, bookmark) => ({
-        ...entities,
-        [bookmark.id]: {
-          ...state.bookmarkEntities[bookmark.id],
-          ...bookmark,
-          previous: bookmark.previous,
-        },
-      }), {});
+      const movedBookmarks = generateBookmarkEntities(action.payload);
       const bookmarkEntities = {
         ...state.bookmarkEntities,
         ...movedBookmarks
       };
-      const bookmarks = Object.keys(bookmarkEntities).map(key => bookmarkEntities[key]);
-      const bookmarkPageEntities = StoreUtils.groupByKeyEntities(bookmarks, 'pageNumber');
       return {
         ...state,
-        bookmarks,
         bookmarkEntities,
-        bookmarkPageEntities,
         loading: false,
         loaded: true
       };

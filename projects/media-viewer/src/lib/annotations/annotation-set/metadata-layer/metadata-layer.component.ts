@@ -88,10 +88,9 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
     this.store.pipe(select(fromBookmarks.getBookmarkInfo), take(1))
       .subscribe((bookmarkInfo) => {
         const selection = window.getSelection().toString();
-        const bookmarkName = selection.trim();
         this.store.dispatch(new CreateBookmark({
           ...bookmarkInfo,
-          name: bookmarkName.length > 0 ? bookmarkName.substr(0, 30) : 'new bookmark',
+          name: selection.length > 0 ? selection.substr(0, 30) : 'new bookmark',
           id: uuid(),
           pageNumber: this.highlightPage - 1,
           xCoordinate: rectangle.x,
