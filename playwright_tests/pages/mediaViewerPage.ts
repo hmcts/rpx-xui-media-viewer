@@ -47,13 +47,6 @@ export class MediaViewerPage {
     }
   }
 
-  async enableAnnotations(): Promise<void> {
-    const toggle = this.page.getByRole('checkbox', { name: 'Toggle annotate' });
-    if (await toggle.count() && !(await toggle.isChecked())) {
-      await toggle.check();
-    }
-  }
-
   resolveDocumentUrl(documentUrl: string): string {
     return new URL(documentUrl, this.page.url()).href;
   }

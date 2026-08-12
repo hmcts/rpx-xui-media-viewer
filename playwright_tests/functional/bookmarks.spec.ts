@@ -16,7 +16,6 @@ const bookmark = (id: string, name: string, index: number, pageNumber = 0) => ({
 test.describe('Bookmarks', () => {
   test('creates a bookmark from the bookmarks panel', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi();
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
 
@@ -27,7 +26,6 @@ test.describe('Bookmarks', () => {
 
   test('updates a bookmark created by the viewer API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Created bookmark', 0)]);
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
     await expect(mediaViewer.bookmarks.name()).toHaveText('Created bookmark');
@@ -39,7 +37,6 @@ test.describe('Bookmarks', () => {
 
   test('deletes a bookmark and supports an empty bookmark draft', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Existing bookmark', 0)]);
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
 
@@ -58,7 +55,6 @@ test.describe('Bookmarks', () => {
       bookmark('bookmark-1', 'First bookmark', 0),
       bookmark('bookmark-2', 'Second bookmark', 1),
     ]);
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
 
@@ -73,14 +69,25 @@ test.describe('Bookmarks', () => {
 
   test('keeps an empty bookmark draft until it has a name', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi();
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
 
     await mediaViewer.bookmarks.add();
     await expect(mediaViewer.bookmarks.input()).toHaveValue('');
-    await mediaViewer.bookmarks.node().locator('.bookmark__save').click();
-    await expect(mediaViewer.bookmarks.input()).toBeVisible();
+  });
+
+  test('keeps multiple empty bookmark drafts scoped to the newest input', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+    await mediaViewer.bookmarks.stubApi();
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.open();
+
+    await mediaViewer.bookmarks.add();
+    await mediaViewer.bookmarks.add();
+    await expect(mediaViewer.bookmarks.nodes).toHaveCount(2);
+    await expect(mediaViewer.bookmarks.input(0)).toHaveCount(0);
+    await expect(mediaViewer.bookmarks.input(1)).toHaveValue('');
+    await mediaViewer.bookmarks.node(1).locator('.bookmark__save').click();
+    await expect(mediaViewer.bookmarks.input(1)).toBeVisible();
   });
 
   test('sorts bookmarks by document position and restores custom order', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
@@ -88,7 +95,6 @@ test.describe('Bookmarks', () => {
       bookmark('bookmark-1', 'Later page', 0, 3),
       bookmark('bookmark-2', 'Earlier page', 1, 0),
     ]);
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
 
@@ -99,12 +105,11 @@ test.describe('Bookmarks', () => {
     await expect(mediaViewer.bookmarks.name(0)).toHaveText('Later page');
   });
 
-  test('persists reorder through the drag-and-drop tree contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+  test('persists reorder through the drag-and-drop API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([
       bookmark('bookmark-1', 'First bookmark', 0),
       bookmark('bookmark-2', 'Second bookmark', 1),
     ]);
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
     await mediaViewer.bookmarks.customSortButton.click();
@@ -118,7 +123,6 @@ test.describe('Bookmarks', () => {
 
   test('adds thirty bookmarks without losing the bookmark input contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi();
-    await mediaViewer.enableAnnotations();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
 

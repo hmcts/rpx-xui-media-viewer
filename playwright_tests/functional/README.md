@@ -12,8 +12,8 @@ is rendered into the Odhín report.
 | Page navigation | `navigation.spec.ts` | 2 | Page identity, viewport rendering, page count and first/last boundaries |
 | Rotation | `rotation.spec.ts` | 2 | Image transform and PDF orientation round-trip |
 | Search | `search.spec.ts` | 4 | Positive match, next/previous, no results, close/reset, recovery and Enter navigation |
-| Bookmarks | `bookmarks.spec.ts` | 8 | Bookmark creation, update, delete/sibling promotion, empty drafts, sorting, real drag-and-drop persistence and bulk lifecycle |
-| **Total** | 5 feature files | **19** | Behaviour-level migration coverage |
+| Bookmarks | `bookmarks.spec.ts` | 9 | Bookmark creation, update, delete/sibling promotion, single and multiple empty drafts, sorting, real drag-and-drop persistence and bulk lifecycle |
+| **Total** | 5 feature files | **20** | Behaviour-level migration coverage |
 
 Run the whole migrated functional suite:
 
