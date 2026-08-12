@@ -31,6 +31,12 @@ export class MediaViewerSidePanels {
     await this.commentsMenuItem.click();
   }
 
+  async openComments(): Promise<void> {
+    if (!(await this.areCommentsOpen())) {
+      await this.toggleComments();
+    }
+  }
+
   async isIndexOpen(): Promise<boolean> {
     return (await this.indexButton.getAttribute('aria-expanded')) === 'true';
   }

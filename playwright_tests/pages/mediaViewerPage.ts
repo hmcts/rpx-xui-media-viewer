@@ -35,15 +35,13 @@ export class MediaViewerPage {
     let currentAnnotationSet = annotationSet;
     await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
       const requestedDocumentId = new URL(route.request().url()).searchParams.get('documentId');
-      if (!Array.isArray(currentAnnotationSet) && !currentAnnotationSet.acceptedDocumentIds.includes(requestedDocumentId ?? '')) {
+      if (!Array.isArray(currentAnnotationSet) && currentAnnotationSet.documentId !== requestedDocumentId) {
         await route.fulfill({ status: 404, json: { message: `Unexpected annotation document: ${requestedDocumentId}` } });
         return;
       }
       await route.fulfill({
         status: 200,
-        json: Array.isArray(currentAnnotationSet)
-          ? currentAnnotationSet
-          : { ...currentAnnotationSet, documentId: requestedDocumentId },
+        json: currentAnnotationSet,
       });
     });
     await this.page.route('**/em-anno/annotation-sets', async (route) => {
@@ -142,6 +140,11 @@ export class MediaViewerPage {
 
   async openDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
     await this.goto();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async reloadDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
+    await this.reload();
     await this.loadDocument(asset.url, caseId, asset.contentType);
   }
 }

@@ -19,16 +19,7 @@ export class CommentsPanel {
     this.annotationRectangles = page.locator('.rectangle');
   }
 
-  async open(): Promise<void> {
-    if (!(await this.panel.isVisible())) {
-      await this.page.getByRole('button', { name: 'More options' }).click();
-      await this.page.locator('.dropdown-menu #mvCommentsBtn').click();
-    }
-    await this.panel.waitFor();
-  }
-
   async openSearch(): Promise<void> {
-    await this.open();
     await this.searchTab.click();
     await this.searchInput.waitFor();
   }

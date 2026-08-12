@@ -7,7 +7,6 @@ export type AnnotationFixture = {
 
 export type AnnotationSetFixture = {
   documentId: string;
-  acceptedDocumentIds: string[];
   annotations: AnnotationFixture[];
   [key: string]: unknown;
 };
@@ -15,9 +14,6 @@ export type AnnotationSetFixture = {
 export const commentsAnnotationSet: AnnotationSetFixture = {
   id: 'pw-comments-annotation-set',
   documentId: mediaAssets.pdf.url,
-  // The standalone wrapper first requests its baked-in demo document, then the
-  // document selected by the test form. Both render the same checked-in PDF.
-  acceptedDocumentIds: [mediaAssets.pdf.url, '04666097-eb32-4b2b-9bec-8e9ce8057560'],
   annotations: [
     {
       id: 'pw-comment-annotation',
@@ -53,7 +49,6 @@ export const commentsAnnotationSet: AnnotationSetFixture = {
 export const commentCreationAnnotationSet: AnnotationSetFixture = {
   id: 'pw-comment-creation-annotation-set',
   documentId: mediaAssets.pdf.url,
-  acceptedDocumentIds: [mediaAssets.pdf.url, '04666097-eb32-4b2b-9bec-8e9ce8057560'],
   annotations: [{
     id: 'pw-empty-comment-annotation',
     annotationSetId: 'pw-comment-creation-annotation-set',
