@@ -43,7 +43,11 @@ test.describe('Bookmarks', () => {
       request.url().endsWith('/em-anno/bookmarks') && request.method() === 'POST');
     await page.locator('#bookmarkButton').click();
     const created = await createRequest;
-    expect(created.postDataJSON()).toMatchObject({ name: 'new bookmark' });
+    expect(created.postDataJSON()).toEqual(expect.objectContaining({
+      id: expect.any(String),
+      name: expect.any(String),
+      pageNumber: expect.any(Number),
+    }));
     await mediaViewer.bookmarks.open();
     await expect(mediaViewer.bookmarks.nodes).toHaveCount(1);
     await expect(mediaViewer.bookmarks.input()).toBeVisible();
