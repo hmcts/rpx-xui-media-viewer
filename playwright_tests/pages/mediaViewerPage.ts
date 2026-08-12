@@ -80,4 +80,12 @@ export class MediaViewerPage {
     await this.goto();
     await this.loadDocument(asset.url, caseId, asset.contentType);
   }
+
+  async openAnnotatedDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
+    await this.goto();
+    const annotationToggle = this.page.locator('label[for="toggleAnnotations"]');
+    await annotationToggle.click();
+    await annotationToggle.click();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
 }

@@ -19,6 +19,7 @@ export class Bookmarks {
   readonly positionSortButton: Locator;
   readonly customSortButton: Locator;
   readonly nodes: Locator;
+  private moveComplete: (() => void) | undefined;
 
   constructor(private readonly page: Page) {
     this.panel = page.locator('#bookmarkContainer');
@@ -69,15 +70,20 @@ export class Bookmarks {
 
       bookmarks = payload.map((bookmark: Bookmark) => {
         const current = bookmarks.find(item => item.id === bookmark.id);
-        return { ...current, ...bookmark };
+        return { ...current, ...bookmark, previous: bookmark.previous };
       });
       await route.fulfill({ json: bookmarks });
+      this.moveComplete?.();
+      this.moveComplete = undefined;
     });
   }
 
   async open(): Promise<void> {
     const bookmarksButton = this.page.getByRole('button', { name: 'Bookmarks' });
-    if ((await bookmarksButton.getAttribute('aria-expanded')) !== 'true') {
+    if (!(await this.panel.isVisible())) {
+      await bookmarksButton.click();
+    }
+    if (!(await this.panel.isVisible())) {
       await bookmarksButton.click();
     }
     await this.panel.waitFor({ state: 'visible' });
@@ -130,11 +136,15 @@ export class Bookmarks {
     }
     const moveRequest = this.page.waitForRequest(request =>
       request.url().endsWith('/em-anno/bookmarks_multiple') && request.method() === 'PUT');
+    const moveComplete = new Promise<void>(resolve => {
+      this.moveComplete = resolve;
+    });
     await this.page.mouse.move(sourceBounds.x + sourceBounds.width / 2, sourceBounds.y + sourceBounds.height / 2);
     await this.page.mouse.down();
     await this.page.mouse.move(targetBounds.x + targetBounds.width / 2, targetBounds.y + targetBounds.height - 2, { steps: 10 });
     await this.page.mouse.up();
     const request = await moveRequest;
+    await moveComplete;
     return request.postDataJSON() as Bookmark[];
   }
 

@@ -137,5 +137,7 @@ describe('BookmarksReducer', () => {
 
     expect(state.bookmarkEntities['id'].previous).toEqual('id2');
     expect(state.bookmarkEntities['id2'].previous).toBeUndefined();
+    expect(state.bookmarkPageEntities[bookmark.pageNumber]).toEqual([bookmark, bookmark2]);
+    expect(state.bookmarks).toEqual([bookmark, bookmark2]);
   });
 });

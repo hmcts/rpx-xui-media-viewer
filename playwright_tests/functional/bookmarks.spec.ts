@@ -24,6 +24,31 @@ test.describe('Bookmarks', () => {
     await expect(mediaViewer.bookmarks.name()).toContainText('Created bookmark');
   });
 
+  test('creates a bookmark from a real text selection', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.bookmarks.stubApi();
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await page.locator('#mvHighlightBtn').click();
+    await page.locator('#highlightTextBtn').click();
+
+    const text = page.locator('.textLayer span').filter({ hasText: /example/i }).first();
+    await text.waitFor({ state: 'visible' });
+    const bounds = await text.boundingBox();
+    if (!bounds) {
+      throw new Error('PDF text fixture was not visible for selection');
+    }
+    await text.dblclick();
+
+    await expect(page.locator('#bookmarkButton')).toBeVisible();
+    const createRequest = page.waitForRequest(request =>
+      request.url().endsWith('/em-anno/bookmarks') && request.method() === 'POST');
+    await page.locator('#bookmarkButton').click();
+    const created = await createRequest;
+    expect(created.postDataJSON()).toMatchObject({ name: 'new bookmark' });
+    await mediaViewer.bookmarks.open();
+    await expect(mediaViewer.bookmarks.nodes).toHaveCount(1);
+    await expect(mediaViewer.bookmarks.input()).toBeVisible();
+  });
+
   test('updates a bookmark created by the viewer API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Created bookmark', 0)]);
     await mediaViewer.openDocument(mediaAssets.pdf);
@@ -119,6 +144,8 @@ test.describe('Bookmarks', () => {
       { name: 'Second bookmark', previous: undefined },
       { name: 'First bookmark', previous: 'bookmark-2' },
     ]);
+    await expect(mediaViewer.bookmarks.name(0)).toHaveText('Second bookmark');
+    await expect(mediaViewer.bookmarks.name(1)).toHaveText('First bookmark');
   });
 
   test('adds thirty bookmarks without losing the bookmark input contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
