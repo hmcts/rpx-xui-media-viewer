@@ -51,36 +51,6 @@ async function createBookmarkTest(I, caseId, mediaType) {
   await I.createBookMark();
 }
 
-async function deleteBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-}
-
-async function updateBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-  await I.updateBookMarks();
-}
-
-async function addEmptyBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.addEmptyBookmarks();
-}
-
-async function sortBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.sortBookmarks();
-}
-
-async function bookmarkBoxBlankTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.bookmarkBoxBlank();
-}
-
 async function multiMediaAudioTest(I, caseId, mediaType) {
   await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
   await I.mvAudioScenario();
@@ -301,20 +271,6 @@ async function uploadDocumentEvent(I, caseId, eventName) {
   await I.chooseNextStep(eventName, 3)
 }
 
-async function customAndReorderBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-  await I.customOrderBookmarks();
-  await I.reorderBookmarks();
-}
-
-async function add30BookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.add30Bookmarks();
-}
-
 module.exports = {
   loginTest,
   submittedState,
@@ -324,10 +280,6 @@ module.exports = {
   downloadPdfDocFromMVTest,
   printDocumentFromMVTest,
   createBookmarkTest,
-  deleteBookmarkTest,
-  updateBookmarkTest,
-  addEmptyBookmarksTest,
-  sortBookmarksTest,
   multiMediaAudioTest,
   multiMediaAudioPauseAndRewindTest,
   highlightTextTest,
@@ -355,9 +307,6 @@ module.exports = {
   updateNonTextualCommentTest,
   deleteNonTextualCommentTest,
   redactSearchAndRedactAllTest,
-  customAndReorderBookmarksTest,
-  bookmarkBoxBlankTest,
-  add30BookmarksTest,
   annotateFromSearchTest,
   loadNewDocument
 }

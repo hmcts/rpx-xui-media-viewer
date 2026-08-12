@@ -6,6 +6,7 @@ import { PageNavigation } from '../components/pageNavigation';
 import { RotationControls } from '../components/rotationControls';
 import { SearchControls } from '../components/searchControls';
 import { ZoomControls } from '../components/zoomControls';
+import { Bookmarks } from '../components/bookmarks';
 import type { MediaAsset } from '../fixtures/mediaAssets';
 
 export class MediaViewerPage {
@@ -16,6 +17,7 @@ export class MediaViewerPage {
   readonly rotation: RotationControls;
   readonly search: SearchControls;
   readonly sidePanels: MediaViewerSidePanels;
+  readonly bookmarks: Bookmarks;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -25,12 +27,14 @@ export class MediaViewerPage {
     this.rotation = new RotationControls(page);
     this.search = new SearchControls(page);
     this.sidePanels = new MediaViewerSidePanels(page);
+    this.bookmarks = new Bookmarks(page);
   }
 
   async stubAnnotationResponses(): Promise<void> {
-    await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => route.fulfill({ json: [] }));
+    await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => route.fulfill({
+      json: { id: 'annotation-set-fixture', annotations: [] },
+    }));
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
-    await this.page.route('**/em-anno/**/bookmarks', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
   }
 
@@ -74,6 +78,14 @@ export class MediaViewerPage {
 
   async openDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
     await this.goto();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async openAnnotatedDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
+    await this.goto();
+    const annotationToggle = this.page.locator('label[for="toggleAnnotations"]');
+    await annotationToggle.click();
+    await annotationToggle.click();
     await this.loadDocument(asset.url, caseId, asset.contentType);
   }
 }

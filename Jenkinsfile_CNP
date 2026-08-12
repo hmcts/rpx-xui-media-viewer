@@ -12,7 +12,7 @@ properties([
 ])
 
 
-@Library("Infrastructure@2.4.9")
+@Library("Infrastructure@2.5.1")
 
 def type = "nodejs"
 def product = "xui"
@@ -161,6 +161,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 timeout(time: 80, unit: 'MINUTES') {
 withPipeline(type, product, component) {
+  enableBuildCache()
   enableSlackNotifications(channel)
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
