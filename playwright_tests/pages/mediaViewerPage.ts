@@ -7,6 +7,7 @@ import { PageNavigation } from '../components/pageNavigation';
 import { RotationControls } from '../components/rotationControls';
 import { SearchControls } from '../components/searchControls';
 import { ZoomControls } from '../components/zoomControls';
+import { Bookmarks } from '../components/bookmarks';
 import type { AnnotationFixture, AnnotationSetFixture } from '../fixtures/mediaViewerComments';
 import type { MediaAsset } from '../fixtures/mediaAssets';
 
@@ -19,6 +20,7 @@ export class MediaViewerPage {
   readonly search: SearchControls;
   readonly sidePanels: MediaViewerSidePanels;
   readonly comments: CommentsPanel;
+  readonly bookmarks: Bookmarks;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -29,9 +31,13 @@ export class MediaViewerPage {
     this.search = new SearchControls(page);
     this.sidePanels = new MediaViewerSidePanels(page);
     this.comments = new CommentsPanel(page);
+    this.bookmarks = new Bookmarks(page);
   }
 
-  async stubAnnotationResponses(annotationSet: AnnotationSetFixture | [] = []): Promise<void> {
+  async stubAnnotationResponses(annotationSet: AnnotationSetFixture | [] = {
+    id: 'annotation-set-fixture',
+    annotations: [],
+  }): Promise<void> {
     let currentAnnotationSet = annotationSet;
     await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
       const requestedDocumentId = new URL(route.request().url()).searchParams.get('documentId');
@@ -39,10 +45,7 @@ export class MediaViewerPage {
         await route.fulfill({ status: 404, json: { message: `Unexpected annotation document: ${requestedDocumentId}` } });
         return;
       }
-      await route.fulfill({
-        status: 200,
-        json: currentAnnotationSet,
-      });
+      await route.fulfill({ status: 200, json: currentAnnotationSet });
     });
     await this.page.route('**/em-anno/annotation-sets', async (route) => {
       if (route.request().method() !== 'POST') {
@@ -87,7 +90,6 @@ export class MediaViewerPage {
       await route.fulfill({ status: 200, body: 'null' });
     });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
-    await this.page.route('**/em-anno/**/bookmarks', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
   }
 
@@ -145,6 +147,20 @@ export class MediaViewerPage {
 
   async reloadDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
     await this.reload();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async openAnnotatedDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
+    await this.goto();
+    const annotationCheckbox = this.page.locator('#toggleAnnotations');
+    const annotationToggle = this.page.locator('label[for="toggleAnnotations"]');
+    await annotationCheckbox.waitFor({ state: 'attached' });
+    if (!(await annotationCheckbox.isChecked())) {
+      await annotationToggle.click();
+    }
+    if (!(await annotationCheckbox.isChecked())) {
+      throw new Error('Annotation toggle did not enable annotations');
+    }
     await this.loadDocument(asset.url, caseId, asset.contentType);
   }
 }
