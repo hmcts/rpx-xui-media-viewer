@@ -1,16 +1,20 @@
 import type { Locator, Page } from '@playwright/test';
 
 export class SearchControls {
+  private readonly page: Page;
   readonly openButton: Locator;
   readonly input: Locator;
+  readonly submitButton: Locator;
   readonly results: Locator;
   readonly previousResultButton: Locator;
   readonly nextResultButton: Locator;
   readonly closeButton: Locator;
 
   constructor(page: Page) {
+    this.page = page;
     this.openButton = page.getByRole('button', { name: 'Search' });
     this.input = page.getByRole('textbox', { name: 'Search document' });
+    this.submitButton = page.locator('mv-search-bar button').filter({ hasText: 'Search' });
     this.results = page.locator('#findResultsCount');
     this.previousResultButton = page.getByRole('button', { name: 'Find the previous occurrence of the phrase' });
     this.nextResultButton = page.getByRole('button', { name: 'Find the next occurrence of the phrase' });
@@ -27,5 +31,25 @@ export class SearchControls {
     await this.open();
     await this.input.fill(term);
     await this.input.press('Enter');
+  }
+
+  async submitSearch(): Promise<void> {
+    await this.submitButton.click();
+  }
+
+  async pressEnterOnFocusedResult(): Promise<void> {
+    await this.page.keyboard.press('Enter');
+  }
+
+  async nextResult(): Promise<void> {
+    await this.nextResultButton.click();
+  }
+
+  async previousResult(): Promise<void> {
+    await this.previousResultButton.click();
+  }
+
+  async close(): Promise<void> {
+    await this.closeButton.click();
   }
 }

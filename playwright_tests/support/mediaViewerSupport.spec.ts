@@ -50,7 +50,7 @@ test.describe('media viewer Playwright support layer', () => {
       mediaAssets.replacementPdf.contentType
     );
 
-    await expect(mediaViewer.navigation.pageCount).toHaveText('/ 6');
+    await expect(mediaViewer.navigation.pageCount).toHaveText(`/ ${mediaAssets.replacementPdf.pageCount}`);
     await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.loadState.pdfCanvas(1)).toHaveAttribute('width', /^[1-9]\d*$/);
   });
