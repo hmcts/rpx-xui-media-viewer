@@ -75,8 +75,12 @@ commentsTest.describe('Comments panel', () => {
     await mediaViewer.comments.searchInput.fill('Existing');
     await mediaViewer.comments.searchButton.click();
 
-    await expect(mediaViewer.comments.comment('Existing viewer comment')).toBeVisible();
-    await expect(mediaViewer.comments.comment('Existing viewer comment').locator('.mvTextHighlight')).toHaveText('Existing');
+    const matchingComment = mediaViewer.comments.comment('Existing viewer comment');
+    const nonMatchingComment = mediaViewer.comments.comment('Unrelated viewer comment');
+    await expect(matchingComment).toBeVisible();
+    await expect(nonMatchingComment).toBeVisible();
+    await expect(matchingComment.locator('.mvTextHighlight')).toHaveText('Existing');
+    await expect(nonMatchingComment.locator('.mvTextHighlight')).toHaveCount(0);
     await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 1');
   });
 });
