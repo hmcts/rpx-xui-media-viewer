@@ -7,6 +7,7 @@ import { PageNavigation } from '../components/pageNavigation';
 import { RotationControls } from '../components/rotationControls';
 import { SearchControls } from '../components/searchControls';
 import { ZoomControls } from '../components/zoomControls';
+import type { AnnotationFixture, AnnotationSetFixture } from '../fixtures/mediaViewerComments';
 import type { MediaAsset } from '../fixtures/mediaAssets';
 
 export class MediaViewerPage {
@@ -30,17 +31,27 @@ export class MediaViewerPage {
     this.comments = new CommentsPanel(page);
   }
 
-  async stubAnnotationResponses(annotationSet: unknown[] | Record<string, unknown> = []): Promise<void> {
-    let currentAnnotationSet: any = annotationSet;
+  async stubAnnotationResponses(annotationSet: AnnotationSetFixture | [] = []): Promise<void> {
+    let currentAnnotationSet = annotationSet;
     await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
-      await route.fulfill({ status: 200, json: currentAnnotationSet });
+      const requestedDocumentId = new URL(route.request().url()).searchParams.get('documentId');
+      if (!Array.isArray(currentAnnotationSet) && !currentAnnotationSet.acceptedDocumentIds.includes(requestedDocumentId ?? '')) {
+        await route.fulfill({ status: 404, json: { message: `Unexpected annotation document: ${requestedDocumentId}` } });
+        return;
+      }
+      await route.fulfill({
+        status: 200,
+        json: Array.isArray(currentAnnotationSet)
+          ? currentAnnotationSet
+          : { ...currentAnnotationSet, documentId: requestedDocumentId },
+      });
     });
     await this.page.route('**/em-anno/annotation-sets', async (route) => {
       if (route.request().method() !== 'POST') {
         await route.continue();
         return;
       }
-      currentAnnotationSet = await route.request().postDataJSON();
+      currentAnnotationSet = await route.request().postDataJSON() as AnnotationSetFixture;
       await route.fulfill({ status: 200, json: currentAnnotationSet });
     });
     await this.page.route('**/em-anno/annotations', async (route) => {
@@ -48,10 +59,18 @@ export class MediaViewerPage {
         await route.continue();
         return;
       }
-      const updatedAnnotation = await route.request().postDataJSON();
-      if (currentAnnotationSet?.annotations) {
+      const updatedAnnotation = await route.request().postDataJSON() as AnnotationFixture;
+      const persistedAnnotation = {
+        ...updatedAnnotation,
+        comments: (updatedAnnotation.comments as Array<Record<string, unknown>>).map((comment) => ({
+          ...comment,
+          editable: false,
+          selected: false,
+        })),
+      };
+      if (!Array.isArray(currentAnnotationSet)) {
         currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
-          annotation.id === updatedAnnotation.id ? updatedAnnotation : annotation
+          annotation.id === updatedAnnotation.id ? persistedAnnotation : annotation
         );
       }
       await route.fulfill({ status: 200, json: updatedAnnotation });
@@ -62,7 +81,7 @@ export class MediaViewerPage {
         return;
       }
       const annotationId = route.request().url().split('/').pop();
-      if (currentAnnotationSet?.annotations) {
+      if (!Array.isArray(currentAnnotationSet)) {
         currentAnnotationSet.annotations = currentAnnotationSet.annotations.filter(
           (annotation: { id: string }) => annotation.id !== annotationId
         );
@@ -80,6 +99,15 @@ export class MediaViewerPage {
     const responseFailed = response !== null && !response.ok() && response.status() !== 304;
     if (!isViewerRoute || responseFailed) {
       throw new Error(`Media viewer route failed: ${response?.status() ?? 'no response'} ${this.page.url()}`);
+    }
+  }
+
+  async reload(): Promise<void> {
+    const response = await this.page.reload({ waitUntil: 'domcontentloaded' });
+    const isViewerRoute = new URL(this.page.url()).hash === '#/media-viewer';
+    const responseFailed = response !== null && !response.ok() && response.status() !== 304;
+    if (!isViewerRoute || responseFailed) {
+      throw new Error(`Media viewer reload failed: ${response?.status() ?? 'no response'} ${this.page.url()}`);
     }
   }
 

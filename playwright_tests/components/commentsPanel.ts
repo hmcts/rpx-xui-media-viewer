@@ -5,6 +5,7 @@ export class CommentsPanel {
   readonly searchTab: Locator;
   readonly searchInput: Locator;
   readonly searchButton: Locator;
+  readonly searchResultStatus: Locator;
   readonly commentCards: Locator;
   readonly annotationRectangles: Locator;
 
@@ -13,6 +14,7 @@ export class CommentsPanel {
     this.searchTab = page.locator('#commentSubPane2');
     this.searchInput = page.getByRole('textbox', { name: 'search comments input' });
     this.searchButton = page.locator('mv-comment-search > button');
+    this.searchResultStatus = page.locator('mv-comment-search mv-comments-navigate span.comment-search__item');
     this.commentCards = this.panel.locator('.aui-comment');
     this.annotationRectangles = page.locator('.rectangle');
   }
@@ -56,8 +58,8 @@ export class CommentsPanel {
     await editor.waitFor({ state: 'hidden' });
   }
 
-  async addToAnnotation(annotationIndex: number, content: string): Promise<void> {
-    await this.annotationRectangles.nth(annotationIndex).click();
+  async addToOnlyAnnotation(content: string): Promise<void> {
+    await this.annotationRectangles.click();
     await this.page.locator('button[title="Comment"]').click();
     const editor = this.panel.locator('textarea[aria-label="comment"]');
     await editor.waitFor();

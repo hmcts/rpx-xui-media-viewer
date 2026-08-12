@@ -1,9 +1,19 @@
-import { expect, commentsTest, mediaAssets } from '../fixtures/mediaViewerTest';
+import { commentCreationTest, expect, commentsTest, mediaAssets } from '../fixtures/mediaViewerTest';
+
+const isLoadedPdfAnnotationRequest = (url: string) =>
+  url.includes('/em-anno/annotation-sets/filter') &&
+  new URL(url).searchParams.get('documentId') === mediaAssets.pdf.url;
+
+const isStandalonePdfAnnotationRequest = (url: string) =>
+  url.includes('/em-anno/annotation-sets/filter') &&
+  new URL(url).searchParams.get('documentId') === '04666097-eb32-4b2b-9bec-8e9ce8057560';
 
 commentsTest.describe('Comments panel', () => {
   commentsTest('opens and closes the comments panel with the seeded comment rendered', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer, page }) => {
-    const annotationResponse = page.waitForResponse((response) => response.url().includes('/em-anno/annotation-sets/filter'));
+    const annotationRequest = page.waitForRequest((request) => isLoadedPdfAnnotationRequest(request.url()));
+    const annotationResponse = page.waitForResponse((response) => isLoadedPdfAnnotationRequest(response.url()));
     await mediaViewer.openDocument(mediaAssets.pdf);
+    expect(new URL((await annotationRequest).url()).searchParams.get('documentId')).toBe(mediaAssets.pdf.url);
     const annotationBody = await (await annotationResponse).json();
     expect(annotationBody).toHaveProperty('annotations');
 
@@ -27,20 +37,12 @@ commentsTest.describe('Comments panel', () => {
 
     await expect(mediaViewer.comments.comment('Updated viewer comment')).toBeVisible();
     expect(request.postDataJSON().comments[0].content).toBe('Updated viewer comment');
-  });
 
-  commentsTest('adds a comment to a selected annotation and persists it', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.openDocument(mediaAssets.pdf);
-
-    const createRequest = page.waitForRequest((request) => request.url().endsWith('/em-anno/annotations') && request.method() === 'POST');
-    await mediaViewer.comments.addToAnnotation(2, 'New viewer comment');
-    const request = await createRequest;
-
-    await expect(mediaViewer.comments.comment('New viewer comment')).toBeVisible();
-    expect(request.postDataJSON()).toMatchObject({
-      id: 'pw-empty-comment-annotation',
-      comments: [expect.objectContaining({ content: 'New viewer comment' })],
-    });
+    const rehydratedAnnotationResponse = page.waitForResponse((response) => isStandalonePdfAnnotationRequest(response.url()));
+    await mediaViewer.reload();
+    await mediaViewer.comments.open();
+    await expect(mediaViewer.comments.comment('Updated viewer comment')).toBeVisible();
+    expect((await rehydratedAnnotationResponse).status()).toBe(200);
   });
 
   commentsTest('deletes a comment and removes it from the panel', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer, page }) => {
@@ -53,6 +55,12 @@ commentsTest.describe('Comments panel', () => {
 
     await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
     expect(request.postDataJSON().comments).toEqual([]);
+
+    const rehydratedAnnotationResponse = page.waitForResponse((response) => isStandalonePdfAnnotationRequest(response.url()));
+    await mediaViewer.reload();
+    await mediaViewer.comments.open();
+    await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
+    expect((await rehydratedAnnotationResponse).status()).toBe(200);
   });
 
   commentsTest('searches comments and highlights only the matching text', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
@@ -64,7 +72,28 @@ commentsTest.describe('Comments panel', () => {
 
     await expect(mediaViewer.comments.comment('Existing viewer comment')).toBeVisible();
     await expect(mediaViewer.comments.comment('Existing viewer comment').locator('.mvTextHighlight')).toHaveText('Existing');
-    await expect(mediaViewer.comments.comment('Unrelated viewer comment').locator('.mvTextHighlight')).toHaveCount(0);
-    await expect(mediaViewer.comments.panel).toContainText('Existing');
+    await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 1');
+  });
+});
+
+commentCreationTest.describe('Comments panel', () => {
+  commentCreationTest('adds a comment to the selected annotation and persists it after rehydration', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    const createRequest = page.waitForRequest((request) => request.url().endsWith('/em-anno/annotations') && request.method() === 'POST');
+    await mediaViewer.comments.addToOnlyAnnotation('New viewer comment');
+    const request = await createRequest;
+
+    await expect(mediaViewer.comments.comment('New viewer comment')).toBeVisible();
+    expect(request.postDataJSON()).toMatchObject({
+      id: 'pw-empty-comment-annotation',
+      comments: [expect.objectContaining({ content: 'New viewer comment' })],
+    });
+
+    const rehydratedAnnotationResponse = page.waitForResponse((response) => isStandalonePdfAnnotationRequest(response.url()));
+    await mediaViewer.reload();
+    await mediaViewer.comments.open();
+    await expect(mediaViewer.comments.comment('New viewer comment')).toBeVisible();
+    expect((await rehydratedAnnotationResponse).status()).toBe(200);
   });
 });
