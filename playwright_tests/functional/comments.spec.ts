@@ -1,4 +1,4 @@
-import { commentCreationTest, expect, commentsTest, mediaAssets } from '../fixtures/mediaViewerTest';
+import { commentCreationTest, expect, commentsTest, mediaAssets, multiDocumentCommentsTest } from '../fixtures/mediaViewerTest';
 
 const isLoadedPdfAnnotationRequest = (url: string) =>
   url.includes('/em-anno/annotation-sets/filter') &&
@@ -36,6 +36,9 @@ commentsTest.describe('Comments panel', () => {
     const request = await updateRequest;
 
     await expect(mediaViewer.comments.comment('Updated viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
+    await expect(mediaViewer.comments.comment('Unrelated viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(2);
     expect(request.postDataJSON().comments[0].content).toBe('Updated viewer comment');
 
     const rejectedAnnotationResponse = page.waitForResponse((response) => isStandalonePdfAnnotationRequest(response.url()));
@@ -43,6 +46,9 @@ commentsTest.describe('Comments panel', () => {
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await mediaViewer.sidePanels.openComments();
     await expect(mediaViewer.comments.comment('Updated viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
+    await expect(mediaViewer.comments.comment('Unrelated viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(2);
     expect((await rejectedAnnotationResponse).status()).toBe(404);
     expect((await rehydratedAnnotationResponse).status()).toBe(200);
   });
@@ -56,6 +62,8 @@ commentsTest.describe('Comments panel', () => {
     const request = await deleteRequest;
 
     await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
+    await expect(mediaViewer.comments.comment('Unrelated viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(1);
     expect(request.postDataJSON().comments).toEqual([]);
 
     const rejectedAnnotationResponse = page.waitForResponse((response) => isStandalonePdfAnnotationRequest(response.url()));
@@ -63,6 +71,8 @@ commentsTest.describe('Comments panel', () => {
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await mediaViewer.sidePanels.openComments();
     await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
+    await expect(mediaViewer.comments.comment('Unrelated viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(1);
     expect((await rejectedAnnotationResponse).status()).toBe(404);
     expect((await rehydratedAnnotationResponse).status()).toBe(200);
   });
@@ -82,6 +92,43 @@ commentsTest.describe('Comments panel', () => {
     await expect(matchingComment.locator('.mvTextHighlight')).toHaveText('Existing');
     await expect(nonMatchingComment.locator('.mvTextHighlight')).toHaveCount(0);
     await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 1');
+  });
+
+  commentsTest('clears stale highlights, reports no matches and navigates multiple results', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.openSearch();
+
+    await mediaViewer.comments.searchInput.fill('Existing');
+    await mediaViewer.comments.searchButton.click();
+    await expect(mediaViewer.comments.comment('Existing viewer comment').locator('.mvTextHighlight')).toHaveText('Existing');
+
+    await mediaViewer.comments.searchInput.fill('missing');
+    await mediaViewer.comments.searchButton.click();
+    await expect(mediaViewer.comments.noSearchMatches).toHaveText('No matches have been found');
+    await expect(mediaViewer.comments.commentCards.locator('.mvTextHighlight')).toHaveCount(0);
+    await expect(mediaViewer.comments.searchResultStatus).toHaveCount(0);
+
+    await mediaViewer.comments.searchInput.fill('viewer');
+    await mediaViewer.comments.searchButton.click();
+    await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 2');
+    await mediaViewer.comments.nextSearchResult.click();
+    await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 2 of 2');
+  });
+
+  commentsTest('collates rendered comments and returns to the panel', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableAnnotations();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'standalone-media-viewer-fixture', mediaAssets.pdf.contentType);
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.openSummary();
+
+    await expect(mediaViewer.comments.summaryDialog.getByRole('heading')).toBeVisible();
+    await expect(mediaViewer.comments.summaryDialog).toContainText('Existing viewer comment');
+    await expect(mediaViewer.comments.summaryDialog).toContainText('Unrelated viewer comment');
+    await mediaViewer.comments.summaryCloseButton.click();
+    await expect(mediaViewer.comments.summaryDialog).toBeHidden();
+    await expect(mediaViewer.comments.panel).toBeVisible();
   });
 });
 
@@ -106,5 +153,34 @@ commentCreationTest.describe('Comments panel', () => {
     await expect(mediaViewer.comments.comment('New viewer comment')).toBeVisible();
     expect((await rejectedAnnotationResponse).status()).toBe(404);
     expect((await rehydratedAnnotationResponse).status()).toBe(200);
+  });
+});
+
+multiDocumentCommentsTest.describe('Comments panel document isolation', () => {
+  multiDocumentCommentsTest('keeps saved comments scoped to the document that owns the annotation set', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    const updateRequest = page.waitForRequest((request) => request.url().endsWith('/em-anno/annotations') && request.method() === 'POST');
+    await mediaViewer.comments.edit('Existing viewer comment', 'Document A updated comment');
+    expect((await updateRequest).postDataJSON().id).toBe('pw-comment-annotation');
+    await expect(mediaViewer.comments.comment('Document A updated comment')).toBeVisible();
+
+    const replacementResponse = page.waitForResponse((response) =>
+      response.url().includes('/em-anno/annotation-sets/filter') &&
+      new URL(response.url()).searchParams.get('documentId') === mediaAssets.replacementPdf.url
+    );
+    await mediaViewer.openDocument(mediaAssets.replacementPdf);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment('Replacement document comment')).toBeVisible();
+    await expect(mediaViewer.comments.comment('Document A updated comment')).toHaveCount(0);
+    expect((await replacementResponse).status()).toBe(200);
+
+    const originalResponse = page.waitForResponse((response) => isLoadedPdfAnnotationRequest(response.url()));
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment('Document A updated comment')).toBeVisible();
+    await expect(mediaViewer.comments.comment('Replacement document comment')).toHaveCount(0);
+    const annotationSet = await (await originalResponse).json();
+    expect(annotationSet.annotations[0].comments[0].content).toBe('Document A updated comment');
   });
 });

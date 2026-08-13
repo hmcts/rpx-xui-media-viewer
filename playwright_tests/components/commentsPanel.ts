@@ -2,19 +2,31 @@ import type { Locator, Page } from '@playwright/test';
 
 export class CommentsPanel {
   readonly panel: Locator;
+  readonly commentsTab: Locator;
   readonly searchTab: Locator;
   readonly searchInput: Locator;
   readonly searchButton: Locator;
   readonly searchResultStatus: Locator;
+  readonly noSearchMatches: Locator;
+  readonly nextSearchResult: Locator;
+  readonly summaryButton: Locator;
+  readonly summaryDialog: Locator;
+  readonly summaryCloseButton: Locator;
   readonly commentCards: Locator;
   readonly annotationRectangles: Locator;
 
   constructor(private readonly page: Page) {
     this.panel = page.locator('.comments-panel.expanded');
+    this.commentsTab = page.locator('#commentSubPane0');
     this.searchTab = page.locator('#commentSubPane2');
     this.searchInput = page.getByRole('textbox', { name: 'search comments input' });
     this.searchButton = page.locator('mv-comment-search > button');
     this.searchResultStatus = page.locator('mv-comment-search mv-comments-navigate span.comment-search__item');
+    this.noSearchMatches = page.locator('mv-comment-search p.comment-search__item');
+    this.nextSearchResult = page.locator('mv-comment-search a[title^="Next comment"]');
+    this.summaryButton = page.locator('#commentSummary');
+    this.summaryDialog = page.locator('#modal');
+    this.summaryCloseButton = page.locator('#modal-close-button');
     this.commentCards = this.panel.locator('.aui-comment');
     this.annotationRectangles = page.locator('.rectangle');
   }
@@ -22,6 +34,12 @@ export class CommentsPanel {
   async openSearch(): Promise<void> {
     await this.searchTab.click();
     await this.searchInput.waitFor();
+  }
+
+  async openSummary(): Promise<void> {
+    await this.commentsTab.click();
+    await this.summaryButton.click();
+    await this.summaryDialog.waitFor({ state: 'visible' });
   }
 
   comment(content: string): Locator {

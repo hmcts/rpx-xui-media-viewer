@@ -1,6 +1,5 @@
 const testConfig = require('./../../config');
 const {
-  collateCommentsTest,
   addMultipleCommentsTest,
   highlightTextTest,
   annotateFromSearchTest,
@@ -27,12 +26,6 @@ Scenario('Ability to highlight and draw box on pdf document', async ({ I }) => {
 
 Scenario('Highlight text and add a comment', async ({ I }) => {
   await addCommentTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
-
-}).tag('@ci')
-  .retry(testConfig.TestRetryScenarios);
-
-Scenario('Annotations: Collate Comments', async ({ I }) => {
-  await collateCommentsTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
 
 }).tag('@ci')
   .retry(testConfig.TestRetryScenarios);

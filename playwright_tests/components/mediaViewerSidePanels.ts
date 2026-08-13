@@ -24,10 +24,12 @@ export class MediaViewerSidePanels {
   }
 
   async toggleComments(): Promise<void> {
-    if (!(await this.commentsMenuItem.isVisible())) {
-      await this.moreOptionsButton.click();
-      await this.commentsMenuItem.waitFor({ state: 'visible' });
+    if (await this.commentsButton.isVisible()) {
+      await this.commentsButton.click();
+      return;
     }
+    await this.moreOptionsButton.click();
+    await this.commentsMenuItem.waitFor({ state: 'visible' });
     await this.commentsMenuItem.click();
   }
 

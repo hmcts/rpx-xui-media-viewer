@@ -34,18 +34,21 @@ export class MediaViewerPage {
     this.bookmarks = new Bookmarks(page);
   }
 
-  async stubAnnotationResponses(annotationSet?: AnnotationSetFixture): Promise<void> {
-    let currentAnnotationSet = annotationSet;
+  async stubAnnotationResponses(annotationSets?: AnnotationSetFixture[]): Promise<void> {
+    const annotationSetsByDocumentId = new Map(
+      annotationSets?.map((annotationSet) => [annotationSet.documentId, annotationSet])
+    );
     await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
       const requestedDocumentId = new URL(route.request().url()).searchParams.get('documentId');
-      if (!currentAnnotationSet) {
+      if (!annotationSets) {
         await route.fulfill({
           status: 200,
           json: { id: 'annotation-set-fixture', documentId: requestedDocumentId, annotations: [] },
         });
         return;
       }
-      if (currentAnnotationSet.documentId !== requestedDocumentId) {
+      const currentAnnotationSet = requestedDocumentId && annotationSetsByDocumentId.get(requestedDocumentId);
+      if (!currentAnnotationSet) {
         await route.fulfill({ status: 404, json: { message: `Unexpected annotation document: ${requestedDocumentId}` } });
         return;
       }
@@ -56,8 +59,9 @@ export class MediaViewerPage {
         await route.continue();
         return;
       }
-      currentAnnotationSet = await route.request().postDataJSON() as AnnotationSetFixture;
-      await route.fulfill({ status: 200, json: currentAnnotationSet });
+      const annotationSet = await route.request().postDataJSON() as AnnotationSetFixture;
+      annotationSetsByDocumentId.set(annotationSet.documentId, annotationSet);
+      await route.fulfill({ status: 200, json: annotationSet });
     });
     await this.page.route('**/em-anno/annotations', async (route) => {
       if (route.request().method() !== 'POST') {
@@ -73,12 +77,15 @@ export class MediaViewerPage {
           selected: false,
         })),
       };
+      const currentAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
+        annotationSet.annotations.some((annotation) => annotation.id === updatedAnnotation.id)
+      );
       if (currentAnnotationSet) {
         currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
           annotation.id === updatedAnnotation.id ? persistedAnnotation : annotation
         );
       }
-      await route.fulfill({ status: 200, json: updatedAnnotation });
+      await route.fulfill({ status: 200, json: persistedAnnotation });
     });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
@@ -144,6 +151,11 @@ export class MediaViewerPage {
 
   async openAnnotatedDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
     await this.goto();
+    await this.enableAnnotations();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async enableAnnotations(): Promise<void> {
     const annotationCheckbox = this.page.locator('#toggleAnnotations');
     const annotationToggle = this.page.locator('label[for="toggleAnnotations"]');
     await annotationCheckbox.waitFor({ state: 'attached' });
@@ -153,6 +165,5 @@ export class MediaViewerPage {
     if (!(await annotationCheckbox.isChecked())) {
       throw new Error('Annotation toggle did not enable annotations');
     }
-    await this.loadDocument(asset.url, caseId, asset.contentType);
   }
 }

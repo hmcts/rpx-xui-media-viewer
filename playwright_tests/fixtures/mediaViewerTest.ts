@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
-import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet } from './mediaViewerComments';
+import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneReplacementCommentsAnnotationSet } from './mediaViewerComments';
 export { mediaAssets } from './mediaAssets';
 
 export const test = base.extend<{ mediaViewer: MediaViewerPage }>({
@@ -14,7 +14,7 @@ export const test = base.extend<{ mediaViewer: MediaViewerPage }>({
 export const commentsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
   mediaViewer: async ({ page }, use) => {
     const mediaViewer = new MediaViewerPage(page);
-    await mediaViewer.stubAnnotationResponses(cloneCommentsAnnotationSet());
+    await mediaViewer.stubAnnotationResponses([cloneCommentsAnnotationSet()]);
     await use(mediaViewer);
   },
 });
@@ -22,7 +22,15 @@ export const commentsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
 export const commentCreationTest = base.extend<{ mediaViewer: MediaViewerPage }>({
   mediaViewer: async ({ page }, use) => {
     const mediaViewer = new MediaViewerPage(page);
-    await mediaViewer.stubAnnotationResponses(cloneCommentCreationAnnotationSet());
+    await mediaViewer.stubAnnotationResponses([cloneCommentCreationAnnotationSet()]);
+    await use(mediaViewer);
+  },
+});
+
+export const multiDocumentCommentsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
+  mediaViewer: async ({ page }, use) => {
+    const mediaViewer = new MediaViewerPage(page);
+    await mediaViewer.stubAnnotationResponses([cloneCommentsAnnotationSet(), cloneReplacementCommentsAnnotationSet()]);
     await use(mediaViewer);
   },
 });

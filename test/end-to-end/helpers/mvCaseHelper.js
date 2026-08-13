@@ -88,12 +88,6 @@ async function annotateFromSearchTest(I, caseId, mediaType) {
   await I.annotateFromSearch();
 }
 
-async function collateCommentsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.collateComments();
-}
-
 async function collateCommentsNotBlankTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.clickCommentsPanel();
@@ -266,7 +260,6 @@ module.exports = {
   addCommentAndRotateTest,
   addCommentTest,
   deleteHighlightsTest,
-  collateCommentsTest,
   collateCommentsNotBlankTest,
   addMultipleCommentsTest,
   markContentForRedactionUsingDrawBoxTest,

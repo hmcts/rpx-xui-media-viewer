@@ -1,7 +1,7 @@
 import { HttpClientTestingModule } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { hot, cold } from 'jasmine-marbles';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
 
 import { mockAnnotations } from 'test/mocks/data/mock-annotations';
@@ -63,6 +63,16 @@ describe('Annotations Effects', () => {
       const completion = new annotationActions.SaveAnnotationSuccess(returnValue);
       (completion as any).autoSelect = undefined;
       (completion as any).annotationId = mockAnnotations[0].id;
+      actions$ = hot('-a', { a: action });
+      const expected = cold('-b', { b: completion });
+      expect(effects.postAnnotation$).toBeObservable(expected);
+    });
+
+    it('keeps annotation-load failure handling separate when a save fails', () => {
+      const action = new annotationActions.SaveAnnotation(mockAnnotations[0]);
+      const error = new Error('Save failed');
+      UserServiceMock.postAnnotation.and.returnValue(throwError(() => error));
+      const completion = new annotationActions.SaveAnnotationFail(error);
       actions$ = hot('-a', { a: action });
       const expected = cold('-b', { b: completion });
       expect(effects.postAnnotation$).toBeObservable(expected);

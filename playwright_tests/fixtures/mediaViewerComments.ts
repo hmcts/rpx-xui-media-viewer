@@ -94,3 +94,24 @@ const cloneAnnotationSet = (annotationSet: AnnotationSetFixture): AnnotationSetF
 
 export const cloneCommentsAnnotationSet = () => cloneAnnotationSet(commentsAnnotationSet);
 export const cloneCommentCreationAnnotationSet = () => cloneAnnotationSet(commentCreationAnnotationSet);
+
+export const cloneReplacementCommentsAnnotationSet = (): AnnotationSetFixture => {
+  const replacementSource = cloneCommentsAnnotationSet().annotations[0];
+  const replacementComment = (replacementSource.comments as AnnotationFixture[])[0];
+  return {
+    id: 'pw-replacement-comments-annotation-set',
+    documentId: mediaAssets.replacementPdf.url,
+    annotations: [{
+      ...replacementSource,
+      id: 'pw-replacement-comment-annotation',
+      annotationSetId: 'pw-replacement-comments-annotation-set',
+      rectangles: [{ id: 'pw-replacement-comment-rectangle', annotationId: 'pw-replacement-comment-annotation', x: 40, y: 120, width: 120, height: 24 }],
+      comments: [{
+        ...replacementComment,
+        id: 'pw-replacement-comment',
+        annotationId: 'pw-replacement-comment-annotation',
+        content: 'Replacement document comment',
+      }],
+    }],
+  };
+};
