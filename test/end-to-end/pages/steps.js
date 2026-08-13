@@ -1,8 +1,6 @@
 'use strict';
 
 const requireDirectory = require('require-directory');
-const annotateFromSearch = require('./annotationsAndComments/annotateFromSearch');
-const openHighlightToolbar = require('./annotationsAndComments/openHighlightToolbar');
 const steps = requireDirectory(module);
 
 module.exports = () => {
@@ -13,20 +11,9 @@ module.exports = () => {
     uploadImage: steps.dmStore.uploadImageJpeg,
     uploadWordDoc: steps.dmStore.uploadWordDocument,
     openCaseDocumentsInMV: steps.openCaseDocsInMv.openCaseDocsInMV,
-    downloadPdfDocument: steps.printAndDownload.mvDownload,
-    mvPrintDocument: steps.printAndDownload.mvPrint,
-    clearBookMarks: steps.bookMarks.clearBookmarkss,
-    openBookmarksPanel: steps.bookMarks.openBookmarksPanel,
-    mvAudioScenario: steps.multiMedia.multiMediaAudio,
     highlightPdfText: steps.annotationsAndComments.highlightPdfText,
-    addCommentAndRotate: steps.annotationsAndComments.addCommentAndRotate,
-    addComments: steps.annotationsAndComments.addComments,
     deleteAllExistingTextHighlights: steps.annotationsAndComments.deleteAllExistingTextHighlights,
-    deleteAllExistingComments: steps.annotationsAndComments.deleteAllExistingComments,
     clickCommentsPanel: steps.annotationsAndComments.clickCommentsPanel,
-    collateComments: steps.annotationsAndComments.collateComments,
-    collateCommentsNotBlank: steps.annotationsAndComments.collateCommentsNotBlank,
-    addMultipleComments: steps.annotationsAndComments.addMultipleComments,
     clickRedactMenu: steps.redact.clickRedactMenu,
     redactTextUsingDrawBox: steps.redact.redactTextUsingDrawBox,
     clearAllRedactions: steps.redact.clearAllRedactions,
@@ -53,8 +40,6 @@ module.exports = () => {
     clickRedactSearchButton: steps.redact.clickRedactSearchButton,
     clickRedactAllButton: steps.redact.clickRedactAllButton,
     openImage: steps.imageViewer.openImage,
-    openHighlightToolbar: steps.annotationsAndComments.openHighlightToolbar,
-    annotateFromSearch: steps.annotationsAndComments.annotateFromSearch,
     loadDocumentAndCheckSuccessLoad: steps.indexAndOutline.loadDocumentAndCheckSuccessLoad,
   });
 };

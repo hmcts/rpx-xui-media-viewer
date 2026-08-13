@@ -184,7 +184,7 @@ class OdhinAdaptiveReporter {
       return;
     }
 
-    const featureName = deriveFeatureName(test?.location?.file);
+    const featureName = deriveFeatureName(test?.location?.file, test?.tags);
     const current = this.featureStats.get(featureName) ?? createEmptyFeatureStat(featureName);
     current.totalTests += 1;
     current.durationMs += Number(result?.duration ?? 0);

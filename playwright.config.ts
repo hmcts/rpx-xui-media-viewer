@@ -174,9 +174,9 @@ export default defineConfig({
   reporter: resolveReporters(process.env, workerCount),
   use: {
     baseURL: resolveBaseUrl(process.env),
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
   },
   projects: [
     {

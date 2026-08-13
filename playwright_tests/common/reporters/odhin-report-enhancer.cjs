@@ -6,7 +6,12 @@ const { parse } = require('node-html-parser');
 
 const evidenceLinkAttributes = ' target="_blank" rel="noopener noreferrer"';
 
-function deriveFeatureName(filePath) {
+function deriveFeatureName(filePath, tags = []) {
+  const featureTag = tags.find((tag) => /^@feature-[a-z0-9-]+$/i.test(tag));
+  if (featureTag) {
+    return featureTag.slice('@feature-'.length);
+  }
+
   const normalized = String(filePath ?? '')
     .replace(/\\/g, '/')
     .trim();
@@ -465,6 +470,11 @@ function injectEnhancerStyles(root) {
     background: #f8d7da;
     color: #842029;
   }
+
+  #odhin-capability-coverage .odhin-capability-status-not-covered {
+    background: #e2e3e5;
+    color: #343a40;
+  }
 </style>`)
   );
 }
@@ -617,6 +627,7 @@ function buildCapabilityCoverageBlock(inventory, featureStats) {
   const coveredCount = capabilities.filter((capability) => capability.status === 'Covered').length;
   const partialCount = capabilities.filter((capability) => capability.status === 'Partial').length;
   const legacyOnlyCount = capabilities.filter((capability) => capability.status === 'Legacy only').length;
+  const notCoveredCount = capabilities.filter((capability) => capability.status === 'Not covered').length;
   const rows = capabilities
     .map((capability) => {
       const execution = executedByFeature.get(capability.playwrightFeature);
@@ -641,7 +652,7 @@ function buildCapabilityCoverageBlock(inventory, featureStats) {
 <div class="mt-3 mb-3 odhin-thin-border dashboard-block" id="odhin-capability-coverage">
   <div class="info-box-header">${escapeHtml(inventory.title)}</div>
   <div class="p-3">
-    <p class="mb-3">Repository capability inventory: ${capabilities.length} areas — ${coveredCount} covered, ${partialCount} partial, ${legacyOnlyCount} legacy-only.</p>
+    <p class="mb-3">Repository capability inventory: ${capabilities.length} areas — ${coveredCount} covered, ${partialCount} partial, ${legacyOnlyCount} legacy-only, ${notCoveredCount} not covered.</p>
     <div class="odhin-capability-coverage-table">
       <table class="table table-sm mb-0">
         <thead><tr>

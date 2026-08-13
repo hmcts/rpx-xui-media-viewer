@@ -35,65 +35,10 @@ async function loadNewDocument(I, caseId, mediaType, newCaseId) {
   await I.loadDocumentAndCheckSuccessLoad(newCaseId)
 }
 
-async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.downloadPdfDocument();
-}
-
-async function printDocumentFromMVTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.mvPrintDocument();
-}
-
-async function multiMediaAudioTest(I, caseId, mediaType) {
-  await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
-  await I.mvAudioScenario();
-}
-
-async function multiMediaAudioPauseAndRewindTest(I, caseId, mediaType) {
-  await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
-  await I.clearBookMarks();
-}
-
-async function highlightTextTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.highlightPdfText();
-}
-
-async function addCommentAndRotateTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addCommentAndRotate();
-}
-
-async function addCommentTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addComments(commonConfig.firstComment1);
-}
-
 async function deleteHighlightsTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.highlightPdfText();
   await I.deleteAllExistingTextHighlights();
-}
-
-async function annotateFromSearchTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.deleteAllExistingTextHighlights();
-  await I.annotateFromSearch();
-}
-
-async function collateCommentsNotBlankTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.addMultipleComments();
-  await I.collateComments();
-  await I.collateCommentsNotBlank();
-}
-
-async function addMultipleCommentsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addMultipleComments();
 }
 
 async function markContentForRedactionUsingDrawBoxTest(I, caseId, mediaType) {
@@ -245,16 +190,6 @@ module.exports = {
   uploadPdf,
   uploadJpeg,
   uploadWorDoc,
-  downloadPdfDocFromMVTest,
-  printDocumentFromMVTest,
-  multiMediaAudioTest,
-  multiMediaAudioPauseAndRewindTest,
-  highlightTextTest,
-  addCommentAndRotateTest,
-  addCommentTest,
-  deleteHighlightsTest,
-  collateCommentsNotBlankTest,
-  addMultipleCommentsTest,
   markContentForRedactionUsingDrawBoxTest,
   redactContentUsingRedactTextTest,
   navigateBundleDocsUsingPageIndexTest,
@@ -270,6 +205,6 @@ module.exports = {
   updateNonTextualCommentTest,
   deleteNonTextualCommentTest,
   redactSearchAndRedactAllTest,
-  annotateFromSearchTest,
-  loadNewDocument
+  loadNewDocument,
+  deleteHighlightsTest
 }

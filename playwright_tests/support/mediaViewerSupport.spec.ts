@@ -1,4 +1,5 @@
-import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
+import { commentsTest, expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
+import { commentsAnnotationSet } from '../fixtures/mediaViewerComments';
 
 test.describe('media viewer Playwright support layer', () => {
   test('returns an empty annotation set for the requested default document', async ({ mediaViewer, page }) => {
@@ -36,13 +37,6 @@ test.describe('media viewer Playwright support layer', () => {
     await expect(page).toHaveURL(/\/#\/media-viewer$/);
   });
 
-  test('loads the image fixture without a live case', async ({ mediaViewer }) => {
-    await mediaViewer.openDocument(mediaAssets.image);
-
-    await expect(mediaViewer.loadState.image).toBeVisible();
-    await expect(mediaViewer.loadState.successMessage).toBeVisible();
-  });
-
   test('loads a fixture when no previous PDF page has rendered', async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
@@ -55,28 +49,6 @@ test.describe('media viewer Playwright support layer', () => {
 
     await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
     await expect(mediaViewer.loadState.unsupportedViewer).toBeVisible();
-  });
-
-  test('replaces an already rendered PDF fixture', async ({ mediaViewer }) => {
-    await mediaViewer.openDocument(mediaAssets.pdf);
-    await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
-
-    await mediaViewer.loadDocument(
-      mediaAssets.replacementPdf.url,
-      'standalone-media-viewer-replacement',
-      mediaAssets.replacementPdf.contentType
-    );
-
-    await expect(mediaViewer.navigation.pageCount).toHaveText(`/ ${mediaAssets.replacementPdf.pageCount}`);
-    await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
-    await expect(mediaViewer.loadState.pdfCanvas(1)).toHaveAttribute('width', /^[1-9]\d*$/);
-  });
-
-  test('reports the unsupported fixture through the viewer state', async ({ mediaViewer }) => {
-    await mediaViewer.openDocument(mediaAssets.unsupported);
-
-    await expect(mediaViewer.loadState.unsupportedViewer).toBeVisible();
-    await expect(mediaViewer.loadState.errorMessage).toContainText('UNSUPPORTED');
   });
 
   test('reports a failed viewer route with its response status', async ({ mediaViewer, page }) => {
@@ -106,4 +78,28 @@ test.describe('media viewer Playwright support layer', () => {
 
     await expect(mediaViewer.loadDocument('assets/cached.pdf', 'cached-asset')).resolves.toBeUndefined();
   });
+});
+
+commentsTest('rejects an annotation update that claims the wrong owning set', async ({ mediaViewer, page }) => {
+  await mediaViewer.openDocument(mediaAssets.pdf);
+  const update = {
+    ...commentsAnnotationSet.annotations[0],
+    annotationSetId: 'wrong-annotation-set',
+  };
+
+  const contract = await page.evaluate(async ({ annotation, documentId }) => {
+    const updateResponse = await fetch('/em-anno/annotations', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(annotation),
+    });
+    const persistedResponse = await fetch(`/em-anno/annotation-sets/filter?documentId=${encodeURIComponent(documentId)}`);
+    return {
+      updateStatus: updateResponse.status,
+      persistedSet: await persistedResponse.json(),
+    };
+  }, { annotation: update, documentId: mediaAssets.pdf.url });
+
+  expect(contract.updateStatus).toBe(404);
+  expect(contract.persistedSet.annotations[0].annotationSetId).toBe(commentsAnnotationSet.id);
 });

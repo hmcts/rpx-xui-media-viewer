@@ -1,4 +1,4 @@
-import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
+import { expect, mediaAssets, savedRotationTest, test } from '../fixtures/mediaViewerTest';
 
 test.describe('Rotation', () => {
   test('rotates an image clockwise and back', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
@@ -22,25 +22,61 @@ test.describe('Rotation', () => {
     await mediaViewer.openDocument(mediaAssets.pdf);
 
     const firstPage = mediaViewer.loadState.pdfPage(1);
+    const firstPageCanvas = mediaViewer.loadState.pdfCanvas(1);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect(firstPageCanvas).toBeVisible();
 
-    const initialOrientation = await firstPage.evaluate((element) => {
-      const { width, height } = element.getBoundingClientRect();
-      return width < height ? 'portrait' : 'landscape';
-    });
+    const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
 
     await mediaViewer.rotation.clockwise();
-    await expect.poll(() => firstPage.evaluate((element) => {
-      const { width, height } = element.getBoundingClientRect();
-      return width < height ? 'portrait' : 'landscape';
-    })).not.toBe(initialOrientation);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).not.toBe(initialOrientation);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     await mediaViewer.rotation.counterclockwise();
-    await expect.poll(() => firstPage.evaluate((element) => {
-      const { width, height } = element.getBoundingClientRect();
-      return width < height ? 'portrait' : 'landscape';
-    })).toBe(initialOrientation);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).toBe(initialOrientation);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+  });
+
+  test('restores the default PDF orientation when the document is reloaded', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    const firstPage = mediaViewer.loadState.pdfPage(1);
+    const firstPageCanvas = mediaViewer.loadState.pdfCanvas(1);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect(firstPageCanvas).toBeVisible();
+
+    const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
+    await mediaViewer.rotation.clockwise();
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).not.toBe(initialOrientation);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).toBe(initialOrientation);
+  });
+
+  savedRotationTest('restores a server-supplied PDF orientation after reload', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer, page }) => {
+    const metadataResponse = page.waitForResponse((response) =>
+      response.url().includes(`/em-anno/metadata/${mediaAssets.pdf.url}`) && response.request().method() === 'GET'
+    );
+
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    expect(await (await metadataResponse).json()).toEqual({ documentId: mediaAssets.pdf.url, rotationAngle: 90 });
+    const firstPageCanvas = mediaViewer.loadState.pdfCanvas(1);
+    await expect(firstPageCanvas).toBeVisible();
+    await expect.poll(() => firstPageCanvas.evaluate((element: HTMLCanvasElement) => element.width > element.height)).toBe(true);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(firstPageCanvas).toBeVisible();
+    await expect.poll(() => firstPageCanvas.evaluate((element: HTMLCanvasElement) => element.width > element.height)).toBe(true);
+  });
+
+  test('restores the default image transform when the document is reloaded', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.image);
+    await mediaViewer.rotation.clockwise();
+    await expect(mediaViewer.loadState.image).toHaveClass('rot90');
+
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toHaveClass('rot0');
+    await expect(mediaViewer.loadState.image).toHaveCSS('transform', 'none');
   });
 });

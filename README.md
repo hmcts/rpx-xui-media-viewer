@@ -132,7 +132,7 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 32 behaviour tests across the explicit `zoom`, `navigation`, `rotation`, `search`, `comments` and `bookmarks` feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 52 behaviour tests across 10 explicit feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
@@ -169,13 +169,13 @@ yarn test:playwright:smoke
 ```
 
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
-`MV_SMOKE_CASE_ID`. `yarn test:smoke` now runs the Playwright smoke so Jenkins
-CNP uses the same smoke entrypoint style as MC/MO. The previous CodeceptJS smoke
-remains available as `yarn test:smoke:legacy` while migration work continues.
+`MV_SMOKE_CASE_ID`. `yarn test:smoke` and `yarn test:local:aat` run the
+Playwright smoke, so the standalone and local-AAT PDF loading journeys no longer
+fall back to CodeceptJS.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
-| Lane | Odhín | JUnit | Trace, screenshot and video output |
+| Lane | Odhín | JUnit | Trace and screenshot output |
 | --- | --- | --- | --- |
 | Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
@@ -198,8 +198,8 @@ Reporting behavior follows the MC/MO pattern:
   count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - Odhín is the only standard human-readable report. JUnit is retained for
-  Jenkins ingestion. Screenshots and videos are kept on failure; traces are
-  captured on the first retry.
+  Jenkins ingestion. Screenshots and traces are kept for failed and timed-out
+  attempts; videos are disabled.
   The standard Playwright HTML reporter is not supported.
 - `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
   local setup step has already installed Chromium.
@@ -228,7 +228,7 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_BRANCH`: branch override used by the default release label
 - `PLAYWRIGHT_REPORT_TEST_ENVIRONMENT` or `PW_ODHIN_ENV`: complete Odhín test-environment label override
 - `TEST_TYPE`: target-environment label, otherwise inferred from the test URL
-- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
+- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces and screenshots folder
 - `FUNCTIONAL_TESTS_WORKERS`: worker-count override from `1` to `64`, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 
@@ -316,10 +316,7 @@ yarn test:functional:local:isolated
 ```
 
 Expected `test:functional:local:isolated` feature groups:
-- `annotationsAndComments`
-- `bookMarks`
 - `redact`
-- `printAndDownload`
 - `imageViewerAnnotationsAndComments`
 
 For the strongest isolation proof, make each scenario upload and use its own document:
