@@ -9,6 +9,11 @@ export class SearchControls {
   readonly previousResultButton: Locator;
   readonly nextResultButton: Locator;
   readonly closeButton: Locator;
+  readonly advancedOptionsButton: Locator;
+  readonly highlightAllCheckbox: Locator;
+  readonly matchCaseCheckbox: Locator;
+  readonly wholeWordCheckbox: Locator;
+  readonly highlights: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -19,6 +24,11 @@ export class SearchControls {
     this.previousResultButton = page.getByRole('button', { name: 'Find the previous occurrence of the phrase' });
     this.nextResultButton = page.getByRole('button', { name: 'Find the next occurrence of the phrase' });
     this.closeButton = page.getByRole('button', { name: 'Close Search' });
+    this.advancedOptionsButton = page.getByRole('button', { name: 'Advanced search options' });
+    this.highlightAllCheckbox = page.getByRole('checkbox', { name: 'Highlight all' });
+    this.matchCaseCheckbox = page.getByRole('checkbox', { name: 'Match text (exact case)' });
+    this.wholeWordCheckbox = page.getByRole('checkbox', { name: 'Match whole words or sentences' });
+    this.highlights = page.locator('.highlight');
   }
 
   async open(): Promise<void> {
@@ -51,5 +61,11 @@ export class SearchControls {
 
   async close(): Promise<void> {
     await this.closeButton.click();
+  }
+
+  async openAdvancedOptions(): Promise<void> {
+    if (!(await this.highlightAllCheckbox.isVisible())) {
+      await this.advancedOptionsButton.click();
+    }
   }
 }
