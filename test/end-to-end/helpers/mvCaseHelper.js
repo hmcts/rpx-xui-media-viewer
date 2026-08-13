@@ -45,12 +45,6 @@ async function printDocumentFromMVTest(I, caseId, mediaType) {
   await I.mvPrintDocument();
 }
 
-async function createBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-}
-
 async function multiMediaAudioTest(I, caseId, mediaType) {
   await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
   await I.mvAudioScenario();
@@ -253,7 +247,6 @@ module.exports = {
   uploadWorDoc,
   downloadPdfDocFromMVTest,
   printDocumentFromMVTest,
-  createBookmarkTest,
   multiMediaAudioTest,
   multiMediaAudioPauseAndRewindTest,
   highlightTextTest,

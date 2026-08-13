@@ -15,7 +15,6 @@ module.exports = () => {
     openCaseDocumentsInMV: steps.openCaseDocsInMv.openCaseDocsInMV,
     downloadPdfDocument: steps.printAndDownload.mvDownload,
     mvPrintDocument: steps.printAndDownload.mvPrint,
-    createBookMark: steps.bookMarks.createBookmarks,
     clearBookMarks: steps.bookMarks.clearBookmarkss,
     openBookmarksPanel: steps.bookMarks.openBookmarksPanel,
     mvAudioScenario: steps.multiMedia.multiMediaAudio,

@@ -18,7 +18,6 @@ max_jobs="${MV_LOCAL_PARALLEL_MAX_JOBS:-3}"
 
 pdf_features=(
   "annotationsAndComments.js"
-  "bookMarks.js"
   "redact.js"
   "printAndDownload.js"
 )
