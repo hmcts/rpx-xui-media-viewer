@@ -175,7 +175,7 @@ fall back to CodeceptJS.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
-| Lane | Odhín | JUnit | Trace, screenshot and video output |
+| Lane | Odhín | JUnit | Trace and screenshot output |
 | --- | --- | --- | --- |
 | Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
@@ -198,8 +198,8 @@ Reporting behavior follows the MC/MO pattern:
   count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - Odhín is the only standard human-readable report. JUnit is retained for
-  Jenkins ingestion. Screenshots and videos are kept on failure; traces are
-  captured on the first retry.
+  Jenkins ingestion. Screenshots and traces are kept for failed and timed-out
+  attempts; videos are disabled.
   The standard Playwright HTML reporter is not supported.
 - `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
   local setup step has already installed Chromium.
@@ -228,7 +228,7 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_BRANCH`: branch override used by the default release label
 - `PLAYWRIGHT_REPORT_TEST_ENVIRONMENT` or `PW_ODHIN_ENV`: complete Odhín test-environment label override
 - `TEST_TYPE`: target-environment label, otherwise inferred from the test URL
-- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
+- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces and screenshots folder
 - `FUNCTIONAL_TESTS_WORKERS`: worker-count override from `1` to `64`, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 

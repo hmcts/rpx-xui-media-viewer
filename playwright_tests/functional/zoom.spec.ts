@@ -5,22 +5,21 @@ test.describe('Zoom', () => {
     await mediaViewer.openDocument(mediaAssets.pdf);
 
     const firstPage = mediaViewer.loadState.pdfPage(1);
+    const firstPageCanvas = mediaViewer.loadState.pdfCanvas(1);
     await expect(firstPage).toBeVisible();
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect(firstPageCanvas).toHaveAttribute('width', /^[1-9]\d*$/);
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
-    const initialBounds = await firstPage.boundingBox();
-    if (!initialBounds) {
-      throw new Error('PDF page was not visible for zoom measurement');
-    }
-    expect(initialBounds.width).toBeGreaterThan(0);
+    const initialCanvasWidth = Number(await firstPageCanvas.getAttribute('width'));
+    expect(initialCanvasWidth).toBeGreaterThan(0);
 
     await mediaViewer.zoom.zoomIn();
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1.1');
-    await expect.poll(async () => (await firstPage.boundingBox())?.width ?? 0).toBeGreaterThan(initialBounds.width);
+    await expect.poll(async () => Number(await firstPageCanvas.getAttribute('width'))).toBeGreaterThan(initialCanvasWidth);
 
     await mediaViewer.zoom.zoomOut();
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
-    await expect.poll(async () => (await firstPage.boundingBox())?.width ?? 0).toBeCloseTo(initialBounds.width, 2);
+    await expect.poll(async () => Number(await firstPageCanvas.getAttribute('width'))).toBe(initialCanvasWidth);
   });
 
   test('zooms an image document in and out', { tag: ['@e2e-functional', '@feature-zoom'] }, async ({ mediaViewer }) => {
