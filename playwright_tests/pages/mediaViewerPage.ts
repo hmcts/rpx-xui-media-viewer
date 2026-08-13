@@ -113,22 +113,6 @@ export class MediaViewerPage {
       }
       await route.fulfill({ status: 200, json: persistedAnnotation });
     });
-    await this.page.route('**/em-anno/annotations/**', async (route) => {
-      if (route.request().method() !== 'DELETE') {
-        await route.continue();
-        return;
-      }
-      const annotationId = new URL(route.request().url()).pathname.split('/').pop();
-      const owningAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
-        annotationSet.annotations.some((annotation) => annotation.id === annotationId)
-      );
-      if (!owningAnnotationSet) {
-        await route.fulfill({ status: 404, json: { message: `Unknown annotation: ${annotationId}` } });
-        return;
-      }
-      owningAnnotationSet.annotations = owningAnnotationSet.annotations.filter((annotation) => annotation.id !== annotationId);
-      await route.fulfill({ status: 200, json: null });
-    });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
   }
