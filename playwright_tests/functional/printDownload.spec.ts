@@ -29,6 +29,8 @@ test.describe('Print and download', () => {
     });
     await mediaViewer.openDocument(mediaAssets.pdf);
     await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.toolbar.root.getByRole('button', { name: 'Download' })).toBeHidden();
+    await expect(mediaViewer.toolbar.moreOptionsButton).toBeVisible();
 
     await mediaViewer.toolbar.clickAction('Download');
 

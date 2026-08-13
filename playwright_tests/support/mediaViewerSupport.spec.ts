@@ -1,4 +1,5 @@
-import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
+import { commentsTest, expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
+import { commentsAnnotationSet } from '../fixtures/mediaViewerComments';
 
 test.describe('media viewer Playwright support layer', () => {
   test('returns an empty annotation set for the requested default document', async ({ mediaViewer, page }) => {
@@ -77,4 +78,28 @@ test.describe('media viewer Playwright support layer', () => {
 
     await expect(mediaViewer.loadDocument('assets/cached.pdf', 'cached-asset')).resolves.toBeUndefined();
   });
+});
+
+commentsTest('rejects an annotation update that claims the wrong owning set', async ({ mediaViewer, page }) => {
+  await mediaViewer.openDocument(mediaAssets.pdf);
+  const update = {
+    ...commentsAnnotationSet.annotations[0],
+    annotationSetId: 'wrong-annotation-set',
+  };
+
+  const contract = await page.evaluate(async ({ annotation, documentId }) => {
+    const updateResponse = await fetch('/em-anno/annotations', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(annotation),
+    });
+    const persistedResponse = await fetch(`/em-anno/annotation-sets/filter?documentId=${encodeURIComponent(documentId)}`);
+    return {
+      updateStatus: updateResponse.status,
+      persistedSet: await persistedResponse.json(),
+    };
+  }, { annotation: update, documentId: mediaAssets.pdf.url });
+
+  expect(contract.updateStatus).toBe(404);
+  expect(contract.persistedSet.annotations[0].annotationSetId).toBe(commentsAnnotationSet.id);
 });

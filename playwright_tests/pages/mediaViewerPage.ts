@@ -98,6 +98,13 @@ export class MediaViewerPage {
         annotationSet.annotations.some((annotation) => annotation.id === updatedAnnotation.id)
       );
       if (currentAnnotationSet) {
+        if (currentAnnotationSet.id !== updatedAnnotation.annotationSetId) {
+          await route.fulfill({
+            status: 404,
+            json: { message: `Annotation ${updatedAnnotation.id} does not belong to set ${updatedAnnotation.annotationSetId}` },
+          });
+          return;
+        }
         currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
           annotation.id === updatedAnnotation.id ? persistedAnnotation : annotation
         );
@@ -114,7 +121,25 @@ export class MediaViewerPage {
       await route.fulfill({ status: 200, json: persistedAnnotation });
     });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
-    await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
+  }
+
+  async stubRotationResponses(initialRotations: Readonly<Record<string, number>> = {}): Promise<void> {
+    const rotationsByDocumentId = new Map(Object.entries(initialRotations));
+    await this.page.route('**/em-anno/metadata/**', async (route) => {
+      const request = route.request();
+      if (request.method() !== 'GET') {
+        await route.continue();
+        return;
+      }
+      const metadataPath = '/em-anno/metadata/';
+      const pathname = new URL(request.url()).pathname;
+      const documentId = decodeURIComponent(pathname.slice(pathname.indexOf(metadataPath) + metadataPath.length));
+      const rotationAngle = rotationsByDocumentId.get(documentId);
+      await route.fulfill({
+        status: 200,
+        json: rotationAngle === undefined ? {} : { documentId, rotationAngle },
+      });
+    });
   }
 
   async goto(): Promise<void> {
@@ -139,9 +164,7 @@ export class MediaViewerPage {
     return new URL(documentUrl, this.page.url()).href;
   }
 
-  async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
-    const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
-    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
+  async submitDocumentDetails(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
     const documentUrlInput = this.page.getByLabel('document url');
 
     if (!(await documentUrlInput.isVisible())) {
@@ -150,12 +173,18 @@ export class MediaViewerPage {
     await documentUrlInput.fill(documentUrl);
     await this.page.getByLabel('document type').fill(contentType);
     await this.page.getByLabel('case id').fill(caseId);
+    await this.page.getByRole('button', { name: 'Load document' }).click();
+  }
+
+  async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
+    const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
+    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
 
     const documentResponse = this.page.waitForResponse((response) => response.url() === expectedDocumentUrl).catch((error) => {
       const cause = error instanceof Error ? error.message : String(error);
       throw new Error(`Document request was not observed: ${expectedDocumentUrl} (${cause})`);
     });
-    await this.page.getByRole('button', { name: 'Load document' }).click();
+    await this.submitDocumentDetails(documentUrl, caseId, contentType);
     const response = await documentResponse;
     if (!response.ok() && response.status() !== 304) {
       throw new Error(`Document request failed: ${response.status()} ${expectedDocumentUrl}`);
