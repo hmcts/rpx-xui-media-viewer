@@ -41,16 +41,6 @@ async function deleteHighlightsTest(I, caseId, mediaType) {
   await I.deleteAllExistingTextHighlights();
 }
 
-async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.downloadPdfDocument();
-}
-
-async function printDocumentFromMVTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.mvPrintDocument();
-}
-
 async function multiMediaAudioTest(I, caseId, mediaType) {
   await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
   await I.mvAudioScenario();
@@ -210,8 +200,6 @@ module.exports = {
   uploadPdf,
   uploadJpeg,
   uploadWorDoc,
-  downloadPdfDocFromMVTest,
-  printDocumentFromMVTest,
   multiMediaAudioTest,
   multiMediaAudioPauseAndRewindTest,
   markContentForRedactionUsingDrawBoxTest,

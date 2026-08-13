@@ -11,8 +11,6 @@ module.exports = () => {
     uploadImage: steps.dmStore.uploadImageJpeg,
     uploadWordDoc: steps.dmStore.uploadWordDocument,
     openCaseDocumentsInMV: steps.openCaseDocsInMv.openCaseDocsInMV,
-    downloadPdfDocument: steps.printAndDownload.mvDownload,
-    mvPrintDocument: steps.printAndDownload.mvPrint,
     clearBookMarks: steps.bookMarks.clearBookmarkss,
     openBookmarksPanel: steps.bookMarks.openBookmarksPanel,
     mvAudioScenario: steps.multiMedia.multiMediaAudio,
