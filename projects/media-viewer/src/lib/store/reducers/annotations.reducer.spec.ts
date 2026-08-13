@@ -86,6 +86,23 @@ describe('AnnotationReducer', () => {
     });
   });
 
+  describe('SAVE_ANNOTATION_FAIL action', () => {
+    it('preserves loaded annotations when saving an annotation fails', () => {
+      const payload: any = { status: 200, body: annotationSet };
+      const loadedState = fromAnnotations.reducer(
+        fromAnnotations.initialState,
+        new fromActions.LoadAnnotationSetSucess(payload)
+      );
+
+      const state = fromAnnotations.reducer(
+        loadedState,
+        new fromActions.SaveAnnotationFail(new Error('Save failed'))
+      );
+
+      expect(state).toBe(loadedState);
+    });
+  });
+
   describe('SAVE_ANNOTATION_SET_SUCCESS action', () => {
     it('should set annotation entities page entities and comment entities', () => {
       const { initialState } = fromAnnotations;

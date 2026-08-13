@@ -629,7 +629,7 @@ function buildCapabilityCoverageBlock(inventory, featureStats) {
           <td><strong>${escapeHtml(capability.name)}</strong></td>
           <td><span class="odhin-capability-status odhin-capability-status-${capabilityStatusClass(capability.status)}">${escapeHtml(capability.status)}</span></td>
           <td>${capability.playwrightTests} (${runTests} this run)</td>
-          <td>${capability.legacyScenarios}</td>
+          <td>${capability.activeLegacyScenarios ?? capability.legacyScenarios} / ${capability.legacyScenarios}</td>
           <td>${escapeHtml(runStatus)}</td>
           <td>${escapeHtml(capability.covered)}</td>
           <td>${escapeHtml(capability.gap)}</td>
@@ -645,7 +645,7 @@ function buildCapabilityCoverageBlock(inventory, featureStats) {
     <div class="odhin-capability-coverage-table">
       <table class="table table-sm mb-0">
         <thead><tr>
-          <th>Capability</th><th>Status</th><th>Playwright tests</th><th>Legacy scenarios</th><th>This run</th><th>Assurance covered</th><th>Remaining gap</th>
+          <th>Capability</th><th>Status</th><th>Playwright tests</th><th>Active / historical Codecept scenarios</th><th>This run</th><th>Assurance covered</th><th>Remaining gap</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>
