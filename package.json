@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.27",
+  "version": "4.2.28",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -145,7 +145,7 @@
     "brace-expansion@^2.0.1": "2.0.2",
     "tmp": "0.2.5",
     "jws": "^4.0.1",
-    "qs": "^6.14.1",
+    "qs": "^6.15.3",
     "bn.js": "^5.2.3",
     "immutable": "^5.1.5"
   },
