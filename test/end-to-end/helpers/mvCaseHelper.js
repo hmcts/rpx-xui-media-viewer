@@ -55,42 +55,6 @@ async function multiMediaAudioPauseAndRewindTest(I, caseId, mediaType) {
   await I.clearBookMarks();
 }
 
-async function highlightTextTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.highlightPdfText();
-}
-
-async function addCommentAndRotateTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addCommentAndRotate();
-}
-
-async function addCommentTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addComments(commonConfig.firstComment1);
-}
-
-async function deleteHighlightsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.highlightPdfText();
-  await I.deleteAllExistingTextHighlights();
-}
-
-async function annotateFromSearchTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.deleteAllExistingTextHighlights();
-  await I.annotateFromSearch();
-}
-
-async function collateCommentsNotBlankTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.addMultipleComments();
-  await I.collateComments();
-  await I.collateCommentsNotBlank();
-}
-
 async function markContentForRedactionUsingDrawBoxTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.markContentForRedaction();
@@ -244,11 +208,6 @@ module.exports = {
   printDocumentFromMVTest,
   multiMediaAudioTest,
   multiMediaAudioPauseAndRewindTest,
-  highlightTextTest,
-  addCommentAndRotateTest,
-  addCommentTest,
-  deleteHighlightsTest,
-  collateCommentsNotBlankTest,
   markContentForRedactionUsingDrawBoxTest,
   redactContentUsingRedactTextTest,
   navigateBundleDocsUsingPageIndexTest,
@@ -264,6 +223,5 @@ module.exports = {
   updateNonTextualCommentTest,
   deleteNonTextualCommentTest,
   redactSearchAndRedactAllTest,
-  annotateFromSearchTest,
   loadNewDocument
 }
