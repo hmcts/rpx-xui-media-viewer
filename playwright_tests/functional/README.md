@@ -8,7 +8,7 @@ legacy-only areas and the next assurance gaps, is stored in
 
 | Feature | File | Tests | Main contracts |
 | --- | --- | ---: | --- |
-| Document loading and media types | `smokeTest.spec.ts` (smoke), `documentLoading.spec.ts` (functional) | 4 across both lanes (3 functional) | Local and local-AAT PDF readiness, image loading, PDF replacement/page identity and unsupported-media diagnostics |
+| Document loading and media types | `smokeTest.spec.ts` (smoke), `documentLoading.spec.ts` (functional) | 4 across both lanes (3 functional) | Local PDF readiness and migrated local-AAT launch-path support, image loading, PDF replacement/page identity and unsupported-media diagnostics. Live AAT/DM Store retrieval remains separately tracked. |
 | Zoom | `zoom.spec.ts` | 3 | PDF/image round-trip and PDF minimum/maximum boundaries |
 | Page navigation | `navigation.spec.ts` | 2 | Page identity, viewport rendering, page count and first/last boundaries |
 | Rotation | `rotation.spec.ts` | 5 | Image transform and PDF orientation round-trips, default-state restoration after reload for both media types, and server-supplied PDF orientation restoration from metadata |

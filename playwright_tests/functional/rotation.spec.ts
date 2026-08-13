@@ -26,20 +26,14 @@ test.describe('Rotation', () => {
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
     await expect(firstPageCanvas).toBeVisible();
 
-    const initialOrientation = await firstPageCanvas.evaluate((element: HTMLCanvasElement) => {
-      return element.width < element.height ? 'portrait' : 'landscape';
-    });
+    const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
 
     await mediaViewer.rotation.clockwise();
-    await expect.poll(() => firstPageCanvas.evaluate((element: HTMLCanvasElement) => {
-      return element.width < element.height ? 'portrait' : 'landscape';
-    })).not.toBe(initialOrientation);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).not.toBe(initialOrientation);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     await mediaViewer.rotation.counterclockwise();
-    await expect.poll(() => firstPageCanvas.evaluate((element: HTMLCanvasElement) => {
-      return element.width < element.height ? 'portrait' : 'landscape';
-    })).toBe(initialOrientation);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).toBe(initialOrientation);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
   });
 
@@ -50,19 +44,13 @@ test.describe('Rotation', () => {
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
     await expect(firstPageCanvas).toBeVisible();
 
-    const initialOrientation = await firstPageCanvas.evaluate((element: HTMLCanvasElement) => {
-      return element.width < element.height ? 'portrait' : 'landscape';
-    });
+    const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
     await mediaViewer.rotation.clockwise();
-    await expect.poll(() => firstPageCanvas.evaluate((element: HTMLCanvasElement) => {
-      return element.width < element.height ? 'portrait' : 'landscape';
-    })).not.toBe(initialOrientation);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).not.toBe(initialOrientation);
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
-    await expect.poll(() => firstPageCanvas.evaluate((element: HTMLCanvasElement) => {
-      return element.width < element.height ? 'portrait' : 'landscape';
-    })).toBe(initialOrientation);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).toBe(initialOrientation);
   });
 
   savedRotationTest('restores a server-supplied PDF orientation after reload', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer, page }) => {

@@ -62,12 +62,13 @@ test.describe('Search', () => {
 
     expect(allCaseMatches).toBeGreaterThan(0);
     await mediaViewer.search.openAdvancedOptions();
-    await mediaViewer.search.openAdvancedOptions();
     await expect(mediaViewer.search.matchCaseCheckbox).toBeVisible();
     await mediaViewer.search.matchCaseCheckbox.check();
     await expect(mediaViewer.search.matchCaseCheckbox).toBeChecked();
-    await expect.poll(async () => Number((await mediaViewer.search.results.textContent())?.match(/of (\d+)/)?.[1]))
-      .toBeLessThan(allCaseMatches);
+    await expect.poll(async () => {
+      const exactCaseMatches = Number((await mediaViewer.search.results.textContent())?.match(/of (\d+)/)?.[1]);
+      return exactCaseMatches > 0 && exactCaseMatches < allCaseMatches;
+    }).toBe(true);
   });
 
   test('excludes partial-word matches when whole-word search is selected', { tag: ['@e2e-functional', '@feature-search'] }, async ({ mediaViewer }) => {
@@ -80,8 +81,10 @@ test.describe('Search', () => {
     await mediaViewer.search.openAdvancedOptions();
     await mediaViewer.search.wholeWordCheckbox.check();
     await expect(mediaViewer.search.wholeWordCheckbox).toBeChecked();
-    await expect.poll(async () => Number((await mediaViewer.search.results.textContent())?.match(/of (\d+)/)?.[1]))
-      .toBeLessThan(partialWordMatches);
+    await expect.poll(async () => {
+      const wholeWordMatches = Number((await mediaViewer.search.results.textContent())?.match(/of (\d+)/)?.[1]);
+      return wholeWordMatches > 0 && wholeWordMatches < partialWordMatches;
+    }).toBe(true);
   });
 
   test('changes rendered PDF highlights when highlight-all is disabled and restored', { tag: ['@e2e-functional', '@feature-search'] }, async ({ mediaViewer }) => {

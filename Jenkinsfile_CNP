@@ -63,7 +63,7 @@ def hasPlaywrightJUnit = { String outputRoot ->
 
 def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true ->
   steps.sh(
-    "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}'"
+    "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}' --test-output-dir '${outputRoot}/test-results'"
   )
   publishHTML([
     allowMissing         : true,

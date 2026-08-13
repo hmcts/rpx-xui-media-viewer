@@ -12,8 +12,6 @@ export class Annotations {
   readonly renderedRectangles: Locator;
   readonly contextToolbar: Locator;
   readonly createButton: Locator;
-  readonly deleteButton: Locator;
-  readonly commentButton: Locator;
 
   constructor(private readonly page: Page) {
     this.textHighlightButton = page.getByRole('button', { name: 'Highlight text' });
@@ -27,8 +25,6 @@ export class Annotations {
     this.renderedRectangles = page.locator('mv-anno-rectangle .rectangle');
     this.contextToolbar = page.locator('mv-ctx-toolbar');
     this.createButton = this.contextToolbar.getByRole('button', { name: 'Highlight' });
-    this.deleteButton = this.contextToolbar.getByRole('button', { name: 'Delete' });
-    this.commentButton = this.contextToolbar.getByRole('button', { name: 'Comment' });
   }
 
   async openTextHighlight(): Promise<void> {

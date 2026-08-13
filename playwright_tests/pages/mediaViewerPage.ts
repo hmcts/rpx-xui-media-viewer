@@ -124,7 +124,6 @@ export class MediaViewerPage {
   }
 
   async stubRotationResponses(initialRotations: Readonly<Record<string, number>> = {}): Promise<void> {
-    const rotationsByDocumentId = new Map(Object.entries(initialRotations));
     await this.page.route('**/em-anno/metadata/**', async (route) => {
       const request = route.request();
       if (request.method() !== 'GET') {
@@ -134,7 +133,7 @@ export class MediaViewerPage {
       const metadataPath = '/em-anno/metadata/';
       const pathname = new URL(request.url()).pathname;
       const documentId = decodeURIComponent(pathname.slice(pathname.indexOf(metadataPath) + metadataPath.length));
-      const rotationAngle = rotationsByDocumentId.get(documentId);
+      const rotationAngle = initialRotations[documentId];
       await route.fulfill({
         status: 200,
         json: rotationAngle === undefined ? {} : { documentId, rotationAngle },

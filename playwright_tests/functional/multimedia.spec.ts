@@ -9,7 +9,7 @@ test.describe('Multimedia playback', () => {
     const player = page.locator('mv-multimedia-player video');
     await expect(player).toBeVisible();
     await expect(player).toHaveAttribute('controls', '');
-    await expect.poll(() => player.evaluate((video) => video.readyState)).toBeGreaterThanOrEqual(2);
+    await expect.poll(() => player.evaluate((video: HTMLMediaElement) => video.readyState)).toBeGreaterThanOrEqual(2);
     await expect(page.getByText('Use the player to play to the file or')).toBeVisible();
   });
 
