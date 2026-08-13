@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.28-nodejs-healthcheck-update",
+  "version": "4.2.29",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
