@@ -316,7 +316,6 @@ yarn test:functional:local:isolated
 ```
 
 Expected `test:functional:local:isolated` feature groups:
-- `annotationsAndComments`
 - `bookMarks`
 - `redact`
 - `printAndDownload`

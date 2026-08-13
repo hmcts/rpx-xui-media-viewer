@@ -9,6 +9,7 @@ export class Annotations {
   readonly highlightAllButton: Locator;
   readonly resultCount: Locator;
   readonly rectangles: Locator;
+  readonly renderedRectangles: Locator;
   readonly contextToolbar: Locator;
   readonly createButton: Locator;
   readonly deleteButton: Locator;
@@ -23,6 +24,7 @@ export class Annotations {
     this.highlightAllButton = page.getByRole('button', { name: 'Highlight all' });
     this.resultCount = page.locator('#findRedactResultsCount');
     this.rectangles = page.locator('mv-anno-rectangle');
+    this.renderedRectangles = page.locator('mv-anno-rectangle .rectangle');
     this.contextToolbar = page.locator('mv-ctx-toolbar');
     this.createButton = this.contextToolbar.getByRole('button', { name: 'Highlight' });
     this.deleteButton = this.contextToolbar.getByRole('button', { name: 'Delete' });

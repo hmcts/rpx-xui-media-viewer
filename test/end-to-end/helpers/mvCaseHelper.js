@@ -91,11 +91,6 @@ async function collateCommentsNotBlankTest(I, caseId, mediaType) {
   await I.collateCommentsNotBlank();
 }
 
-async function addMultipleCommentsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addMultipleComments();
-}
-
 async function markContentForRedactionUsingDrawBoxTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.markContentForRedaction();
@@ -254,7 +249,6 @@ module.exports = {
   addCommentTest,
   deleteHighlightsTest,
   collateCommentsNotBlankTest,
-  addMultipleCommentsTest,
   markContentForRedactionUsingDrawBoxTest,
   redactContentUsingRedactTextTest,
   navigateBundleDocsUsingPageIndexTest,

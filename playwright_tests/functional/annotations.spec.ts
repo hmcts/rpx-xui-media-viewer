@@ -22,10 +22,16 @@ annotationsTest.describe('PDF annotations', () => {
     });
     expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
     expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
+    expect(savedAnnotation.rectangles[0].x).toBeGreaterThanOrEqual(0);
+    expect(savedAnnotation.rectangles[0].y).toBeGreaterThanOrEqual(0);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
+    expect(rehydratedBounds).not.toBeNull();
+    expect(rehydratedBounds?.width).toBeGreaterThan(0);
+    expect(rehydratedBounds?.height).toBeGreaterThan(0);
   });
 
   annotationsTest('creates a draw-box PDF highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
@@ -49,7 +55,16 @@ annotationsTest.describe('PDF annotations', () => {
     });
     expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
     expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
+    expect(savedAnnotation.rectangles[0].x).toBeGreaterThanOrEqual(0);
+    expect(savedAnnotation.rectangles[0].y).toBeGreaterThanOrEqual(0);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
+    expect(rehydratedBounds).not.toBeNull();
+    expect(rehydratedBounds?.width).toBeGreaterThan(0);
+    expect(rehydratedBounds?.height).toBeGreaterThan(0);
   });
 
   annotationsTest('keeps a comment on a selected PDF highlight through rotation and rehydration', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
@@ -70,12 +85,15 @@ annotationsTest.describe('PDF annotations', () => {
     await mediaViewer.annotations.createButton.click();
     const annotationId = (await createRequest).postDataJSON().id;
 
-    await mediaViewer.annotations.commentButton.click();
-    const editor = mediaViewer.comments.panel.getByRole('textbox', { name: 'comment' });
-    await editor.fill('Rotated PDF annotation comment');
     const commentRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    const commentResponse = page.waitForResponse((response) => annotationRequest(response.url()) && response.request().method() === 'POST');
-    await mediaViewer.comments.panel.getByRole('button', { name: 'Save' }).click();
+    const commentResponse = page.waitForResponse((response) => {
+      if (!annotationRequest(response.url()) || response.request().method() !== 'POST') {
+        return false;
+      }
+      const requestBody = response.request().postDataJSON() as { comments?: Array<{ content?: string }> };
+      return requestBody.comments?.some((comment) => comment.content === 'Rotated PDF annotation comment') ?? false;
+    });
+    await mediaViewer.comments.addToSelectedAnnotation('Rotated PDF annotation comment');
     expect((await commentRequest).postDataJSON()).toMatchObject({
       id: annotationId,
       comments: [expect.objectContaining({ content: 'Rotated PDF annotation comment' })],
@@ -101,6 +119,33 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.comments.comment('Rotated PDF annotation comment')).toBeVisible();
     await mediaViewer.comments.openSummary();
     await expect(mediaViewer.comments.summaryDialog).toContainText('Rotated PDF annotation comment');
+  });
+
+  annotationsTest('collates distinct text-selection and draw-box comments after rehydration', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    const textComment = 'Text-selection annotation comment';
+    const drawBoxComment = 'Draw-box annotation comment';
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+
+    await mediaViewer.annotations.openTextHighlight();
+    await mediaViewer.annotations.selectExampleFixtureText();
+    const textAnnotationRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.createButton.click();
+    await textAnnotationRequest;
+    await mediaViewer.comments.addToSelectedAnnotation(textComment);
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+
+    const drawBoxRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await drawBoxRequest;
+    await mediaViewer.comments.addToSelectedAnnotation(drawBoxComment);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment(textComment)).toBeVisible();
+    await expect(mediaViewer.comments.comment(drawBoxComment)).toBeVisible();
+    await mediaViewer.comments.openSummary();
+    await expect(mediaViewer.comments.summaryDialog).toContainText(textComment);
+    await expect(mediaViewer.comments.summaryDialog).toContainText(drawBoxComment);
   });
 
   annotationsTest('highlights PDF search results and persists the created annotation set', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {

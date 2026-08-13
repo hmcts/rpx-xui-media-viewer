@@ -17,7 +17,6 @@ fixture_env="${MV_LOCAL_DOCUMENT_ENV_FILE:-.local-aat-documents.env}"
 max_jobs="${MV_LOCAL_PARALLEL_MAX_JOBS:-3}"
 
 pdf_features=(
-  "annotationsAndComments.js"
   "redact.js"
   "printAndDownload.js"
 )

@@ -84,6 +84,10 @@ export class CommentsPanel {
 
   async addToOnlyAnnotation(content: string): Promise<void> {
     await this.annotationRectangles.click();
+    await this.addToSelectedAnnotation(content);
+  }
+
+  async addToSelectedAnnotation(content: string): Promise<void> {
     await this.page.locator('button[title="Comment"]').click();
     const editor = this.panel.locator('textarea[aria-label="comment"]');
     await editor.waitFor();
