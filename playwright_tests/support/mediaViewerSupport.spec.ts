@@ -1,6 +1,23 @@
 import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
 
 test.describe('media viewer Playwright support layer', () => {
+  test('returns an empty annotation set for the requested default document', async ({ mediaViewer, page }) => {
+    const annotationResponse = page.waitForResponse((response) =>
+      response.url().includes('/em-anno/annotation-sets/filter') &&
+      new URL(response.url()).searchParams.get('documentId') === mediaAssets.pdf.url
+    );
+
+    await mediaViewer.openDocument(mediaAssets.pdf);
+
+    const response = await annotationResponse;
+    expect(response.status()).toBe(200);
+    expect(await response.json()).toEqual({
+      id: 'annotation-set-fixture',
+      documentId: mediaAssets.pdf.url,
+      annotations: [],
+    });
+  });
+
   test('loads the PDF fixture and exposes focused viewer controls', async ({ mediaViewer, page }) => {
     await mediaViewer.openDocument(mediaAssets.pdf);
 
@@ -50,7 +67,7 @@ test.describe('media viewer Playwright support layer', () => {
       mediaAssets.replacementPdf.contentType
     );
 
-    await expect(mediaViewer.navigation.pageCount).toHaveText('/ 6');
+    await expect(mediaViewer.navigation.pageCount).toHaveText(`/ ${mediaAssets.replacementPdf.pageCount}`);
     await expect(mediaViewer.loadState.firstPdfPage).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.loadState.pdfCanvas(1)).toHaveAttribute('width', /^[1-9]\d*$/);
   });
