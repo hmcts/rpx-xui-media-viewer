@@ -83,9 +83,6 @@ export class Bookmarks {
     if (!(await this.panel.isVisible())) {
       await bookmarksButton.click();
     }
-    if (!(await this.panel.isVisible())) {
-      await bookmarksButton.click();
-    }
     await this.panel.waitFor({ state: 'visible' });
     await this.addButton.waitFor({ state: 'visible' });
   }

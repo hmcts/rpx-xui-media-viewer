@@ -45,12 +45,6 @@ async function printDocumentFromMVTest(I, caseId, mediaType) {
   await I.mvPrintDocument();
 }
 
-async function createBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-}
-
 async function multiMediaAudioTest(I, caseId, mediaType) {
   await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
   await I.mvAudioScenario();
@@ -76,19 +70,6 @@ async function addCommentTest(I, caseId, mediaType) {
   await I.addComments(commonConfig.firstComment1);
 }
 
-async function updateCommentTest(I, caseId, mediaType, comment, updatedComment) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.addComments(comment);
-  await I.updateComment(comment, updatedComment);
-}
-
-async function deleteCommentTest(I, caseId, mediaType, comment, updatedComment) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.deleteComments(comment, updatedComment);
-}
-
 async function deleteHighlightsTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.highlightPdfText();
@@ -101,12 +82,6 @@ async function annotateFromSearchTest(I, caseId, mediaType) {
   await I.annotateFromSearch();
 }
 
-async function collateCommentsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.collateComments();
-}
-
 async function collateCommentsNotBlankTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.clickCommentsPanel();
@@ -114,13 +89,6 @@ async function collateCommentsNotBlankTest(I, caseId, mediaType) {
   await I.addMultipleComments();
   await I.collateComments();
   await I.collateCommentsNotBlank();
-}
-
-async function commentsSearchTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.commentsSearch();
 }
 
 async function addMultipleCommentsTest(I, caseId, mediaType) {
@@ -279,18 +247,13 @@ module.exports = {
   uploadWorDoc,
   downloadPdfDocFromMVTest,
   printDocumentFromMVTest,
-  createBookmarkTest,
   multiMediaAudioTest,
   multiMediaAudioPauseAndRewindTest,
   highlightTextTest,
   addCommentAndRotateTest,
   addCommentTest,
-  deleteCommentTest,
   deleteHighlightsTest,
-  updateCommentTest,
-  collateCommentsTest,
   collateCommentsNotBlankTest,
-  commentsSearchTest,
   addMultipleCommentsTest,
   markContentForRedactionUsingDrawBoxTest,
   redactContentUsingRedactTextTest,

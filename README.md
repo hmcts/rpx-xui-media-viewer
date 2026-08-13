@@ -132,7 +132,7 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 20 behaviour tests across the explicit `zoom`, `navigation`, `rotation`, `search` and `bookmarks` feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 32 behaviour tests across the explicit `zoom`, `navigation`, `rotation`, `search`, `comments` and `bookmarks` feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves

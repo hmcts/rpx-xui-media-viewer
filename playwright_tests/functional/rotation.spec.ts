@@ -25,28 +25,22 @@ test.describe('Rotation', () => {
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     const initialOrientation = await firstPage.evaluate((element) => {
-      const style = getComputedStyle(element);
-      return Number.parseFloat(style.width) < Number.parseFloat(style.height) ? 'portrait' : 'landscape';
+      const { width, height } = element.getBoundingClientRect();
+      return width < height ? 'portrait' : 'landscape';
     });
 
     await mediaViewer.rotation.clockwise();
-    await expect
-      .poll(() =>
-        firstPage.evaluate((element) => {
-          const style = getComputedStyle(element);
-          return Number.parseFloat(style.width) < Number.parseFloat(style.height) ? 'portrait' : 'landscape';
-        })
-      )
-      .not.toBe(initialOrientation);
+    await expect.poll(() => firstPage.evaluate((element) => {
+      const { width, height } = element.getBoundingClientRect();
+      return width < height ? 'portrait' : 'landscape';
+    })).not.toBe(initialOrientation);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     await mediaViewer.rotation.counterclockwise();
-    await expect
-      .poll(() =>
-        firstPage.evaluate((element) => {
-          const style = getComputedStyle(element);
-          return Number.parseFloat(style.width) < Number.parseFloat(style.height) ? 'portrait' : 'landscape';
-        })
-      )
-      .toBe(initialOrientation);
+    await expect.poll(() => firstPage.evaluate((element) => {
+      const { width, height } = element.getBoundingClientRect();
+      return width < height ? 'portrait' : 'landscape';
+    })).toBe(initialOrientation);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
   });
 });

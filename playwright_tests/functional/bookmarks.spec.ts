@@ -45,8 +45,11 @@ test.describe('Bookmarks', () => {
     const created = await createRequest;
     expect(created.postDataJSON()).toEqual(expect.objectContaining({
       id: expect.any(String),
+      documentId: mediaAssets.pdf.url,
       name: expect.any(String),
       pageNumber: expect.any(Number),
+      xCoordinate: expect.any(Number),
+      yCoordinate: expect.any(Number),
     }));
     await mediaViewer.bookmarks.open();
     await expect(mediaViewer.bookmarks.nodes).toHaveCount(1);
