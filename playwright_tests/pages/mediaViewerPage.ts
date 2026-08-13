@@ -34,14 +34,18 @@ export class MediaViewerPage {
     this.bookmarks = new Bookmarks(page);
   }
 
-  async stubAnnotationResponses(annotationSet: AnnotationSetFixture | [] = {
-    id: 'annotation-set-fixture',
-    annotations: [],
-  }): Promise<void> {
+  async stubAnnotationResponses(annotationSet?: AnnotationSetFixture): Promise<void> {
     let currentAnnotationSet = annotationSet;
     await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
       const requestedDocumentId = new URL(route.request().url()).searchParams.get('documentId');
-      if (!Array.isArray(currentAnnotationSet) && currentAnnotationSet.documentId !== requestedDocumentId) {
+      if (!currentAnnotationSet) {
+        await route.fulfill({
+          status: 200,
+          json: { id: 'annotation-set-fixture', documentId: requestedDocumentId, annotations: [] },
+        });
+        return;
+      }
+      if (currentAnnotationSet.documentId !== requestedDocumentId) {
         await route.fulfill({ status: 404, json: { message: `Unexpected annotation document: ${requestedDocumentId}` } });
         return;
       }
@@ -69,25 +73,12 @@ export class MediaViewerPage {
           selected: false,
         })),
       };
-      if (!Array.isArray(currentAnnotationSet)) {
+      if (currentAnnotationSet) {
         currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
           annotation.id === updatedAnnotation.id ? persistedAnnotation : annotation
         );
       }
       await route.fulfill({ status: 200, json: updatedAnnotation });
-    });
-    await this.page.route('**/em-anno/annotations/*', async (route) => {
-      if (route.request().method() !== 'DELETE') {
-        await route.continue();
-        return;
-      }
-      const annotationId = route.request().url().split('/').pop();
-      if (!Array.isArray(currentAnnotationSet)) {
-        currentAnnotationSet.annotations = currentAnnotationSet.annotations.filter(
-          (annotation: { id: string }) => annotation.id !== annotationId
-        );
-      }
-      await route.fulfill({ status: 200, body: 'null' });
     });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
@@ -128,7 +119,8 @@ export class MediaViewerPage {
     await this.page.getByLabel('case id').fill(caseId);
 
     const documentResponse = this.page.waitForResponse((response) => response.url() === expectedDocumentUrl).catch((error) => {
-      throw new Error(`Document request was not observed: ${expectedDocumentUrl}`, { cause: error });
+      const cause = error instanceof Error ? error.message : String(error);
+      throw new Error(`Document request was not observed: ${expectedDocumentUrl} (${cause})`);
     });
     await this.page.getByRole('button', { name: 'Load document' }).click();
     const response = await documentResponse;
