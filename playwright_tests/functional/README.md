@@ -12,7 +12,8 @@ is rendered into the Odhín report.
 | Page navigation | `navigation.spec.ts` | 2 | Page identity, viewport rendering, page count and first/last boundaries |
 | Rotation | `rotation.spec.ts` | 2 | Image transform and PDF orientation round-trip |
 | Search | `search.spec.ts` | 4 | Positive match, next/previous, no results, close/reset, recovery and Enter navigation |
-| **Total** | 4 feature files | **11** | Behaviour-level migration coverage |
+| Bookmarks | `bookmarks.spec.ts` | 10 (1 skipped) | Highlight-origin and panel creation, update, delete/sibling promotion, single and multiple empty drafts, sorting, bulk lifecycle; rendered reorder remains skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097) |
+| **Total** | 5 feature files | **20** | Behaviour-level migration coverage |
 
 Run the whole migrated functional suite:
 
