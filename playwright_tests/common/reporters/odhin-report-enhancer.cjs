@@ -428,6 +428,43 @@ function injectEnhancerStyles(root) {
       justify-content: flex-start;
     }
   }
+
+  #odhin-capability-coverage .odhin-capability-coverage-table {
+    overflow-x: auto;
+  }
+
+  #odhin-capability-coverage table {
+    min-width: 1100px;
+  }
+
+  #odhin-capability-coverage th,
+  #odhin-capability-coverage td {
+    vertical-align: top;
+  }
+
+  #odhin-capability-coverage .odhin-capability-status {
+    border-radius: 999px;
+    display: inline-block;
+    font-size: 12px;
+    font-weight: 700;
+    padding: 3px 9px;
+    white-space: nowrap;
+  }
+
+  #odhin-capability-coverage .odhin-capability-status-covered {
+    background: #d8f3dc;
+    color: #155724;
+  }
+
+  #odhin-capability-coverage .odhin-capability-status-partial {
+    background: #fff3cd;
+    color: #664d03;
+  }
+
+  #odhin-capability-coverage .odhin-capability-status-legacy-only {
+    background: #f8d7da;
+    color: #842029;
+  }
 </style>`)
   );
 }
@@ -558,6 +595,71 @@ function buildFeatureOverviewBlock(featureStats) {
     </div>
   </div>
 </div>`;
+}
+
+function readCoverageInventory() {
+  const inventoryPath = path.resolve(__dirname, '../../functional/mediaViewerCoverage.json');
+  try {
+    const inventory = JSON.parse(fs.readFileSync(inventoryPath, 'utf8'));
+    return Array.isArray(inventory?.capabilities) ? inventory : null;
+  } catch {
+    return null;
+  }
+}
+
+function capabilityStatusClass(status) {
+  return String(status ?? 'unknown').toLowerCase().replace(/\s+/g, '-');
+}
+
+function buildCapabilityCoverageBlock(inventory, featureStats) {
+  const executedByFeature = new Map(normalizeFeatureStats(featureStats).map((feature) => [feature.name, feature]));
+  const capabilities = inventory?.capabilities ?? [];
+  const coveredCount = capabilities.filter((capability) => capability.status === 'Covered').length;
+  const partialCount = capabilities.filter((capability) => capability.status === 'Partial').length;
+  const legacyOnlyCount = capabilities.filter((capability) => capability.status === 'Legacy only').length;
+  const rows = capabilities
+    .map((capability) => {
+      const execution = executedByFeature.get(capability.playwrightFeature);
+      const runTests = execution?.totalTests ?? 0;
+      const runStatus = execution
+        ? `${execution.passed}/${execution.totalTests} passed${execution.flaky ? `, ${execution.flaky} flaky` : ''}`
+        : 'Not in this run';
+      return `
+        <tr>
+          <td><strong>${escapeHtml(capability.name)}</strong></td>
+          <td><span class="odhin-capability-status odhin-capability-status-${capabilityStatusClass(capability.status)}">${escapeHtml(capability.status)}</span></td>
+          <td>${capability.playwrightTests} (${runTests} this run)</td>
+          <td>${capability.legacyScenarios}</td>
+          <td>${escapeHtml(runStatus)}</td>
+          <td>${escapeHtml(capability.covered)}</td>
+          <td>${escapeHtml(capability.gap)}</td>
+        </tr>`;
+    })
+    .join('\n');
+
+  return `
+<div class="mt-3 mb-3 odhin-thin-border dashboard-block" id="odhin-capability-coverage">
+  <div class="info-box-header">${escapeHtml(inventory.title)}</div>
+  <div class="p-3">
+    <p class="mb-3">Repository capability inventory: ${capabilities.length} areas — ${coveredCount} covered, ${partialCount} partial, ${legacyOnlyCount} legacy-only.</p>
+    <div class="odhin-capability-coverage-table">
+      <table class="table table-sm mb-0">
+        <thead><tr>
+          <th>Capability</th><th>Status</th><th>Playwright tests</th><th>Legacy scenarios</th><th>This run</th><th>Assurance covered</th><th>Remaining gap</th>
+        </tr></thead>
+        <tbody>${rows}</tbody>
+      </table>
+    </div>
+  </div>
+</div>`;
+}
+
+function appendCapabilityCoverageBlock(root, inventory, featureStats) {
+  if (!inventory || root.querySelector('#odhin-capability-coverage')) {
+    return;
+  }
+  const body = root.querySelector('body');
+  body?.insertAdjacentHTML('beforeend', buildCapabilityCoverageBlock(inventory, featureStats));
 }
 
 function normalizeEvidenceEntries(entries) {
@@ -1312,8 +1414,9 @@ function enhanceDashboardHtml(html, featureStats, evidenceEntries = []) {
   const htmlWithDefaultTestRows = defaultTestListRowsPerPage(html);
   const normalizedStats = normalizeFeatureStats(featureStats);
   const normalizedEvidenceEntries = normalizeEvidenceEntries(evidenceEntries);
+  const coverageInventory = readCoverageInventory();
   const hasDashboardAccessibilityEvidence = htmlWithDefaultTestRows.includes('id="odhin-accessibility-evidence"');
-  if (!normalizedStats.length && !normalizedEvidenceEntries.length && !hasDashboardAccessibilityEvidence) {
+  if (!normalizedStats.length && !normalizedEvidenceEntries.length && !hasDashboardAccessibilityEvidence && !coverageInventory) {
     return htmlWithDefaultTestRows;
   }
 
@@ -1328,6 +1431,8 @@ function enhanceDashboardHtml(html, featureStats, evidenceEntries = []) {
     rebalanceTopDashboardColumns(root);
     stripLegacyFileChartArtifacts(root);
   }
+
+  appendCapabilityCoverageBlock(root, coverageInventory, normalizedStats);
 
   injectAccessibilityEvidenceIntoTestModals(root, normalizedEvidenceEntries);
   injectAccessibilityIssueSummary(root, normalizedEvidenceEntries);
@@ -1376,7 +1481,7 @@ function enhanceGeneratedReport(outputFolder, featureStats) {
 
   const normalizedStats = normalizeFeatureStats(featureStats);
   const evidenceEntries = readAccessibilityEvidenceEntries(outputFolder);
-  if (!normalizedStats.length && !normalizeEvidenceEntries(evidenceEntries).length) {
+  if (!normalizedStats.length && !normalizeEvidenceEntries(evidenceEntries).length && !readCoverageInventory()) {
     return;
   }
 
@@ -1400,6 +1505,7 @@ module.exports = {
   percentOf,
   __test__: {
     buildFeatureOverviewBlock,
+    buildCapabilityCoverageBlock,
     buildIssueSummaryBlock,
     buildAccessibilityEvidenceBlock,
     createEmptyFeatureStat,
@@ -1409,6 +1515,7 @@ module.exports = {
     formatDuration,
     normalizeEvidenceEntries,
     readAccessibilityEvidenceEntries,
+    readCoverageInventory,
     removeLegacyFileChartInitializer,
     normalizeFeatureStats,
     percentOf,

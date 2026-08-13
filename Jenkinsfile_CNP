@@ -12,7 +12,7 @@ properties([
 ])
 
 
-@Library("Infrastructure@2.4.4")
+@Library("Infrastructure@2.5.1")
 
 def type = "nodejs"
 def product = "xui"
@@ -25,9 +25,13 @@ def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
+def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
+def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
+def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
+def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -101,6 +105,25 @@ def runPlaywrightSupportTests = { String outputRoot, String reportName, String t
   }
 }
 
+def runPlaywrightFunctionalTests = { String outputRoot, String reportName, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-functional-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightFunctionalOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightFunctionalOdhinTitle}",
+    "TEST_TYPE=${targetEnvironment}",
+    'PLAYWRIGHT_SKIP_INSTALL=true'
+  ]) {
+    try {
+      yarnBuilder.yarn('test:playwright:functional')
+    } finally {
+      publishPlaywrightReport(outputRoot, reportName, playwrightFunctionalOdhinReportFile)
+    }
+  }
+}
+
 env.DOCASSEMBLY_URL = "http://dg-docassembly-aat.service.core-compute-aat.internal"
 env.DM_STORE_APP_URL = "http://dm-store-aat.service.core-compute-aat.internal"
 env.HRS_API_URL = "http://em-hrs-api-aat.service.core-compute-aat.internal"
@@ -138,6 +161,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 timeout(time: 80, unit: 'MINUTES') {
 withPipeline(type, product, component) {
+  enableBuildCache()
   enableSlackNotifications(channel)
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
@@ -199,6 +223,9 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('smoketest:preview') {
+    stage('Playwright Viewer Functional Test - preview') {
+      runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
+    }
     stage('Playwright Viewer Support Test - preview') {
       runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
     }
@@ -224,6 +251,9 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('smoketest:aat') {
+    stage('Playwright Viewer Functional Test - AAT') {
+      runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
+    }
     stage('Playwright Viewer Support Test - AAT') {
       runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
     }

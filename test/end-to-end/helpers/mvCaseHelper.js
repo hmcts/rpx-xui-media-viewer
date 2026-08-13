@@ -35,36 +35,6 @@ async function loadNewDocument(I, caseId, mediaType, newCaseId) {
   await I.loadDocumentAndCheckSuccessLoad(newCaseId)
 }
 
-async function contentSearchTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executeContentSearch(searchKeyword, noOfFindings);
-}
-
-async function navigateSearchResultsUsingPreviousNextLinksTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.searchResultsNavigationUsingPreviousAndNextLinks(searchKeyword, noOfFindings);
-}
-
-async function searchResultsNotFoundTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executeContentSearch(searchKeyword, noOfFindings);
-}
-
-async function enterShouldJumpViewerToNextSearchResultsTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.enterShouldJumpViewerToNextSearchResult(searchKeyword, noOfFindings);
-}
-
-async function pdfViewerPageNavigationTest(I, caseId, mediaType, pageNoToNavigate) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.pdfViewerPageNavigation(pageNoToNavigate);
-}
-
-async function pdfViewerZoomInOutTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executePdfViewerZoom();
-}
-
 async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.downloadPdfDocument();
@@ -75,45 +45,10 @@ async function printDocumentFromMVTest(I, caseId, mediaType) {
   await I.mvPrintDocument();
 }
 
-async function pdfAndImageRotationTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.rotatePdfAndJpg();
-}
-
 async function createBookmarkTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.clearBookMarks();
   await I.createBookMark();
-}
-
-async function deleteBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-}
-
-async function updateBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-  await I.updateBookMarks();
-}
-
-async function addEmptyBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.addEmptyBookmarks();
-}
-
-async function sortBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.sortBookmarks();
-}
-
-async function bookmarkBoxBlankTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.bookmarkBoxBlank();
 }
 
 async function multiMediaAudioTest(I, caseId, mediaType) {
@@ -336,40 +271,15 @@ async function uploadDocumentEvent(I, caseId, eventName) {
   await I.chooseNextStep(eventName, 3)
 }
 
-async function customAndReorderBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-  await I.customOrderBookmarks();
-  await I.reorderBookmarks();
-}
-
-async function add30BookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.add30Bookmarks();
-}
-
 module.exports = {
   loginTest,
   submittedState,
   uploadPdf,
   uploadJpeg,
   uploadWorDoc,
-  contentSearchTest,
-  searchResultsNotFoundTest,
   downloadPdfDocFromMVTest,
-  pdfViewerZoomInOutTest,
   printDocumentFromMVTest,
-  pdfViewerPageNavigationTest,
-  pdfAndImageRotationTest,
-  navigateSearchResultsUsingPreviousNextLinksTest,
-  enterShouldJumpViewerToNextSearchResultsTest,
   createBookmarkTest,
-  deleteBookmarkTest,
-  updateBookmarkTest,
-  addEmptyBookmarksTest,
-  sortBookmarksTest,
   multiMediaAudioTest,
   multiMediaAudioPauseAndRewindTest,
   highlightTextTest,
@@ -397,9 +307,6 @@ module.exports = {
   updateNonTextualCommentTest,
   deleteNonTextualCommentTest,
   redactSearchAndRedactAllTest,
-  customAndReorderBookmarksTest,
-  bookmarkBoxBlankTest,
-  add30BookmarksTest,
   annotateFromSearchTest,
   loadNewDocument
 }

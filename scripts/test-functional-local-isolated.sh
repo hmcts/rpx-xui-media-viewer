@@ -20,10 +20,7 @@ pdf_features=(
   "annotationsAndComments.js"
   "bookMarks.js"
   "redact.js"
-  "search.js"
   "printAndDownload.js"
-  "rotate.js"
-  "zoomAndnavigation.js"
 )
 
 image_features=(

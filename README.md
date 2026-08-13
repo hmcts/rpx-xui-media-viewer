@@ -131,8 +131,18 @@ Current Playwright lanes:
 
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
-| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Loads standalone PDF and image fixtures and verifies rendered-document readiness, PDF zoom and navigation, image rotation and deterministic PDF search. |
+| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 20 behaviour tests across the explicit `zoom`, `navigation`, `rotation`, `search` and `bookmarks` feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
+
+The current migration slice is deliberately separated from smoke: smoke proves
+the application is ready, functional proves user-facing viewer behaviour, and
+support proves the reusable automation contracts. There is no API or mocked
+integration project in this slice because the migrated contracts are browser
+rendering and interaction behaviour owned by the standalone viewer. Every
+Playwright Odhín report also includes a capability inventory showing covered,
+partially covered and legacy-only Media Viewer areas, with the remaining
+assurance gap for each capability.
 
 The Playwright config runs tests fully in parallel with seven workers. Each test
 gets its own browser context and page-scoped route mocks. Tests must not depend
@@ -169,6 +179,7 @@ The lane wrapper commands write Playwright evidence under `functional-output/tes
 | --- | --- | --- | --- |
 | Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
+| Migrated functional | `functional-output/tests/playwright-functional/odhin-report/xui-playwright-functional.html` | `functional-output/tests/playwright-functional/playwright-functional-junit.xml` | `functional-output/tests/playwright-functional/test-results` |
 
 Those are the default lane-specific paths. CNP keeps preview and AAT viewer
 support evidence separate under `functional-output/tests/playwright-support/preview`
@@ -309,9 +320,6 @@ Expected `test:functional:local:isolated` feature groups:
 - `bookMarks`
 - `redact`
 - `printAndDownload`
-- `rotate`
-- `search`
-- `zoomAndnavigation`
 - `imageViewerAnnotationsAndComments`
 
 For the strongest isolation proof, make each scenario upload and use its own document:
