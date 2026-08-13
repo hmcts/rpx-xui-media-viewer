@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
-import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneReplacementCommentsAnnotationSet } from './mediaViewerComments';
+import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneReplacementCommentsAnnotationSet, cloneTwoPageCommentsAnnotationSet } from './mediaViewerComments';
 export { mediaAssets } from './mediaAssets';
 
 export const test = base.extend<{ mediaViewer: MediaViewerPage }>({
@@ -31,6 +31,14 @@ export const multiDocumentCommentsTest = base.extend<{ mediaViewer: MediaViewerP
   mediaViewer: async ({ page }, use) => {
     const mediaViewer = new MediaViewerPage(page);
     await mediaViewer.stubAnnotationResponses([cloneCommentsAnnotationSet(), cloneReplacementCommentsAnnotationSet()]);
+    await use(mediaViewer);
+  },
+});
+
+export const twoPageCommentsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
+  mediaViewer: async ({ page }, use) => {
+    const mediaViewer = new MediaViewerPage(page);
+    await mediaViewer.stubAnnotationResponses([cloneTwoPageCommentsAnnotationSet()]);
     await use(mediaViewer);
   },
 });

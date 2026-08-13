@@ -1,4 +1,4 @@
-import { commentCreationTest, expect, commentsTest, mediaAssets, multiDocumentCommentsTest } from '../fixtures/mediaViewerTest';
+import { commentCreationTest, expect, commentsTest, mediaAssets, multiDocumentCommentsTest, twoPageCommentsTest } from '../fixtures/mediaViewerTest';
 
 const isLoadedPdfAnnotationRequest = (url: string) =>
   url.includes('/em-anno/annotation-sets/filter') &&
@@ -77,6 +77,20 @@ commentsTest.describe('Comments panel', () => {
     expect((await rehydratedAnnotationResponse).status()).toBe(200);
   });
 
+  commentsTest('cancels an edit without changing the rendered or rehydrated comment', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+
+    await mediaViewer.comments.cancelEdit('Existing viewer comment', 'Unsaved viewer comment');
+    await expect(mediaViewer.comments.comment('Existing viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.comment('Unsaved viewer comment')).toHaveCount(0);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment('Existing viewer comment')).toBeVisible();
+    await expect(mediaViewer.comments.comment('Unsaved viewer comment')).toHaveCount(0);
+  });
+
   commentsTest('searches comments and highlights only the matching text', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.sidePanels.openComments();
@@ -129,6 +143,43 @@ commentsTest.describe('Comments panel', () => {
     await mediaViewer.comments.summaryCloseButton.click();
     await expect(mediaViewer.comments.summaryDialog).toBeHidden();
     await expect(mediaViewer.comments.panel).toBeVisible();
+  });
+});
+
+twoPageCommentsTest.describe('Comments panel navigation', () => {
+  twoPageCommentsTest('navigates search results to the matching comment page', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.openSearch();
+
+    await mediaViewer.comments.searchInput.fill('navigation comment');
+    await mediaViewer.comments.searchButton.click();
+    await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 2');
+    await mediaViewer.comments.nextSearchResult.click();
+
+    await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 2 of 2');
+    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue('2');
+    await expect(mediaViewer.loadState.pdfPage(2)).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.comments.comment('Page two navigation comment').getByRole('button', { name: 'Edit' })).toBeVisible();
+
+    await mediaViewer.comments.previousSearchResult.click();
+    await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 2');
+    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue('1');
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
+  });
+
+  twoPageCommentsTest('navigates from a comment summary page link and keeps comments open', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableAnnotations();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'standalone-media-viewer-fixture', mediaAssets.pdf.contentType);
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.openSummary();
+
+    await mediaViewer.comments.summaryPageLink(2).click();
+    await expect(mediaViewer.comments.summaryDialog).toBeHidden();
+    await expect(mediaViewer.comments.panel).toBeVisible();
+    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue('2');
+    await expect(mediaViewer.loadState.pdfPage(2)).toHaveAttribute('data-loaded', 'true');
   });
 });
 

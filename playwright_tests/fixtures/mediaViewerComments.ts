@@ -89,11 +89,71 @@ export const commentCreationAnnotationSet: AnnotationSetFixture = {
   }],
 };
 
+export const twoPageCommentsAnnotationSet: AnnotationSetFixture = {
+  id: 'pw-two-page-comments-annotation-set',
+  documentId: mediaAssets.pdf.url,
+  annotations: [
+    {
+      id: 'pw-page-one-comment-annotation',
+      annotationSetId: 'pw-two-page-comments-annotation-set',
+      page: 1,
+      type: 'highlight',
+      color: 'FFFF00',
+      tags: [],
+      rectangles: [{ id: 'pw-page-one-comment-rectangle', annotationId: 'pw-page-one-comment-annotation', x: 40, y: 120, width: 120, height: 24 }],
+      comments: [{
+        id: 'pw-page-one-comment',
+        annotationId: 'pw-page-one-comment-annotation',
+        content: 'Page one navigation comment',
+        createdBy: 'pw-user',
+        createdByDetails: { forename: 'Playwright', surname: 'User' },
+        lastModifiedBy: 'pw-user',
+        lastModifiedByDetails: { forename: 'Playwright', surname: 'User' },
+        createdDate: '2026-01-01T00:00:00.000Z',
+        lastModifiedDate: '2026-01-01T00:00:00.000Z',
+        page: 1,
+        pageHeight: 1122,
+        pages: { 1: { styles: { height: 1122 } } },
+        selected: false,
+        editable: undefined,
+        tags: [],
+      }],
+    },
+    {
+      id: 'pw-page-two-comment-annotation',
+      annotationSetId: 'pw-two-page-comments-annotation-set',
+      page: 2,
+      type: 'highlight',
+      color: 'FFFF00',
+      tags: [],
+      rectangles: [{ id: 'pw-page-two-comment-rectangle', annotationId: 'pw-page-two-comment-annotation', x: 40, y: 120, width: 120, height: 24 }],
+      comments: [{
+        id: 'pw-page-two-comment',
+        annotationId: 'pw-page-two-comment-annotation',
+        content: 'Page two navigation comment',
+        createdBy: 'pw-user',
+        createdByDetails: { forename: 'Playwright', surname: 'User' },
+        lastModifiedBy: 'pw-user',
+        lastModifiedByDetails: { forename: 'Playwright', surname: 'User' },
+        createdDate: '2026-01-01T00:00:00.000Z',
+        lastModifiedDate: '2026-01-01T00:00:00.000Z',
+        page: 2,
+        pageHeight: 1122,
+        pages: { 2: { styles: { height: 1122 } } },
+        selected: false,
+        editable: undefined,
+        tags: [],
+      }],
+    },
+  ],
+};
+
 const cloneAnnotationSet = (annotationSet: AnnotationSetFixture): AnnotationSetFixture =>
   JSON.parse(JSON.stringify(annotationSet)) as AnnotationSetFixture;
 
 export const cloneCommentsAnnotationSet = () => cloneAnnotationSet(commentsAnnotationSet);
 export const cloneCommentCreationAnnotationSet = () => cloneAnnotationSet(commentCreationAnnotationSet);
+export const cloneTwoPageCommentsAnnotationSet = () => cloneAnnotationSet(twoPageCommentsAnnotationSet);
 
 export const cloneReplacementCommentsAnnotationSet = (): AnnotationSetFixture => {
   const replacementSource = cloneCommentsAnnotationSet().annotations[0];

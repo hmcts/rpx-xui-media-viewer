@@ -8,6 +8,7 @@ export class CommentsPanel {
   readonly searchButton: Locator;
   readonly searchResultStatus: Locator;
   readonly noSearchMatches: Locator;
+  readonly previousSearchResult: Locator;
   readonly nextSearchResult: Locator;
   readonly summaryButton: Locator;
   readonly summaryDialog: Locator;
@@ -23,6 +24,7 @@ export class CommentsPanel {
     this.searchButton = page.locator('mv-comment-search > button');
     this.searchResultStatus = page.locator('mv-comment-search mv-comments-navigate span.comment-search__item');
     this.noSearchMatches = page.locator('mv-comment-search p.comment-search__item');
+    this.previousSearchResult = page.locator('mv-comment-search a[title^="Previous comment"]');
     this.nextSearchResult = page.locator('mv-comment-search a[title^="Next comment"]');
     this.summaryButton = page.locator('#commentSummary');
     this.summaryDialog = page.locator('#modal');
@@ -56,14 +58,27 @@ export class CommentsPanel {
     return this.commentCards.nth(index);
   }
 
-  async edit(content: string, replacement: string): Promise<void> {
+  private async openEditor(content: string): Promise<Locator> {
     const comment = await this.card(content);
     await comment.locator('p.commentText').click();
     await comment.getByRole('button', { name: 'Edit' }).click();
+    await comment.locator('textarea[aria-label="comment"]').waitFor();
+    return comment;
+  }
+
+  async edit(content: string, replacement: string): Promise<void> {
+    const comment = await this.openEditor(content);
     const editor = comment.locator('textarea[aria-label="comment"]');
-    await editor.waitFor();
     await editor.fill(replacement);
     await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
+    await editor.waitFor({ state: 'hidden' });
+  }
+
+  async cancelEdit(content: string, replacement: string): Promise<void> {
+    const comment = await this.openEditor(content);
+    const editor = comment.locator('textarea[aria-label="comment"]');
+    await editor.fill(replacement);
+    await comment.getByRole('button', { name: 'Cancel' }).click();
     await editor.waitFor({ state: 'hidden' });
   }
 
@@ -81,5 +96,9 @@ export class CommentsPanel {
     const comment = await this.card(content);
     await comment.locator('p.commentText').click();
     await comment.getByRole('button', { name: 'Delete' }).click();
+  }
+
+  summaryPageLink(pageNumber: number): Locator {
+    return this.summaryDialog.getByRole('link', { name: String(pageNumber), exact: true });
   }
 }
