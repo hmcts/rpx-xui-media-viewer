@@ -6,7 +6,12 @@ const { parse } = require('node-html-parser');
 
 const evidenceLinkAttributes = ' target="_blank" rel="noopener noreferrer"';
 
-function deriveFeatureName(filePath) {
+function deriveFeatureName(filePath, tags = []) {
+  const featureTag = tags.find((tag) => /^@feature-[a-z0-9-]+$/i.test(tag));
+  if (featureTag) {
+    return featureTag.slice('@feature-'.length);
+  }
+
   const normalized = String(filePath ?? '')
     .replace(/\\/g, '/')
     .trim();

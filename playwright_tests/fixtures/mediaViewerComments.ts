@@ -89,6 +89,12 @@ export const commentCreationAnnotationSet: AnnotationSetFixture = {
   }],
 };
 
+export const emptyAnnotationsAnnotationSet: AnnotationSetFixture = {
+  id: 'pw-empty-annotations-annotation-set',
+  documentId: mediaAssets.pdf.url,
+  annotations: [],
+};
+
 export const twoPageCommentsAnnotationSet: AnnotationSetFixture = {
   id: 'pw-two-page-comments-annotation-set',
   documentId: mediaAssets.pdf.url,
@@ -153,6 +159,7 @@ const cloneAnnotationSet = (annotationSet: AnnotationSetFixture): AnnotationSetF
 
 export const cloneCommentsAnnotationSet = () => cloneAnnotationSet(commentsAnnotationSet);
 export const cloneCommentCreationAnnotationSet = () => cloneAnnotationSet(commentCreationAnnotationSet);
+export const cloneEmptyAnnotationsAnnotationSet = () => cloneAnnotationSet(emptyAnnotationsAnnotationSet);
 export const cloneTwoPageCommentsAnnotationSet = () => cloneAnnotationSet(twoPageCommentsAnnotationSet);
 
 export const cloneReplacementCommentsAnnotationSet = (): AnnotationSetFixture => {

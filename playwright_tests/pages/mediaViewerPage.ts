@@ -8,8 +8,27 @@ import { RotationControls } from '../components/rotationControls';
 import { SearchControls } from '../components/searchControls';
 import { ZoomControls } from '../components/zoomControls';
 import { Bookmarks } from '../components/bookmarks';
+import { Annotations } from '../components/annotations';
 import type { AnnotationFixture, AnnotationSetFixture } from '../fixtures/mediaViewerComments';
 import type { MediaAsset } from '../fixtures/mediaAssets';
+
+const persistComment = (comment: Record<string, unknown>, annotation: AnnotationFixture): Record<string, unknown> => {
+  const page = typeof annotation.page === 'number' ? annotation.page : 1;
+  return {
+    ...comment,
+    createdBy: comment.createdBy ?? 'pw-user',
+    createdByDetails: comment.createdByDetails ?? { forename: 'Playwright', surname: 'User' },
+    lastModifiedBy: comment.lastModifiedBy ?? 'pw-user',
+    lastModifiedByDetails: comment.lastModifiedByDetails ?? { forename: 'Playwright', surname: 'User' },
+    createdDate: comment.createdDate ?? '2026-01-01T00:00:00.000Z',
+    lastModifiedDate: comment.lastModifiedDate ?? '2026-01-01T00:00:00.000Z',
+    page: comment.page ?? page,
+    pageHeight: comment.pageHeight ?? 1122,
+    pages: comment.pages ?? { [page]: { styles: { height: 1122 } } },
+    editable: false,
+    selected: false,
+  };
+};
 
 export class MediaViewerPage {
   readonly loadState: DocumentLoadState;
@@ -21,6 +40,7 @@ export class MediaViewerPage {
   readonly sidePanels: MediaViewerSidePanels;
   readonly comments: CommentsPanel;
   readonly bookmarks: Bookmarks;
+  readonly annotations: Annotations;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -32,6 +52,7 @@ export class MediaViewerPage {
     this.sidePanels = new MediaViewerSidePanels(page);
     this.comments = new CommentsPanel(page);
     this.bookmarks = new Bookmarks(page);
+    this.annotations = new Annotations(page);
   }
 
   async stubAnnotationResponses(annotationSets?: AnnotationSetFixture[]): Promise<void> {
@@ -71,11 +92,7 @@ export class MediaViewerPage {
       const updatedAnnotation = await route.request().postDataJSON() as AnnotationFixture;
       const persistedAnnotation = {
         ...updatedAnnotation,
-        comments: (updatedAnnotation.comments as Array<Record<string, unknown>>).map((comment) => ({
-          ...comment,
-          editable: false,
-          selected: false,
-        })),
+        comments: (updatedAnnotation.comments as Array<Record<string, unknown>>).map((comment) => persistComment(comment, updatedAnnotation)),
       };
       const currentAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
         annotationSet.annotations.some((annotation) => annotation.id === updatedAnnotation.id)
@@ -84,8 +101,33 @@ export class MediaViewerPage {
         currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
           annotation.id === updatedAnnotation.id ? persistedAnnotation : annotation
         );
+      } else {
+        const owningAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
+          annotationSet.id === updatedAnnotation.annotationSetId
+        );
+        if (!owningAnnotationSet) {
+          await route.fulfill({ status: 404, json: { message: `Unknown annotation set: ${updatedAnnotation.annotationSetId}` } });
+          return;
+        }
+        owningAnnotationSet.annotations.push(persistedAnnotation);
       }
       await route.fulfill({ status: 200, json: persistedAnnotation });
+    });
+    await this.page.route('**/em-anno/annotations/**', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.continue();
+        return;
+      }
+      const annotationId = new URL(route.request().url()).pathname.split('/').pop();
+      const owningAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
+        annotationSet.annotations.some((annotation) => annotation.id === annotationId)
+      );
+      if (!owningAnnotationSet) {
+        await route.fulfill({ status: 404, json: { message: `Unknown annotation: ${annotationId}` } });
+        return;
+      }
+      owningAnnotationSet.annotations = owningAnnotationSet.annotations.filter((annotation) => annotation.id !== annotationId);
+      await route.fulfill({ status: 200, json: null });
     });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
     await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));

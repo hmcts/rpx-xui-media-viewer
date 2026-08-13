@@ -1,55 +1,11 @@
 const testConfig = require('./../../config');
-const {
-  addMultipleCommentsTest,
-  highlightTextTest,
-  annotateFromSearchTest,
-  addCommentAndRotateTest,
-  addCommentTest,
-  deleteHighlightsTest,
-  collateCommentsNotBlankTest
-} = require("../helpers/mvCaseHelper");
+const { addMultipleCommentsTest } = require("../helpers/mvCaseHelper");
 const { mvData } = require('../pages/common/constants.js');
 
 Feature('Annotations & Comments Feature');
-
-Scenario('Add comment to a rotated pdf document', async ({ I }) => {
-  await addCommentAndRotateTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
-
-}).tag('@ci')
-  .retry(testConfig.TestRetryScenarios);
-
-Scenario('Ability to highlight and draw box on pdf document', async ({ I }) => {
-  await highlightTextTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
-
-}).tag('@ci')
-  .retry(testConfig.TestRetryScenarios);
-
-Scenario('Highlight text and add a comment', async ({ I }) => {
-  await addCommentTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
-
-}).tag('@ci')
-  .retry(testConfig.TestRetryScenarios);
-
-Scenario('Collate Comments should not be blank', async ({ I }) => {
-  await collateCommentsNotBlankTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
-  
-}).tag('@ci')
-  .retry(testConfig.TestRetryScenarios);
-
-Scenario('Annotations: Annotate from search', async ({ I }) => {
-  await annotateFromSearchTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
-  
-}).tag('@ci')
-  .retry(testConfig.TestRetryScenarios);
 
 Scenario('Add multiple comments on multiples pages', async ({ I }) => {
   await addMultipleCommentsTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT);
 
 }).tag('@wip')
-  .retry(testConfig.TestRetryScenarios);
-
-Scenario('Delete all highlights', async ({ I }) => {
-  await deleteHighlightsTest(I, mvData.CASE_ID, mvData.PDF_DOCUMENT, mvData.DELETE_ANNOTATION);
-
-}).tag('@ci')
   .retry(testConfig.TestRetryScenarios);
