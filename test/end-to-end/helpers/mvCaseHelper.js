@@ -35,6 +35,12 @@ async function loadNewDocument(I, caseId, mediaType, newCaseId) {
   await I.loadDocumentAndCheckSuccessLoad(newCaseId)
 }
 
+async function deleteHighlightsTest(I, caseId, mediaType) {
+  await executeTestsOnPreview(I, caseId, mediaType);
+  await I.highlightPdfText();
+  await I.deleteAllExistingTextHighlights();
+}
+
 async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.downloadPdfDocument();
@@ -223,5 +229,6 @@ module.exports = {
   updateNonTextualCommentTest,
   deleteNonTextualCommentTest,
   redactSearchAndRedactAllTest,
-  loadNewDocument
+  loadNewDocument,
+  deleteHighlightsTest
 }

@@ -45,6 +45,8 @@ test.describe('Zoom', () => {
 
   test('keeps PDF zoom within the supported scale range', { tag: ['@e2e-functional', '@feature-zoom'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.pdf);
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
 
     await mediaViewer.zoom.select(0.1);
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('0.1');

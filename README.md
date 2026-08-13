@@ -169,9 +169,9 @@ yarn test:playwright:smoke
 ```
 
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
-`MV_SMOKE_CASE_ID`. `yarn test:smoke` now runs the Playwright smoke so Jenkins
-CNP uses the same smoke entrypoint style as MC/MO. The previous CodeceptJS smoke
-remains available as `yarn test:smoke:legacy` while migration work continues.
+`MV_SMOKE_CASE_ID`. `yarn test:smoke` and `yarn test:local:aat` run the
+Playwright smoke, so the standalone and local-AAT PDF loading journeys no longer
+fall back to CodeceptJS.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 

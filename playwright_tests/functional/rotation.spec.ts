@@ -43,4 +43,37 @@ test.describe('Rotation', () => {
     })).toBe(initialOrientation);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
   });
+
+  test('restores the default PDF orientation when the document is reloaded', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    const firstPage = mediaViewer.loadState.pdfPage(1);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+
+    const initialOrientation = await firstPage.evaluate((element) => {
+      const { width, height } = element.getBoundingClientRect();
+      return width < height ? 'portrait' : 'landscape';
+    });
+    await mediaViewer.rotation.clockwise();
+    await expect.poll(() => firstPage.evaluate((element) => {
+      const { width, height } = element.getBoundingClientRect();
+      return width < height ? 'portrait' : 'landscape';
+    })).not.toBe(initialOrientation);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect.poll(() => firstPage.evaluate((element) => {
+      const { width, height } = element.getBoundingClientRect();
+      return width < height ? 'portrait' : 'landscape';
+    })).toBe(initialOrientation);
+  });
+
+  test('restores the default image transform when the document is reloaded', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.image);
+    await mediaViewer.rotation.clockwise();
+    await expect(mediaViewer.loadState.image).toHaveClass('rot90');
+
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toHaveClass('rot0');
+    await expect(mediaViewer.loadState.image).toHaveCSS('transform', 'none');
+  });
 });

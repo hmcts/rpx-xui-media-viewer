@@ -28,6 +28,7 @@ annotationsTest.describe('PDF annotations', () => {
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
     const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     expect(rehydratedBounds).not.toBeNull();
     expect(rehydratedBounds?.width).toBeGreaterThan(0);
@@ -61,6 +62,7 @@ annotationsTest.describe('PDF annotations', () => {
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
     const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     expect(rehydratedBounds).not.toBeNull();
     expect(rehydratedBounds?.width).toBeGreaterThan(0);
@@ -154,6 +156,9 @@ annotationsTest.describe('PDF annotations', () => {
     await mediaViewer.annotations.searchInput.fill('Trace-based');
     await mediaViewer.annotations.searchButton.click();
     await expect(mediaViewer.annotations.resultCount).toContainText(/results founds/);
+    const searchResultText = await mediaViewer.annotations.resultCount.textContent();
+    const searchResultCount = Number(searchResultText?.match(/(\d+)\s+results founds/)?.[1]);
+    expect(searchResultCount).toBeGreaterThan(0);
 
     const saveRequest = page.waitForRequest((request) => request.url().endsWith('/em-anno/annotation-sets') && request.method() === 'POST');
     await mediaViewer.annotations.highlightAllButton.click();
@@ -161,6 +166,7 @@ annotationsTest.describe('PDF annotations', () => {
 
     expect(savedAnnotationSet).toMatchObject({ id: 'pw-empty-annotations-annotation-set', documentId: mediaAssets.pdf.url });
     expect(savedAnnotationSet.annotations).not.toHaveLength(0);
+    expect(savedAnnotationSet.annotations).toHaveLength(searchResultCount);
     expect(savedAnnotationSet.annotations[0]).toMatchObject({ page: expect.any(Number), type: 'highlight' });
     expect(savedAnnotationSet.annotations[0].rectangles[0].width).toBeGreaterThan(0);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(savedAnnotationSet.annotations.length);
@@ -169,22 +175,4 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(savedAnnotationSet.annotations.length);
   });
 
-  annotationsTest('removes a persisted PDF highlight and proves the DELETE contract after rehydration', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
-    await mediaViewer.annotations.openTextHighlight();
-    await mediaViewer.annotations.selectExampleFixtureText();
-    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.createButton.click();
-    const annotationId = (await saveRequest).postDataJSON().id;
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
-
-    await expect(mediaViewer.annotations.deleteButton).toBeVisible();
-    const deleteRequest = page.waitForRequest((request) => request.url().endsWith(`/em-anno/annotations/${annotationId}`) && request.method() === 'DELETE');
-    await mediaViewer.annotations.deleteButton.click();
-    await deleteRequest;
-
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(0);
-    await mediaViewer.reloadDocument(mediaAssets.pdf);
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(0);
-  });
 });
