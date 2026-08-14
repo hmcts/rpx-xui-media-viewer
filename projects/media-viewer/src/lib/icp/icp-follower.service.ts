@@ -4,9 +4,21 @@ import { select, Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
-import { distinctUntilChanged, take } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 import { IcpScreenUpdate, IcpState, IcpSession } from './icp.interfaces';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
+import { PdfPosition } from '../store/reducers/reducers';
+
+const isFiniteNumber = (value: unknown): value is number =>
+  typeof value === 'number' && Number.isFinite(value);
+
+const isValidPdfPosition = (position: Partial<PdfPosition> | undefined): position is PdfPosition =>
+  !!position &&
+  isFiniteNumber(position.pageNumber) &&
+  isFiniteNumber(position.scale) &&
+  isFiniteNumber(position.top) &&
+  isFiniteNumber(position.left) &&
+  isFiniteNumber(position.rotation);
 
 @Injectable({ providedIn: 'root' })
 export class IcpFollowerService {
@@ -45,7 +57,7 @@ export class IcpFollowerService {
   }
 
   followScreenUpdate({ pdfPosition }: Partial<IcpScreenUpdate> = {}) {
-    if (!pdfPosition) {
+    if (!isValidPdfPosition(pdfPosition)) {
       return;
     }
 
@@ -57,9 +69,9 @@ export class IcpFollowerService {
     ]);
 
     this.store.pipe(
-      select(fromDocSelectors.getPdfPosition), 
-      take(1), 
-      distinctUntilChanged(undefined, a => a.rotation))
+      select(fromDocSelectors.getPdfPosition),
+      filter((position): position is PdfPosition => !!position),
+      take(1))
       .subscribe(position => {
         if (pdfPosition.scale !== position.scale) {
           this.toolbarEvents.zoom(pdfPosition.scale);

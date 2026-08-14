@@ -105,6 +105,54 @@ describe('Icp Follower Service', () => {
     })
   );
 
+  it('should ignore incomplete or non-finite screen positions',
+    inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
+      spyOn(viewerEvents, 'goToDestinationICP');
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      const invalidPositions = [
+        { ...pdfPosition, pageNumber: undefined },
+        { ...pdfPosition, scale: undefined },
+        { ...pdfPosition, top: undefined },
+        { ...pdfPosition, left: undefined },
+        { ...pdfPosition, rotation: Number.NaN }
+      ];
+
+      invalidPositions.forEach(position =>
+        followerService.followScreenUpdate({ pdfPosition: position as PdfPosition }));
+
+      expect(viewerEvents.goToDestinationICP).not.toHaveBeenCalled();
+      expect(toolbarEvents.rotate).not.toHaveBeenCalled();
+      expect(toolbarEvents.zoom).not.toHaveBeenCalled();
+    })
+  );
+
+  it('should wait for a local PDF position before synchronising toolbar state',
+    inject([Store, ViewerEventService, ToolbarEventService], fakeAsync((store, viewerEvents, toolbarEvents) => {
+      spyOn(viewerEvents, 'goToDestinationICP');
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      const presenterPosition = { ...pdfPosition, rotation: 90, scale: 1.1 };
+      followerService.followScreenUpdate({ pdfPosition: presenterPosition });
+
+      expect(viewerEvents.goToDestinationICP).toHaveBeenCalledWith([
+        presenterPosition.pageNumber - 1,
+        { name: 'XYZ' },
+        presenterPosition.left,
+        presenterPosition.top
+      ]);
+      expect(toolbarEvents.rotate).not.toHaveBeenCalled();
+      expect(toolbarEvents.zoom).not.toHaveBeenCalled();
+
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0, scale: 1 }));
+
+      expect(toolbarEvents.zoom).toHaveBeenCalledWith(presenterPosition.scale);
+      expect(toolbarEvents.rotate).toHaveBeenCalledWith(presenterPosition.rotation);
+    }))
+  );
+
   it('should not apply a duplicate presenter rotation twice',
     inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
       spyOn(toolbarEvents, 'rotate');
