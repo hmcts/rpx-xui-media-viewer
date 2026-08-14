@@ -335,10 +335,6 @@ describe('CommentSetComponent', () => {
     })
   );
 
-  it('should track comments by their stable id', () => {
-    expect(component.trackComment(0, mockComment.comment)).toBe(mockComment.comment.id);
-  });
-
   it('should dispatch SaveAnnotation when onAnnotationUpdate called',
     inject([Store], (store: Store<{}>) => {
       spyOn(store, 'dispatch').and.callThrough();

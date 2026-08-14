@@ -43,7 +43,6 @@ export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnC
           this.convertedUrl = docInfo.url;
           this.store.dispatch(new fromDocumentActions.ClearConvertDocUrl());
         } else {
-          this.mediaLoadStatus.emit(ResponseType.FAILURE);
           this.onLoadException(new ViewerException(docInfo.error));
         }
       });

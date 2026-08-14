@@ -140,16 +140,6 @@ describe('CommentComponent', () => {
     expect(component.comment).toEqual({ ...mockComment });
   });
 
-  it('should preserve an in-progress edit when the same comment is refreshed', () => {
-    component._editable = true;
-    component.fullComment = 'Unsaved replacement text';
-
-    component.comment = { ...mockComment };
-
-    expect(component.editable).toBe(true);
-    expect(component.fullComment).toBe('Unsaved replacement text');
-  });
-
   it('should set the unsavedChanges value',
     inject([CommentService], (commentService: CommentService) => {
       spyOn(commentService, 'onCommentChange');
@@ -209,10 +199,8 @@ describe('CommentComponent', () => {
 
   it('should emit a click', () => {
     const clickEmitEventSpy = spyOn(component.commentClick, 'emit');
-    const event = { stopPropagation: jasmine.createSpy('stopPropagation') } as unknown as Event;
     component.selected = false;
-    component.onCommentClick(event);
-    expect(event.stopPropagation).toHaveBeenCalled();
+    component.onCommentClick();
     expect(clickEmitEventSpy).toHaveBeenCalledTimes(1);
   });
 

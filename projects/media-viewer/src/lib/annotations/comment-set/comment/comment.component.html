@@ -1,6 +1,6 @@
 <div
   #form
-  (click)="onCommentClick($event)"
+  (click)="onCommentClick()"
   class="aui-comment"
   [ngClass]="{ stylestoggle: (marginToComment$ | async) }"
   [style.top.px]="commentTop"

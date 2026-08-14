@@ -17,15 +17,4 @@ test.describe('Office document conversion', () => {
     await expect(mediaViewer.loadState.pdfCanvas(1)).toBeVisible();
   });
 
-  test('reports a rendered failure when Word conversion is unavailable', { tag: ['@e2e-functional', '@feature-office-conversion'] }, async ({ mediaViewer, page }) => {
-    await page.route('**/doc-assembly/convert/playwright-office-document', async (route) => {
-      await route.fulfill({ status: 503, contentType: 'application/json', json: { message: 'Conversion unavailable' } });
-    });
-    await mediaViewer.goto();
-
-    await mediaViewer.submitDocumentDetails(mediaAssets.officeDocument.url, 'playwright-office-case', mediaAssets.officeDocument.contentType);
-
-    await expect(mediaViewer.loadState.errorMessage).toBeVisible();
-    await expect(mediaViewer.loadState.pdfViewer).toHaveCount(0);
-  });
 });

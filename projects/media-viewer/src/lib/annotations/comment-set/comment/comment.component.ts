@@ -95,20 +95,17 @@ export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {
 
   @Input()
   set comment(comment: Comment) {
-    const isEditingCurrentComment = this._editable && this._comment?.id === comment.id;
     this._comment = {...comment};
     this.page = this._comment.page;
     this.lastUpdate = comment.lastModifiedDate ? comment.lastModifiedDate : comment.createdDate;
     this.author = comment.createdByDetails;
     this.createdBy = comment.createdBy;
     this.editor = comment.lastModifiedByDetails;
-    if (!isEditingCurrentComment) {
-      this.originalComment = comment.content;
-      this.fullComment = this.originalComment;
-      this.selected = this._comment.selected;
-      this._editable = this._comment.editable;
-      this.tagItems = this._comment.tags;
-    }
+    this.originalComment = comment.content;
+    this.fullComment = this.originalComment;
+    this.selected = this._comment.selected;
+    this._editable = this._comment.editable;
+    this.tagItems = this._comment.tags;
     const pageMarginBottom = 10;
     this.totalPrevPagesHeight = 0;
     for (let i = 0; i < this.page - 1; i++) {
@@ -182,8 +179,7 @@ export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {
     }
   }
 
-  onCommentClick(event?: Event) {
-    event?.stopPropagation();
+  onCommentClick() {
     if (!this.selected) {
       this.selected = true;
       this._editable = false;

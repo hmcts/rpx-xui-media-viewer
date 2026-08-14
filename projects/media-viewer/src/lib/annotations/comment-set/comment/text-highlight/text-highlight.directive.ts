@@ -7,32 +7,25 @@ import { AfterViewChecked, Directive, ElementRef, Input } from '@angular/core';
 export class TextHighlightDirective implements AfterViewChecked {
 
   @Input() textToHighlight: string;
-  private previousTextToHighlight: string;
-  private previousContent: string;
 
   constructor(private element: ElementRef<HTMLElement>) {}
 
   ngAfterViewChecked(): void {
-    const content = this.element.nativeElement.textContent;
-    if (this.textToHighlight === this.previousTextToHighlight && content === this.previousContent) {
-      return;
-    }
-
-    this.resetHighlight();
     if (this.textToHighlight) {
       this.highlightInputText(this.textToHighlight);
     }
-    this.previousTextToHighlight = this.textToHighlight;
-    this.previousContent = this.element.nativeElement.textContent;
   }
 
   highlightInputText(textToHighlight: string) {
+    this.resetHighlight();
+    this.textToHighlight = textToHighlight;
     const searchPattern = new RegExp(textToHighlight, 'gi');
     const hostElement = this.element.nativeElement;
     if (hostElement.innerHTML.match(searchPattern)) {
       hostElement.innerHTML = hostElement.innerHTML
         .replace(searchPattern, this.highlightPattern('$&'));
     }
+    this.textToHighlight = undefined;
   }
 
   resetHighlight() {

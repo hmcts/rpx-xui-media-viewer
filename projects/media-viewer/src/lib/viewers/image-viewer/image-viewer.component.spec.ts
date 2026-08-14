@@ -172,7 +172,7 @@ describe('ImageViewerComponent', () => {
     spyOn(store, 'dispatch');
     const img = { offsetHeight: 100, offsetWidth: 50, offsetLeft: 20, offsetTop: 30 };
     const payload = [{
-      div: { scrollHeight: 100, scrollWidth: 50, offsetLeft: 20, clientHeight: 100, clientWidth: 50 },
+      div: { scrollHeight: 100, scrollWidth: 50, offsetLeft: 20 },
       pageNumber: 1,
       scale: 1,
       rotation: 0,
@@ -188,7 +188,7 @@ describe('ImageViewerComponent', () => {
       component.rotation = 90;
       const img = { offsetHeight: 100, offsetWidth: 50, offsetLeft: 20, offsetTop: 30 };
       const payload = [{
-        div: { scrollHeight: 50, scrollWidth: 100, offsetLeft: 30, clientHeight: 50, clientWidth: 100 },
+        div: { scrollHeight: 50, scrollWidth: 100, offsetLeft: 30 },
         pageNumber: 1,
         scale: 1,
         rotation: 90,

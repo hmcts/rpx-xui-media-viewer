@@ -90,10 +90,6 @@ export class CommentSetComponent implements OnInit, OnDestroy, OnChanges {
     this.store.dispatch(new fromActions.SelectedAnnotation(annotationId));
   }
 
-  trackComment(_index: number, comment: Comment): string {
-    return comment.id;
-  }
-
   public onCommentDelete(comment: Comment) {
     const annotation = this.annotationSet.annotations.find(anno => anno.id === comment.annotationId);
     const comments = [];

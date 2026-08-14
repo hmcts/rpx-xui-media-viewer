@@ -1,4 +1,4 @@
-import { annotationsTest, expect, imageAnnotationCreationTest, imageAnnotationsTest, mediaAssets } from '../fixtures/mediaViewerTest';
+import { annotationsTest, expect, mediaAssets } from '../fixtures/mediaViewerTest';
 
 const annotationRequest = (url: string) => url.endsWith('/em-anno/annotations');
 
@@ -175,93 +175,4 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(savedAnnotationSet.annotations.length);
   });
 
-});
-
-imageAnnotationCreationTest.describe('Image annotations and comments', () => {
-  imageAnnotationCreationTest('creates a non-textual image highlight and persists a comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
-    await expect(mediaViewer.loadState.image).toBeVisible();
-
-    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnImage(mediaViewer.loadState.image);
-    const savedAnnotation = (await saveRequest).postDataJSON();
-
-    expect(savedAnnotation).toMatchObject({
-      annotationSetId: 'pw-empty-image-annotations-annotation-set',
-      documentId: mediaAssets.image.url,
-      page: 1,
-      type: 'highlight',
-    });
-    expect(savedAnnotation.rectangles).toHaveLength(1);
-    expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
-    expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
-
-    const commentRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.comments.addToSelectedAnnotation('Image annotation comment');
-    expect((await commentRequest).postDataJSON()).toMatchObject({
-      documentId: mediaAssets.image.url,
-      comments: [expect.objectContaining({ content: 'Image annotation comment' })],
-    });
-    await expect(mediaViewer.comments.comment('Image annotation comment')).toBeVisible();
-
-    await mediaViewer.reloadDocument(mediaAssets.image);
-    await mediaViewer.sidePanels.openComments();
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
-    await expect(mediaViewer.comments.comment('Image annotation comment')).toBeVisible();
-  });
-
-  imageAnnotationCreationTest('creates an image highlight through the draw-box contract', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
-    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-
-    await mediaViewer.annotations.drawOnImage(mediaViewer.loadState.image);
-    const savedAnnotation = (await saveRequest).postDataJSON();
-
-    expect(savedAnnotation).toMatchObject({
-      documentId: mediaAssets.image.url,
-      page: 1,
-      type: 'highlight',
-    });
-    expect(savedAnnotation.rectangles[0]).toMatchObject({
-      x: expect.any(Number),
-      y: expect.any(Number),
-      width: expect.any(Number),
-      height: expect.any(Number),
-    });
-    await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
-  });
-});
-
-imageAnnotationsTest.describe('Image annotation lifecycle', () => {
-  imageAnnotationsTest('updates a non-textual image annotation comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
-    await mediaViewer.sidePanels.openComments();
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
-    await expect(mediaViewer.comments.comment('Existing image annotation comment')).toBeVisible();
-
-    const updateRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.comments.edit('Existing image annotation comment', 'Updated image annotation comment');
-    expect((await updateRequest).postDataJSON()).toMatchObject({
-      comments: [expect.objectContaining({ content: 'Updated image annotation comment' })],
-    });
-    await expect(mediaViewer.comments.comment('Updated image annotation comment')).toBeVisible();
-    await expect(mediaViewer.comments.comment('Existing image annotation comment')).toHaveCount(0);
-  });
-
-  imageAnnotationsTest('deletes a non-textual image highlight and its comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
-    await mediaViewer.sidePanels.openComments();
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
-    await expect(mediaViewer.comments.comment('Existing image annotation comment')).toBeVisible();
-
-    await mediaViewer.annotations.renderedRectangles.first().click();
-    const deleteRequest = page.waitForRequest((request) => request.url().includes('/em-anno/annotations/') && request.method() === 'DELETE');
-    await mediaViewer.annotations.contextToolbar.getByRole('button', { name: 'Delete' }).click();
-    await deleteRequest;
-
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(0);
-    await expect(mediaViewer.comments.comment('Existing image annotation comment')).toHaveCount(0);
-  });
 });

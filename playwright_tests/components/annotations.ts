@@ -44,11 +44,6 @@ export class Annotations {
     await this.drawRectangle(page);
   }
 
-  async drawOnImage(image: Locator): Promise<void> {
-    await this.drawBoxButton.click();
-    await this.drawRectangle(image);
-  }
-
   private async drawRectangle(page: Locator): Promise<void> {
     const bounds = await page.boundingBox();
     if (!bounds) {
