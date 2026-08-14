@@ -175,6 +175,48 @@ describe('Icp Follower Service', () => {
     }))
   );
 
+  it('should only apply the latest screen update when local PDF state arrives late',
+    inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      followerService.followScreenUpdate({
+        pdfPosition: { ...pdfPosition, rotation: 90, scale: 1.1 }
+      });
+      followerService.followScreenUpdate({
+        pdfPosition: { ...pdfPosition, rotation: 180, scale: 1.2 }
+      });
+
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0, scale: 1 }));
+
+      expect(toolbarEvents.zoom).toHaveBeenCalledTimes(1);
+      expect(toolbarEvents.zoom).toHaveBeenCalledWith(1.2);
+      expect(toolbarEvents.rotate).toHaveBeenCalledTimes(1);
+      expect(toolbarEvents.rotate).toHaveBeenCalledWith(180);
+    }))
+  );
+
+  it('should not let an invalid update supersede a pending valid screen update',
+    inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      followerService.followScreenUpdate({
+        pdfPosition: { ...pdfPosition, rotation: 90, scale: 1.1 }
+      });
+      followerService.followScreenUpdate({
+        pdfPosition: { ...pdfPosition, pageNumber: 0 }
+      });
+
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0, scale: 1 }));
+
+      expect(toolbarEvents.zoom).toHaveBeenCalledTimes(1);
+      expect(toolbarEvents.zoom).toHaveBeenCalledWith(1.1);
+      expect(toolbarEvents.rotate).toHaveBeenCalledTimes(1);
+      expect(toolbarEvents.rotate).toHaveBeenCalledWith(90);
+    }))
+  );
+
   it('should not apply a duplicate presenter rotation twice',
     inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
       spyOn(toolbarEvents, 'rotate');

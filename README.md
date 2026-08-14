@@ -144,10 +144,12 @@ Playwright Odhín report also includes a capability inventory showing covered,
 partially covered and legacy-only Media Viewer areas, with the remaining
 assurance gap for each capability.
 
-The Playwright config runs tests fully in parallel with seven workers. Each test
-gets its own browser context and page-scoped route mocks. Tests must not depend
-on execution order or share mutable documents; mutation-heavy AAT journeys must
-provision a document per test or reset it before reuse.
+The Playwright config runs tests fully in parallel with seven workers by
+default. Set `FUNCTIONAL_TESTS_WORKERS` to a positive integer (up to 64) for an
+intentional capacity run. Each test gets its own browser context and page-scoped
+route mocks. Tests must not depend on execution order or share mutable
+documents; mutation-heavy AAT journeys must provision a document per test or
+reset it before reuse.
 
 Install Chromium once before local runs when the browser cache is empty:
 

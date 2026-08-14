@@ -1,7 +1,7 @@
 import { Injectable } from '@angular/core';
 import { ToolbarEventService } from '../toolbar/toolbar-event.service';
 import { select, Store } from '@ngrx/store';
-import { Subject, Subscription } from 'rxjs';
+import { merge, Subject, Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
 import { filter, take, takeUntil } from 'rxjs/operators';
@@ -33,6 +33,7 @@ export class IcpFollowerService {
   private previousRotation: number|null = null;
   $subscription: Subscription;
   private readonly stopFollowing$ = new Subject<void>();
+  private readonly supersedeScreenUpdate$ = new Subject<void>();
 
   constructor(private readonly toolbarEvents: ToolbarEventService,
     private readonly viewerEvents: ViewerEventService,
@@ -70,6 +71,9 @@ export class IcpFollowerService {
       return;
     }
 
+    // Local PDF state can arrive after several socket messages. Only the newest
+    // valid screen update may synchronise toolbar state once it is available.
+    this.supersedeScreenUpdate$.next();
     this.viewerEvents.goToDestinationICP([
       pdfPosition.pageNumber - 1,
       { 'name': 'XYZ' },
@@ -80,7 +84,7 @@ export class IcpFollowerService {
     this.store.pipe(
       select(fromDocSelectors.getPdfPosition),
       filter((position): position is PdfPosition => !!position),
-      takeUntil(this.stopFollowing$),
+      takeUntil(merge(this.stopFollowing$, this.supersedeScreenUpdate$)),
       take(1))
       .subscribe(position => {
         if (pdfPosition.scale !== position.scale) {

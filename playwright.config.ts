@@ -12,7 +12,7 @@ const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
-const defaultFunctionalWorkerCount = 5;
+const defaultFunctionalWorkerCount = 7;
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
