@@ -51,16 +51,12 @@ export class Redactions {
     await this.redactTextButton.click();
     const text = this.page.locator('.textLayer').first().locator(':scope > *').nth(4);
     await text.waitFor({ state: 'visible' });
-    await text.evaluate((element) => {
-      const selection = window.getSelection();
-      const range = document.createRange();
-      range.selectNodeContents(element);
-      selection?.removeAllRanges();
-      selection?.addRange(range);
-    });
     const bounds = await text.boundingBox();
     if (!bounds) throw new Error('PDF text was not visible for redaction selection');
-    await this.page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    const y = bounds.y + bounds.height / 2;
+    await this.page.mouse.move(bounds.x + 2, y);
+    await this.page.mouse.down();
+    await this.page.mouse.move(bounds.x + bounds.width - 2, y);
     await this.page.mouse.up();
   }
 

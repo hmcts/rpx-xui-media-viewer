@@ -14,6 +14,7 @@ test.describe('Redaction', () => {
     const payload = redaction.postDataJSON() as { documentId: string; page: number; rectangles: Array<{ width: number; height: number }> };
     expect(payload.documentId).toBe(mediaAssets.pdf.url);
     expect(payload.page).toBe(1);
+    expect(payload.rectangles).not.toHaveLength(0);
     expect(payload.rectangles[0].width).toBeGreaterThan(0);
     expect(payload.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.redactions.markers).toHaveCount(1);
@@ -61,6 +62,7 @@ test.describe('Redaction', () => {
     const secondRedaction = (await secondSaveRequest).postDataJSON() as { documentId: string; page: number; redactionId: string };
 
     expect(firstRedaction).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1, redactionId: expect.any(String) });
+    expect(firstRedaction.rectangles).not.toHaveLength(0);
     expect(firstRedaction.rectangles[0].width).toBeGreaterThan(0);
     expect(firstRedaction.rectangles[0].height).toBeGreaterThan(0);
     expect(secondRedaction.redactionId).not.toBe(firstRedaction.redactionId);
@@ -103,6 +105,7 @@ test.describe('Redaction', () => {
     for (const redaction of bulkRedaction.searchRedactions) {
       expect(redaction.documentId).toBe(mediaAssets.pdf.url);
       expect(redaction.page).toBeGreaterThan(0);
+      expect(redaction.rectangles).not.toHaveLength(0);
       expect(redaction.rectangles[0].width).toBeGreaterThan(0);
       expect(redaction.rectangles[0].height).toBeGreaterThan(0);
     }
@@ -119,6 +122,7 @@ test.describe('Redaction', () => {
     const redaction = await saveRequest;
     const payload = redaction.postDataJSON() as { documentId: string; page: number; redactionId: string; rectangles: Array<{ width: number; height: number }> };
     expect(payload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
+    expect(payload.rectangles).not.toHaveLength(0);
     expect(payload.rectangles[0].width).toBeGreaterThan(0);
     expect(payload.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.redactions.markers).toHaveCount(1);
@@ -153,9 +157,11 @@ test.describe('Redaction', () => {
     await mediaViewer.openRedactions();
     const fullPageSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
     await mediaViewer.redactions.redactCurrentPage();
-    const fullPagePayload = (await fullPageSave).postDataJSON() as { page: number; rectangles: Array<{ width: number; height: number }> };
-    expect(fullPagePayload).toMatchObject({ page: 1 });
+    const fullPagePayload = (await fullPageSave).postDataJSON() as { documentId: string; page: number; rectangles: Array<{ width: number; height: number }> };
+    expect(fullPagePayload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
     expect(fullPagePayload.rectangles).not.toHaveLength(0);
+    expect(fullPagePayload.rectangles[0].width).toBeGreaterThan(0);
+    expect(fullPagePayload.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.redactions.markers).toHaveCount(1);
   });
 
@@ -166,12 +172,16 @@ test.describe('Redaction', () => {
     await mediaViewer.openRedactions();
     const firstPageSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
     await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
-    expect((await firstPageSave).postDataJSON()).toMatchObject({ page: 1 });
+    const firstPagePayload = (await firstPageSave).postDataJSON() as { documentId: string; page: number; rectangles: Array<{ width: number; height: number }> };
+    expect(firstPagePayload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
+    expect(firstPagePayload.rectangles).not.toHaveLength(0);
     await mediaViewer.navigation.goToPage(2);
     await expect(mediaViewer.loadState.pdfPage(2)).toHaveAttribute('data-loaded', 'true');
     const secondPageSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
     await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(2));
-    expect((await secondPageSave).postDataJSON()).toMatchObject({ page: 2 });
+    const secondPagePayload = (await secondPageSave).postDataJSON() as { documentId: string; page: number; rectangles: Array<{ width: number; height: number }> };
+    expect(secondPagePayload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 2 });
+    expect(secondPagePayload.rectangles).not.toHaveLength(0);
     await expect(mediaViewer.redactions.markers).toHaveCount(2);
   });
 
