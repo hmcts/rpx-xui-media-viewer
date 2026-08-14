@@ -44,6 +44,7 @@ test.describe('Redaction', () => {
     expect(payload.redactions).toHaveLength(1);
     expect(payload.redactions[0].page).toBe(1);
     expect(completedDownload.suggestedFilename()).toBe('redacted.pdf');
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
   });
 
   test('deletes one persisted marker while keeping its sibling redaction', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
@@ -106,6 +107,72 @@ test.describe('Redaction', () => {
       expect(redaction.rectangles[0].height).toBeGreaterThan(0);
     }
     await expect(mediaViewer.redactions.markers).toHaveCount(searchResultCount);
+  });
+
+  test('redacts selected text and removes the persisted marker', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-text-case', mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const saveRequest = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.redactExampleFixtureText();
+    const redaction = await saveRequest;
+    const payload = redaction.postDataJSON() as { documentId: string; page: number; redactionId: string; rectangles: Array<{ width: number; height: number }> };
+    expect(payload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
+    expect(payload.rectangles[0].width).toBeGreaterThan(0);
+    expect(payload.rectangles[0].height).toBeGreaterThan(0);
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
+    const deleteRequest = page.waitForRequest((request) => request.method() === 'DELETE' && new URL(request.url()).pathname.endsWith(payload.redactionId));
+    await mediaViewer.redactions.markers.first().click();
+    await mediaViewer.redactions.deleteSelectedMarker();
+    await deleteRequest;
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+  });
+
+  test('keeps text and draw-box redactions together after reload', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-combined-case', mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const firstSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.redactExampleFixtureText();
+    await firstSave;
+    const secondSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await secondSave;
+    await expect(mediaViewer.redactions.markers).toHaveCount(2);
+    await mediaViewer.reloadDocument(mediaAssets.pdf, 'playwright-redaction-combined-case');
+    await mediaViewer.openRedactions();
+    await expect(mediaViewer.redactions.markers).toHaveCount(2);
+  });
+
+  test('redacts a full PDF page with positive geometry', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-page-case', mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const fullPageSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.redactCurrentPage();
+    const fullPagePayload = (await fullPageSave).postDataJSON() as { page: number; rectangles: Array<{ width: number; height: number }> };
+    expect(fullPagePayload).toMatchObject({ page: 1 });
+    expect(fullPagePayload.rectangles).not.toHaveLength(0);
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
+  });
+
+  test('retains redactions on multiple PDF pages', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-multi-page-case', mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const firstPageSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    expect((await firstPageSave).postDataJSON()).toMatchObject({ page: 1 });
+    await mediaViewer.navigation.goToPage(2);
+    await expect(mediaViewer.loadState.pdfPage(2)).toHaveAttribute('data-loaded', 'true');
+    const secondPageSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(2));
+    expect((await secondPageSave).postDataJSON()).toMatchObject({ page: 2 });
+    await expect(mediaViewer.redactions.markers).toHaveCount(2);
   });
 
 });

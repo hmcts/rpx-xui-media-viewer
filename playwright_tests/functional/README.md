@@ -19,11 +19,11 @@ legacy-only areas and the next assurance gaps, is stored in
 | Office document conversion | `officeConversion.spec.ts` | 1 | Word conversion request and returned-PDF rendering using a deterministic document-assembly response. Conversion-failure diagnostics and live document-assembly/AAT coverage remain separately tracked. |
 | Bookmarks | `bookmarks.spec.ts` | 10 (1 skipped) | All eight legacy Codecept bookmark scenarios are retired. Playwright covers highlight-origin and panel creation, update, delete/sibling promotion, single and multiple empty drafts, sorting and bulk lifecycle; rendered reorder remains skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097) |
 | Print and download | `printDownload.spec.ts` | 2 | Direct and overflow toolbar actions plus exact print URL and PDF.js download URL/filename hand-off contracts |
-| Redaction | `redactions.spec.ts` | 4 | Real draw-box geometry and persistence, preview, single-marker and clear-all deletion, search/redact-all persistence, plus redaction-service payload and downloaded PDF filename. Text selection, combined draw-box/text, full-page/multi-page and post-download reset retain their Codecept safety net pending AAT/service-contract evidence. |
+| Redaction | `redactions.spec.ts` | 8 | Playwright covers all 12 historical redaction scenarios through real draw-box and text-selection gestures, combined markers, full-page and multi-page redaction, single-marker and clear-all deletion, preview state, search/redact-all persistence, redaction request payload, downloaded PDF filename and post-download reset. AAT/service-contract evidence is still required before claiming live-service equivalence. |
 | Multimedia playback | `multimedia.spec.ts` | 4 | MP4 readiness, real MP3 play/pause/rewind state transitions, disabled-player download fallback and unsupported-media diagnostics |
 | In-court presentation (ICP) | — | 0 | Not claimed in Playwright. Add leader/follower page, zoom and rotation synchronisation after a separate product fix; live session-service/Web PubSub coverage remains separately tracked. |
-| **Functional total** | 12 feature files | **58 (1 skipped)** | Behaviour-level functional coverage |
-| **Playwright total** | Functional plus smoke | **59 (1 skipped)** | Adds one standalone PDF-readiness contract |
+| **Functional total** | 12 feature files | **62 (1 skipped)** | Behaviour-level functional coverage |
+| **Playwright total** | Functional plus smoke | **63 (1 skipped)** | Adds one standalone PDF-readiness contract |
 
 Run the whole migrated functional suite:
 

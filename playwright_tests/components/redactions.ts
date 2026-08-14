@@ -3,6 +3,8 @@ import type { Locator, Page } from '@playwright/test';
 export class Redactions {
   readonly toolbar: Locator;
   readonly drawBoxButton: Locator;
+  readonly redactPageButton: Locator;
+  readonly redactTextButton: Locator;
   readonly fromSearchButton: Locator;
   readonly searchInput: Locator;
   readonly searchButton: Locator;
@@ -18,6 +20,8 @@ export class Redactions {
   constructor(private readonly page: Page) {
     this.toolbar = page.locator('mv-redaction-toolbar');
     this.drawBoxButton = this.toolbar.getByRole('button', { name: 'Draw a box' });
+    this.redactPageButton = this.toolbar.getByRole('button', { name: 'Redact page' });
+    this.redactTextButton = this.toolbar.getByRole('button', { name: 'Redact text' });
     this.fromSearchButton = this.toolbar.getByRole('button', { name: 'From search' });
     this.searchInput = page.getByRole('textbox', { name: 'Redact from search' });
     this.searchButton = page.locator('#mvSearchAllBtn');
@@ -41,6 +45,28 @@ export class Redactions {
     await this.page.mouse.down();
     await this.page.mouse.move(bounds.x + start.x + 100, bounds.y + start.y + 50);
     await this.page.mouse.up();
+  }
+
+  async redactExampleFixtureText(): Promise<void> {
+    await this.redactTextButton.click();
+    const text = this.page.locator('.textLayer').first().locator(':scope > *').nth(4);
+    await text.waitFor({ state: 'visible' });
+    await text.evaluate((element) => {
+      const selection = window.getSelection();
+      const range = document.createRange();
+      range.selectNodeContents(element);
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+    });
+    const bounds = await text.boundingBox();
+    if (!bounds) throw new Error('PDF text was not visible for redaction selection');
+    await this.page.mouse.move(bounds.x + bounds.width / 2, bounds.y + bounds.height / 2);
+    await this.page.mouse.up();
+  }
+
+  async redactCurrentPage(): Promise<void> {
+    await this.redactPageButton.click();
+    await this.page.locator('mv-box-highlight-create').first().locator('div').first().click();
   }
 
   async deleteSelectedMarker(): Promise<void> {
