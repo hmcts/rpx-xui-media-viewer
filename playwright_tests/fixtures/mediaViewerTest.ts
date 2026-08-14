@@ -85,4 +85,14 @@ export const imageAnnotationsTest = base.extend<{ mediaViewer: MediaViewerPage }
   },
 });
 
+export const redactionsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
+  mediaViewer: async ({ page }, use) => {
+    const mediaViewer = new MediaViewerPage(page);
+    await mediaViewer.stubAnnotationResponses();
+    await mediaViewer.stubRotationResponses();
+    await mediaViewer.stubRedactionResponses();
+    await use(mediaViewer);
+  },
+});
+
 export { expect } from '@playwright/test';

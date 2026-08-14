@@ -19,10 +19,11 @@ legacy-only areas and the next assurance gaps, is stored in
 | Office document conversion | `officeConversion.spec.ts` | 2 | Word conversion request, returned-PDF rendering and visible conversion-failure diagnostics using a deterministic document-assembly response. Live document-assembly/AAT coverage remains separately tracked. |
 | Bookmarks | `bookmarks.spec.ts` | 10 (1 skipped) | All eight legacy Codecept bookmark scenarios are retired. Playwright covers highlight-origin and panel creation, update, delete/sibling promotion, single and multiple empty drafts, sorting and bulk lifecycle; rendered reorder remains skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097) |
 | Print and download | `printDownload.spec.ts` | 2 | Direct and overflow toolbar actions plus exact print URL and PDF.js download URL/filename hand-off contracts |
+| Redaction | `redactions.spec.ts` | 2 | Real draw-box geometry and persistence, preview and clear-all state, plus redaction-service payload and downloaded PDF filename. Text/search/page and multi-page redaction retain their Codecept safety net pending AAT/service-contract evidence. |
 | Multimedia playback | `multimedia.spec.ts` | 4 | MP4 readiness, real MP3 play/pause/rewind state transitions, disabled-player download fallback and unsupported-media diagnostics |
 | In-court presentation (ICP) | `icp.spec.ts` | 1 | Leader/follower presentation launch and deterministic server screen update with follower viewport, zoom and rotation synchronisation. Live session-service/Web PubSub integration remains separately tracked. |
-| **Functional total** | 13 feature files | **60 (1 skipped)** | Behaviour-level functional coverage |
-| **Playwright total** | Functional plus smoke | **61 (1 skipped)** | Adds one standalone PDF-readiness contract |
+| **Functional total** | 14 feature files | **62 (1 skipped)** | Behaviour-level functional coverage |
+| **Playwright total** | Functional plus smoke | **63 (1 skipped)** | Adds one standalone PDF-readiness contract |
 
 Run the whole migrated functional suite:
 

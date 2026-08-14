@@ -9,6 +9,7 @@ import { SearchControls } from '../components/searchControls';
 import { ZoomControls } from '../components/zoomControls';
 import { Bookmarks } from '../components/bookmarks';
 import { Annotations } from '../components/annotations';
+import { Redactions } from '../components/redactions';
 import type { AnnotationFixture, AnnotationSetFixture } from '../fixtures/mediaViewerComments';
 import type { MediaAsset } from '../fixtures/mediaAssets';
 
@@ -41,6 +42,7 @@ export class MediaViewerPage {
   readonly comments: CommentsPanel;
   readonly bookmarks: Bookmarks;
   readonly annotations: Annotations;
+  readonly redactions: Redactions;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -53,6 +55,7 @@ export class MediaViewerPage {
     this.comments = new CommentsPanel(page);
     this.bookmarks = new Bookmarks(page);
     this.annotations = new Annotations(page);
+    this.redactions = new Redactions(page);
   }
 
   async stubAnnotationResponses(annotationSets?: AnnotationSetFixture[]): Promise<void> {
@@ -152,6 +155,40 @@ export class MediaViewerPage {
     });
   }
 
+  async stubRedactionResponses(): Promise<void> {
+    const redactions: Array<Record<string, unknown>> = [];
+    await this.page.route('**/api/markups', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
+      const redaction = await route.request().postDataJSON() as Record<string, unknown>;
+      redactions.push(redaction);
+      await route.fulfill({ status: 200, json: redaction });
+    });
+    await this.page.route('**/api/markups/**', async (route) => {
+      const request = route.request();
+      if (request.method() === 'GET') {
+        await route.fulfill({ status: 200, json: redactions });
+        return;
+      }
+      if (request.method() === 'DELETE') {
+        redactions.splice(0, redactions.length);
+        await route.fulfill({ status: 200, json: null });
+        return;
+      }
+      await route.fallback();
+    });
+    await this.page.route('**/api/redaction', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/pdf',
+        headers: { 'content-disposition': 'attachment; filename="redacted.pdf"' },
+        path: 'src/assets/example.pdf',
+      });
+    });
+  }
+
   async goto(): Promise<void> {
     const response = await this.page.goto('/#/media-viewer', { waitUntil: 'domcontentloaded' });
     const isViewerRoute = new URL(this.page.url()).hash === '#/media-viewer';
@@ -230,5 +267,22 @@ export class MediaViewerPage {
     if (!(await annotationCheckbox.isChecked())) {
       throw new Error('Annotation toggle did not enable annotations');
     }
+  }
+
+  async enableRedactions(): Promise<void> {
+    const redactionCheckbox = this.page.locator('#toggleRedact');
+    const redactionToggle = this.page.locator('label[for="toggleRedact"]');
+    await redactionCheckbox.waitFor({ state: 'attached' });
+    if (!(await redactionCheckbox.isChecked())) {
+      await redactionToggle.click();
+    }
+    if (!(await redactionCheckbox.isChecked())) {
+      throw new Error('Redaction toggle did not enable redactions');
+    }
+  }
+
+  async openRedactions(): Promise<void> {
+    await this.toolbar.clickAction('Redact');
+    await this.redactions.toolbar.waitFor({ state: 'visible' });
   }
 }
