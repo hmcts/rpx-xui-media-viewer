@@ -185,4 +185,82 @@ test.describe('Redaction', () => {
     await expect(mediaViewer.redactions.markers).toHaveCount(2);
   });
 
+  test('saves exactly the redactions created on two PDF pages', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-multi-page-save-case', mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const firstSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    const firstRedaction = (await firstSave).postDataJSON() as { redactionId: string; page: number };
+    await mediaViewer.navigation.goToPage(2);
+    await expect(mediaViewer.loadState.pdfPage(2)).toHaveAttribute('data-loaded', 'true');
+    const secondSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(2));
+    const secondRedaction = (await secondSave).postDataJSON() as { redactionId: string; page: number };
+
+    const redactionRequest = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/redaction');
+    const download = page.waitForEvent('download');
+    await mediaViewer.redactions.saveDocumentButton.click();
+    const [request, completedDownload] = await Promise.all([redactionRequest, download]);
+    const payload = request.postDataJSON() as { documentId: string; redactions: Array<{ redactionId: string; page: number }> };
+    expect(payload.documentId).toBe(mediaAssets.pdf.url);
+    expect(payload.redactions).toHaveLength(2);
+    expect(payload.redactions).toEqual(expect.arrayContaining([firstRedaction, secondRedaction]));
+    expect(completedDownload.suggestedFilename()).toBe('redacted.pdf');
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+  });
+
+  test('clears persisted redactions across PDF pages without restoring them after reload', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    const caseId = 'playwright-redaction-multi-page-clear-case';
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, caseId, mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const firstSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await firstSave;
+    await mediaViewer.navigation.goToPage(2);
+    await expect(mediaViewer.loadState.pdfPage(2)).toHaveAttribute('data-loaded', 'true');
+    const secondSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(2));
+    await secondSave;
+    await expect(mediaViewer.redactions.markers).toHaveCount(2);
+
+    const clearRequest = page.waitForRequest((request) => request.method() === 'DELETE' && new URL(request.url()).pathname.endsWith(mediaAssets.pdf.url));
+    await mediaViewer.redactions.clearAllButton.click();
+    await clearRequest;
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+    await mediaViewer.reloadDocument(mediaAssets.pdf, caseId);
+    await mediaViewer.openRedactions();
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+  });
+
+  test('keeps the remaining multi-page marker after deleting its sibling and reloading', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    const caseId = 'playwright-redaction-multi-page-delete-case';
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, caseId, mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    const firstSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    const firstRedaction = (await firstSave).postDataJSON() as { redactionId: string };
+
+    const secondSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.navigation.goToNextPage();
+    await expect(mediaViewer.navigation.pageNumberInput).toHaveValue('2');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(2));
+    await secondSave;
+
+    await mediaViewer.redactions.markers.first().click();
+    const deleteRequest = page.waitForRequest((request) => request.method() === 'DELETE' && new URL(request.url()).pathname.endsWith(firstRedaction.redactionId));
+    await mediaViewer.redactions.deleteSelectedMarker();
+    await deleteRequest;
+    await mediaViewer.reloadDocument(mediaAssets.pdf, caseId);
+    await mediaViewer.openRedactions();
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
+    await expect(page.locator('mv-redactions .pageContainer__page[redaction-page-num="1"] .rectangle')).toHaveCount(0);
+    await expect(page.locator('mv-redactions .pageContainer__page[redaction-page-num="2"] .rectangle')).toHaveCount(1);
+  });
+
 });
