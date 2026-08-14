@@ -1,6 +1,6 @@
 type NonPdfMediaAsset = {
   url: string;
-  contentType: 'image' | 'mp3' | 'mp4' | 'unsupported';
+  contentType: 'image' | 'mp3' | 'mp4' | 'unsupported' | 'word';
 };
 
 export type MediaAsset =
@@ -17,5 +17,6 @@ export const mediaAssets = {
   image: { url: 'assets/example.jpg', contentType: 'image' },
   audio: { url: 'assets/multimedia/audio_test.mp3', contentType: 'mp3' },
   video: { url: 'assets/multimedia/movie.mp4', contentType: 'mp4' },
+  officeDocument: { url: '/documents/playwright-office-document/binary', contentType: 'word' },
   unsupported: { url: 'assets/unsupported.txt', contentType: 'unsupported' },
 } as const satisfies Record<string, MediaAsset>;

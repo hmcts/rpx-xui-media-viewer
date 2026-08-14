@@ -53,6 +53,23 @@ test.describe('Rotation', () => {
     await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).toBe(initialOrientation);
   });
 
+  test('resets PDF orientation when a rotated document is replaced', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.replacementPdf);
+    const replacementOrientation = await mediaViewer.loadState.pdfOrientation(1);
+
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    const firstPage = mediaViewer.loadState.pdfPage(1);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
+
+    await mediaViewer.rotation.clockwise();
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).not.toBe(initialOrientation);
+
+    await mediaViewer.loadDocument(mediaAssets.replacementPdf.url, 'standalone-media-viewer-fixture', mediaAssets.replacementPdf.contentType);
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).toBe(replacementOrientation);
+  });
+
   savedRotationTest('restores a server-supplied PDF orientation after reload', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer, page }) => {
     const metadataResponse = page.waitForResponse((response) =>
       response.url().includes(`/em-anno/metadata/${mediaAssets.pdf.url}`) && response.request().method() === 'GET'

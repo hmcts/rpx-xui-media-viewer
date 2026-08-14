@@ -73,7 +73,10 @@ test.describe('Search', () => {
 
   test('excludes partial-word matches when whole-word search is selected', { tag: ['@e2e-functional', '@feature-search'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.pdf);
-    await mediaViewer.search.searchFor('compile');
+    // `type` appears both as a standalone word and inside `typed`/`types` in
+    // the checked-in PDF fixture, so it proves the whole-word filter rather
+    // than relying on a term the document no longer contains.
+    await mediaViewer.search.searchFor('type');
     await expect(mediaViewer.search.results).toContainText('of');
     const partialWordMatches = Number((await mediaViewer.search.results.textContent())?.match(/of (\d+)/)?.[1]);
 

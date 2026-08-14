@@ -132,7 +132,7 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 52 behaviour tests across 10 explicit feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 56 behaviour tests across 12 explicit feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
@@ -144,10 +144,12 @@ Playwright Odhín report also includes a capability inventory showing covered,
 partially covered and legacy-only Media Viewer areas, with the remaining
 assurance gap for each capability.
 
-The Playwright config runs tests fully in parallel with seven workers. Each test
-gets its own browser context and page-scoped route mocks. Tests must not depend
-on execution order or share mutable documents; mutation-heavy AAT journeys must
-provision a document per test or reset it before reuse.
+The Playwright config runs tests fully in parallel with seven workers by
+default. Set `FUNCTIONAL_TESTS_WORKERS` to a positive integer (up to 64) for an
+intentional capacity run. Each test gets its own browser context and page-scoped
+route mocks. Tests must not depend on execution order or share mutable
+documents; mutation-heavy AAT journeys must provision a document per test or
+reset it before reuse.
 
 Install Chromium once before local runs when the browser cache is empty:
 

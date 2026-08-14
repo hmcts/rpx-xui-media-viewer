@@ -41,9 +41,13 @@ export class Annotations {
   async drawOnPage(page: Locator): Promise<void> {
     await this.page.locator('#mvHighlightBtn').click();
     await this.drawBoxButton.click();
+    await this.drawRectangle(page);
+  }
+
+  private async drawRectangle(page: Locator): Promise<void> {
     const bounds = await page.boundingBox();
     if (!bounds) {
-      throw new Error('PDF page was not visible for draw-box annotation');
+      throw new Error('Media page was not visible for draw-box annotation');
     }
     await this.page.mouse.move(bounds.x + 80, bounds.y + 80);
     await this.page.mouse.down();
