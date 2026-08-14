@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
 import { distinctUntilChanged, take } from 'rxjs/operators';
-import { IcpState, IcpSession } from './icp.interfaces';
+import { IcpScreenUpdate, IcpState, IcpSession } from './icp.interfaces';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
 
 @Injectable({ providedIn: 'root' })
@@ -41,17 +41,21 @@ export class IcpFollowerService {
       this.$subscription.unsubscribe();
       this.$subscription = undefined;
     }
+    this.previousRotation = null;
   }
 
-  followScreenUpdate({ pdfPosition }) {
-    if (pdfPosition) {
-      this.viewerEvents.goToDestinationICP([
-        pdfPosition.pageNumber - 1,
-        { 'name': 'XYZ' },
-        pdfPosition.left,
-        pdfPosition.top
-      ]);
+  followScreenUpdate({ pdfPosition }: Partial<IcpScreenUpdate> = {}) {
+    if (!pdfPosition) {
+      return;
     }
+
+    this.viewerEvents.goToDestinationICP([
+      pdfPosition.pageNumber - 1,
+      { 'name': 'XYZ' },
+      pdfPosition.left,
+      pdfPosition.top
+    ]);
+
     this.store.pipe(
       select(fromDocSelectors.getPdfPosition), 
       take(1), 
@@ -67,6 +71,7 @@ export class IcpFollowerService {
         if (rotationDelta && rotationDelta !== 0) {
           this.toolbarEvents.rotate(rotationDelta);
         }
+        this.previousRotation = pdfPosition.rotation;
       });
   }
 }

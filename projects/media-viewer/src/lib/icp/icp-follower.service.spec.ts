@@ -90,4 +90,31 @@ describe('Icp Follower Service', () => {
       expect(toolbarEvents.zoom).toHaveBeenCalledWith(1.1);
     }))
   );
+
+  it('should ignore an update without a screen position',
+    inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
+      spyOn(viewerEvents, 'goToDestinationICP');
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      followerService.followScreenUpdate({});
+
+      expect(viewerEvents.goToDestinationICP).not.toHaveBeenCalled();
+      expect(toolbarEvents.rotate).not.toHaveBeenCalled();
+      expect(toolbarEvents.zoom).not.toHaveBeenCalled();
+    })
+  );
+
+  it('should not apply a duplicate presenter rotation twice',
+    inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
+      spyOn(toolbarEvents, 'rotate');
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0 }));
+
+      followerService.followScreenUpdate({ pdfPosition });
+      followerService.followScreenUpdate({ pdfPosition });
+
+      expect(toolbarEvents.rotate).toHaveBeenCalledTimes(1);
+      expect(toolbarEvents.rotate).toHaveBeenCalledWith(pdfPosition.rotation);
+    }))
+  );
 });

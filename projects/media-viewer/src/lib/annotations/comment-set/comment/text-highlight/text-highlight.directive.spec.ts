@@ -34,4 +34,24 @@ describe('TextHighlightDirective', () => {
 
     expect(hostElement.querySelector('span.mvTextHighlight')).toBeFalsy();
   });
+
+  it('should remove a previous highlight when the search is cleared', () => {
+    directive.textToHighlight = 'text';
+    directive.ngAfterViewChecked();
+
+    directive.textToHighlight = '';
+    directive.ngAfterViewChecked();
+
+    expect(hostElement.querySelector('span.mvTextHighlight')).toBeFalsy();
+  });
+
+  it('should highlight replacement content for an unchanged search', () => {
+    directive.textToHighlight = 'text';
+    directive.ngAfterViewChecked();
+
+    hostElement.innerText = 'replacement text';
+    directive.ngAfterViewChecked();
+
+    expect(hostElement.querySelector('span.mvTextHighlight').textContent).toBe('text');
+  });
 });

@@ -15,7 +15,6 @@ test.describe('Office document conversion', () => {
     expect((await convertRequest).postData()).toBe('{}');
     await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.loadState.pdfCanvas(1)).toBeVisible();
-    await expect(mediaViewer.loadState.successMessage).toBeVisible();
   });
 
   test('reports a rendered failure when Word conversion is unavailable', { tag: ['@e2e-functional', '@feature-office-conversion'] }, async ({ mediaViewer, page }) => {

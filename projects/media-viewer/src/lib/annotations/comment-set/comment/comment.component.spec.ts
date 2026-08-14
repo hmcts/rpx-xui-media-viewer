@@ -140,6 +140,16 @@ describe('CommentComponent', () => {
     expect(component.comment).toEqual({ ...mockComment });
   });
 
+  it('should preserve an in-progress edit when the same comment is refreshed', () => {
+    component._editable = true;
+    component.fullComment = 'Unsaved replacement text';
+
+    component.comment = { ...mockComment };
+
+    expect(component.editable).toBe(true);
+    expect(component.fullComment).toBe('Unsaved replacement text');
+  });
+
   it('should set the unsavedChanges value',
     inject([CommentService], (commentService: CommentService) => {
       spyOn(commentService, 'onCommentChange');
