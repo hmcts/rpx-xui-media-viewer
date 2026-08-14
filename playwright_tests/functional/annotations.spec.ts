@@ -27,8 +27,10 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
+    await mediaViewer.annotations.renderedRectangles.first().scrollIntoViewIfNeeded();
     const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     expect(rehydratedBounds).not.toBeNull();
     expect(rehydratedBounds?.width).toBeGreaterThan(0);
@@ -61,8 +63,10 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
+    await mediaViewer.annotations.renderedRectangles.first().scrollIntoViewIfNeeded();
     const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     expect(rehydratedBounds).not.toBeNull();
     expect(rehydratedBounds?.width).toBeGreaterThan(0);
