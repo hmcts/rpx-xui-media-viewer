@@ -95,6 +95,37 @@ export const emptyAnnotationsAnnotationSet: AnnotationSetFixture = {
   annotations: [],
 };
 
+export const imageAnnotationsAnnotationSet: AnnotationSetFixture = {
+  id: 'pw-image-annotations-annotation-set',
+  documentId: mediaAssets.image.url,
+  annotations: [{
+    id: 'pw-image-annotation',
+    annotationSetId: 'pw-image-annotations-annotation-set',
+    page: 1,
+    type: 'highlight',
+    color: 'FFFF00',
+    tags: [],
+    rectangles: [{ id: 'pw-image-rectangle', annotationId: 'pw-image-annotation', x: 40, y: 60, width: 120, height: 80 }],
+    comments: [{
+      id: 'pw-image-comment',
+      annotationId: 'pw-image-annotation',
+      content: 'Existing image annotation comment',
+      createdBy: 'pw-user',
+      createdByDetails: { forename: 'Playwright', surname: 'User' },
+      lastModifiedBy: 'pw-user',
+      lastModifiedByDetails: { forename: 'Playwright', surname: 'User' },
+      createdDate: '2026-01-01T00:00:00.000Z',
+      lastModifiedDate: '2026-01-01T00:00:00.000Z',
+      page: 1,
+      pageHeight: 1122,
+      pages: { 1: { styles: { height: 1122 } } },
+      selected: false,
+      editable: undefined,
+      tags: [],
+    }],
+  }],
+};
+
 export const twoPageCommentsAnnotationSet: AnnotationSetFixture = {
   id: 'pw-two-page-comments-annotation-set',
   documentId: mediaAssets.pdf.url,
@@ -160,6 +191,12 @@ const cloneAnnotationSet = (annotationSet: AnnotationSetFixture): AnnotationSetF
 export const cloneCommentsAnnotationSet = () => cloneAnnotationSet(commentsAnnotationSet);
 export const cloneCommentCreationAnnotationSet = () => cloneAnnotationSet(commentCreationAnnotationSet);
 export const cloneEmptyAnnotationsAnnotationSet = () => cloneAnnotationSet(emptyAnnotationsAnnotationSet);
+export const cloneImageAnnotationsAnnotationSet = () => cloneAnnotationSet(imageAnnotationsAnnotationSet);
+export const cloneEmptyImageAnnotationsAnnotationSet = (): AnnotationSetFixture => ({
+  ...cloneEmptyAnnotationsAnnotationSet(),
+  documentId: mediaAssets.image.url,
+  id: 'pw-empty-image-annotations-annotation-set',
+});
 export const cloneTwoPageCommentsAnnotationSet = () => cloneAnnotationSet(twoPageCommentsAnnotationSet);
 
 export const cloneReplacementCommentsAnnotationSet = (): AnnotationSetFixture => {

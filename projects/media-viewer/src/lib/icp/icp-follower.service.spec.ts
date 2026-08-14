@@ -68,6 +68,7 @@ describe('Icp Follower Service', () => {
     inject([Store, ViewerEventService, ToolbarEventService], fakeAsync((store, viewerEvents, toolbarEvents) => {
       spyOn(viewerEvents, 'goToDestinationICP');
       spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
 
       store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0 }));
 
@@ -75,6 +76,18 @@ describe('Icp Follower Service', () => {
 
       expect(viewerEvents.goToDestinationICP).toHaveBeenCalled();
       expect(toolbarEvents.rotate).toHaveBeenCalled();
+      expect(toolbarEvents.zoom).not.toHaveBeenCalled();
+    }))
+  );
+
+  it('should synchronise follower zoom when the presenter scale changes',
+    inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
+      spyOn(toolbarEvents, 'zoom');
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, scale: 1 }));
+
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, scale: 1.1 } });
+
+      expect(toolbarEvents.zoom).toHaveBeenCalledWith(1.1);
     }))
   );
 });

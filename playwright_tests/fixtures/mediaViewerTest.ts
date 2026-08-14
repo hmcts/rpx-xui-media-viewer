@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
-import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneEmptyAnnotationsAnnotationSet, cloneReplacementCommentsAnnotationSet, cloneTwoPageCommentsAnnotationSet } from './mediaViewerComments';
+import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneEmptyAnnotationsAnnotationSet, cloneEmptyImageAnnotationsAnnotationSet, cloneImageAnnotationsAnnotationSet, cloneReplacementCommentsAnnotationSet, cloneTwoPageCommentsAnnotationSet } from './mediaViewerComments';
 import { mediaAssets } from './mediaAssets';
 export { mediaAssets } from './mediaAssets';
 
@@ -62,6 +62,24 @@ export const annotationsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
   mediaViewer: async ({ page }, use) => {
     const mediaViewer = new MediaViewerPage(page);
     await mediaViewer.stubAnnotationResponses([cloneEmptyAnnotationsAnnotationSet()]);
+    await mediaViewer.stubRotationResponses();
+    await use(mediaViewer);
+  },
+});
+
+export const imageAnnotationCreationTest = base.extend<{ mediaViewer: MediaViewerPage }>({
+  mediaViewer: async ({ page }, use) => {
+    const mediaViewer = new MediaViewerPage(page);
+    await mediaViewer.stubAnnotationResponses([cloneEmptyImageAnnotationsAnnotationSet()]);
+    await mediaViewer.stubRotationResponses();
+    await use(mediaViewer);
+  },
+});
+
+export const imageAnnotationsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
+  mediaViewer: async ({ page }, use) => {
+    const mediaViewer = new MediaViewerPage(page);
+    await mediaViewer.stubAnnotationResponses([cloneImageAnnotationsAnnotationSet()]);
     await mediaViewer.stubRotationResponses();
     await use(mediaViewer);
   },

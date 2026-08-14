@@ -120,6 +120,17 @@ export class MediaViewerPage {
       }
       await route.fulfill({ status: 200, json: persistedAnnotation });
     });
+    await this.page.route('**/em-anno/annotations/**', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.fallback();
+        return;
+      }
+      const annotationId = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop() ?? '');
+      for (const annotationSet of annotationSetsByDocumentId.values()) {
+        annotationSet.annotations = annotationSet.annotations.filter(annotation => annotation.id !== annotationId);
+      }
+      await route.fulfill({ status: 200, json: null });
+    });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
   }
 

@@ -186,6 +186,8 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
         scrollHeight: this.imageHeight,
         scrollWidth: this.imageWidth,
         offsetLeft: this.imageLeft,
+        clientHeight: this.imageHeight,
+        clientWidth: this.imageWidth,
       },
       pageNumber: 1,
       scale: this.zoom,

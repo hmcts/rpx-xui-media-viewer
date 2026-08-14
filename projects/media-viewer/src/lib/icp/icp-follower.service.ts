@@ -57,6 +57,9 @@ export class IcpFollowerService {
       take(1), 
       distinctUntilChanged(undefined, a => a.rotation))
       .subscribe(position => {
+        if (pdfPosition.scale !== position.scale) {
+          this.toolbarEvents.zoom(pdfPosition.scale);
+        }
         if (this.previousRotation === pdfPosition.rotation) {
           return;
         }
