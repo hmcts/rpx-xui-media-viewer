@@ -173,11 +173,26 @@ export class MediaViewerPage {
         return;
       }
       if (request.method() === 'DELETE') {
-        redactions.splice(0, redactions.length);
+        const redactionId = decodeURIComponent(new URL(request.url()).pathname.split('/').pop() ?? '');
+        const deletedIndex = redactions.findIndex((redaction) => redaction.redactionId === redactionId);
+        if (deletedIndex === -1) {
+          redactions.splice(0, redactions.length);
+        } else {
+          redactions.splice(deletedIndex, 1);
+        }
         await route.fulfill({ status: 200, json: null });
         return;
       }
       await route.fallback();
+    });
+    await this.page.route('**/api/markups/search', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
+      const bulkRedaction = await route.request().postDataJSON() as { searchRedactions: Array<Record<string, unknown>> };
+      redactions.push(...bulkRedaction.searchRedactions);
+      await route.fulfill({ status: 200, json: bulkRedaction });
     });
     await this.page.route('**/api/redaction', async (route) => {
       await route.fulfill({
