@@ -12,6 +12,7 @@ const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
+const defaultFunctionalWorkerCount = 5;
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
@@ -72,7 +73,7 @@ const resolveTestEnvironmentLabel = (env: EnvMap, workerCount: number): string =
 const resolveWorkerCount = (raw: string | undefined): number => {
   const configured = raw?.trim();
   if (!configured) {
-    return 7;
+    return defaultFunctionalWorkerCount;
   }
   if (!/^[1-9]\d*$/.test(configured)) {
     throw new Error(`FUNCTIONAL_TESTS_WORKERS must be an integer between 1 and ${maxWorkerCount}`);

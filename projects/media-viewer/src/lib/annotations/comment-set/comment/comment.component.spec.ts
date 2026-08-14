@@ -209,8 +209,10 @@ describe('CommentComponent', () => {
 
   it('should emit a click', () => {
     const clickEmitEventSpy = spyOn(component.commentClick, 'emit');
+    const event = { stopPropagation: jasmine.createSpy('stopPropagation') } as unknown as Event;
     component.selected = false;
-    component.onCommentClick();
+    component.onCommentClick(event);
+    expect(event.stopPropagation).toHaveBeenCalled();
     expect(clickEmitEventSpy).toHaveBeenCalledTimes(1);
   });
 

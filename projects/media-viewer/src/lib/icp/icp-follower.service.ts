@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { ToolbarEventService } from '../toolbar/toolbar-event.service';
 import { select, Store } from '@ngrx/store';
-import { Subscription } from 'rxjs';
+import { Subject, Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
-import { filter, take } from 'rxjs/operators';
+import { filter, take, takeUntil } from 'rxjs/operators';
 import { IcpScreenUpdate, IcpState, IcpSession } from './icp.interfaces';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
 import { PdfPosition } from '../store/reducers/reducers';
@@ -12,10 +12,16 @@ import { PdfPosition } from '../store/reducers/reducers';
 const isFiniteNumber = (value: unknown): value is number =>
   typeof value === 'number' && Number.isFinite(value);
 
+const isPositiveFiniteNumber = (value: unknown): value is number =>
+  isFiniteNumber(value) && value > 0;
+
+const isPositiveInteger = (value: unknown): value is number =>
+  isPositiveFiniteNumber(value) && Number.isInteger(value);
+
 const isValidPdfPosition = (position: Partial<PdfPosition> | undefined): position is PdfPosition =>
   !!position &&
-  isFiniteNumber(position.pageNumber) &&
-  isFiniteNumber(position.scale) &&
+  isPositiveInteger(position.pageNumber) &&
+  isPositiveFiniteNumber(position.scale) &&
   isFiniteNumber(position.top) &&
   isFiniteNumber(position.left) &&
   isFiniteNumber(position.rotation);
@@ -26,6 +32,7 @@ export class IcpFollowerService {
   session: IcpSession;
   private previousRotation: number|null = null;
   $subscription: Subscription;
+  private readonly stopFollowing$ = new Subject<void>();
 
   constructor(private readonly toolbarEvents: ToolbarEventService,
     private readonly viewerEvents: ViewerEventService,
@@ -49,6 +56,8 @@ export class IcpFollowerService {
   }
 
   unsubscribe() {
+    this.stopFollowing$.next();
+
     if (this.$subscription) {
       this.$subscription.unsubscribe();
       this.$subscription = undefined;
@@ -71,6 +80,7 @@ export class IcpFollowerService {
     this.store.pipe(
       select(fromDocSelectors.getPdfPosition),
       filter((position): position is PdfPosition => !!position),
+      takeUntil(this.stopFollowing$),
       take(1))
       .subscribe(position => {
         if (pdfPosition.scale !== position.scale) {

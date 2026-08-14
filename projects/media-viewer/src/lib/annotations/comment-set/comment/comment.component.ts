@@ -182,7 +182,8 @@ export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {
     }
   }
 
-  onCommentClick() {
+  onCommentClick(event?: Event) {
+    event?.stopPropagation();
     if (!this.selected) {
       this.selected = true;
       this._editable = false;

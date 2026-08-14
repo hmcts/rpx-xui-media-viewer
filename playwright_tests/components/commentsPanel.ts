@@ -61,24 +61,25 @@ export class CommentsPanel {
   private async openEditor(content: string): Promise<Locator> {
     const comment = await this.card(content);
     await comment.locator('p.commentText').click();
-    await comment.getByRole('button', { name: 'Edit' }).click();
-    await comment.locator('textarea[aria-label="comment"]').waitFor();
-    return comment;
+    const editButton = this.panel.getByRole('button', { name: 'Edit' });
+    await editButton.waitFor({ state: 'visible' });
+    await editButton.click();
+    const editor = this.panel.locator('textarea[aria-label="comment"]');
+    await editor.waitFor();
+    return editor;
   }
 
   async edit(content: string, replacement: string): Promise<void> {
-    const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[aria-label="comment"]');
+    const editor = await this.openEditor(content);
     await editor.fill(replacement);
     await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
     await editor.waitFor({ state: 'hidden' });
   }
 
   async cancelEdit(content: string, replacement: string): Promise<void> {
-    const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[aria-label="comment"]');
+    const editor = await this.openEditor(content);
     await editor.fill(replacement);
-    await comment.getByRole('button', { name: 'Cancel' }).click();
+    await this.panel.getByRole('button', { name: 'Cancel' }).click();
     await editor.waitFor({ state: 'hidden' });
   }
 

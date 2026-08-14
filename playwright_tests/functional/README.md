@@ -22,7 +22,7 @@ legacy-only areas and the next assurance gaps, is stored in
 | Redaction | `redactions.spec.ts` | 2 | Real draw-box geometry and persistence, preview and clear-all state, plus redaction-service payload and downloaded PDF filename. Text/search/page and multi-page redaction retain their Codecept safety net pending AAT/service-contract evidence. |
 | Multimedia playback | `multimedia.spec.ts` | 4 | MP4 readiness, real MP3 play/pause/rewind state transitions, disabled-player download fallback and unsupported-media diagnostics |
 | In-court presentation (ICP) | `icp.spec.ts` | 1 | Leader/follower presentation launch and deterministic server screen update with follower viewport, zoom and rotation synchronisation. Live session-service/Web PubSub integration remains separately tracked. |
-| **Functional total** | 14 feature files | **62 (1 skipped)** | Behaviour-level functional coverage |
+| **Functional total** | 13 feature files | **62 (1 skipped)** | Behaviour-level functional coverage |
 | **Playwright total** | Functional plus smoke | **63 (1 skipped)** | Adds one standalone PDF-readiness contract |
 
 Run the whole migrated functional suite:

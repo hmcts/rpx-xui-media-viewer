@@ -113,7 +113,12 @@ describe('Icp Follower Service', () => {
 
       const invalidPositions = [
         { ...pdfPosition, pageNumber: undefined },
+        { ...pdfPosition, pageNumber: 0 },
+        { ...pdfPosition, pageNumber: -1 },
+        { ...pdfPosition, pageNumber: 1.5 },
         { ...pdfPosition, scale: undefined },
+        { ...pdfPosition, scale: 0 },
+        { ...pdfPosition, scale: -1 },
         { ...pdfPosition, top: undefined },
         { ...pdfPosition, left: undefined },
         { ...pdfPosition, rotation: Number.NaN }
@@ -126,6 +131,23 @@ describe('Icp Follower Service', () => {
       expect(toolbarEvents.rotate).not.toHaveBeenCalled();
       expect(toolbarEvents.zoom).not.toHaveBeenCalled();
     })
+  );
+
+  it('should not synchronise toolbar state after following stops before a local PDF position is available',
+    inject([Store, ToolbarEventService], fakeAsync((store, toolbarEvents) => {
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      followerService.followScreenUpdate({
+        pdfPosition: { ...pdfPosition, rotation: 90, scale: 1.1 }
+      });
+      followerService.update(false);
+
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0, scale: 1 }));
+
+      expect(toolbarEvents.rotate).not.toHaveBeenCalled();
+      expect(toolbarEvents.zoom).not.toHaveBeenCalled();
+    }))
   );
 
   it('should wait for a local PDF position before synchronising toolbar state',

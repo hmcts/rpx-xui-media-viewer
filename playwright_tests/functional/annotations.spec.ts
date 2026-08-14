@@ -238,6 +238,7 @@ imageAnnotationsTest.describe('Image annotation lifecycle', () => {
   imageAnnotationsTest('updates a non-textual image annotation comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
     await expect(mediaViewer.comments.comment('Existing image annotation comment')).toBeVisible();
 
     const updateRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
