@@ -37,7 +37,7 @@
     "@ngrx/store": "^20",
     "@ngrx/store-devtools": "^20",
     "ngx-chips": "3.0.0",
-    "rpx-xui-translation": "1.2.7",
+    "rpx-xui-translation": "1.2.12",
     "rxjs": "^7.8.2"
   },
   "devDependencies": {
