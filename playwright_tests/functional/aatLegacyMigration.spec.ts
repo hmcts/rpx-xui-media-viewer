@@ -1,10 +1,9 @@
 import { expect, test } from '@playwright/test';
-import { canRunAatLegacyMigration, createAatCcdCase, missingAatEnvironment } from '../fixtures/aatLegacyCase';
+import { assertAatLegacyMigrationEnvironment, createAatCcdCase } from '../fixtures/aatLegacyCase';
 import { AatCasePage } from '../pages/aatCasePage';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
 
 test.describe('AAT legacy Codecept migration', () => {
-  test.skip(!canRunAatLegacyMigration(), `Requires TEST_TYPE=aat and: ${missingAatEnvironment().join(', ')}`);
   test.describe.configure({ mode: 'serial' });
   test.setTimeout(120_000);
 
@@ -13,6 +12,7 @@ test.describe('AAT legacy Codecept migration', () => {
   let updatedComment = '';
 
   test.beforeAll(async ({ request }) => {
+    assertAatLegacyMigrationEnvironment();
     caseId = await createAatCcdCase(request);
   });
 

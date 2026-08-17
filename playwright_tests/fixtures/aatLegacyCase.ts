@@ -14,8 +14,6 @@ const requiredEnvironment = [
 
 const aatUrl = (value: string | undefined, fallback: string): string => value ?? fallback;
 
-export const runsAgainstAat = (): boolean => process.env.TEST_TYPE === 'aat';
-
 export const missingAatEnvironment = (): string[] => {
   const missing: string[] = requiredEnvironment.filter((name) => !process.env[name]);
   if (!process.env.PLAYWRIGHT_BASE_URL && !process.env.TEST_URL) {
@@ -24,7 +22,15 @@ export const missingAatEnvironment = (): string[] => {
   return missing;
 };
 
-export const canRunAatLegacyMigration = (): boolean => runsAgainstAat() && missingAatEnvironment().length === 0;
+export const assertAatLegacyMigrationEnvironment = (): void => {
+  const missing = missingAatEnvironment();
+  if (process.env.TEST_TYPE !== 'aat') {
+    missing.unshift('TEST_TYPE=aat');
+  }
+  if (missing.length > 0) {
+    throw new Error(`AAT legacy migration requires: ${missing.join(', ')}`);
+  }
+};
 
 const responseJson = async <T>(response: Awaited<ReturnType<APIRequestContext['post']>>, description: string): Promise<T> => {
   if (!response.ok()) {
@@ -34,13 +40,10 @@ const responseJson = async <T>(response: Awaited<ReturnType<APIRequestContext['p
 };
 
 export const createAatCcdCase = async (request: APIRequestContext): Promise<string> => {
+  assertAatLegacyMigrationEnvironment();
   const username = process.env.CCD_CASEWORKER_E2E_EMAIL;
   const password = process.env.CCD_CASEWORKER_E2E_PASSWORD;
   const ccdGatewayKey = process.env.MICROSERVICE_CCD_GW;
-
-  if (!username || !password || !ccdGatewayKey) {
-    throw new Error(`Missing AAT environment: ${missingAatEnvironment().join(', ')}`);
-  }
 
   const idamUrl = aatUrl(process.env.IDAM_URL, 'https://idam-api.aat.platform.hmcts.net').replace(/\/$/, '');
   const s2sUrl = aatUrl(process.env.S2S_URL, 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal').replace(/\/$/, '');

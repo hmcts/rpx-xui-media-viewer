@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import { canRunAatLegacyMigration, missingAatEnvironment } from '../fixtures/aatLegacyCase';
+import { assertAatLegacyMigrationEnvironment, missingAatEnvironment } from '../fixtures/aatLegacyCase';
 
 const guardedEnvironment = [
   'TEST_TYPE',
@@ -12,7 +12,7 @@ const guardedEnvironment = [
   'S2S_URL',
 ] as const;
 
-test('requires the full approved AAT environment before enabling legacy migration', { tag: ['@e2e-support', '@feature-aat-document-prerequisites'] }, async () => {
+test('fails visibly when the AAT legacy migration environment is incomplete', { tag: ['@e2e-support', '@feature-aat-document-prerequisites'] }, async () => {
   const originalEnvironment = Object.fromEntries(guardedEnvironment.map((name) => [name, process.env[name]]));
   try {
     for (const name of guardedEnvironment) {
@@ -20,12 +20,12 @@ test('requires the full approved AAT environment before enabling legacy migratio
     }
     process.env.TEST_TYPE = 'aat';
 
-    expect(canRunAatLegacyMigration()).toBe(false);
     expect(missingAatEnvironment()).toEqual(expect.arrayContaining([
       'CCD_CASEWORKER_E2E_EMAIL',
       'CCD_CASEWORKER_E2E_PASSWORD',
       'PLAYWRIGHT_BASE_URL or TEST_URL',
     ]));
+    expect(() => assertAatLegacyMigrationEnvironment()).toThrow(/AAT legacy migration requires/);
 
     Object.assign(process.env, {
       TEST_URL: 'https://xui-media-viewer-aat.service.core-compute-aat.internal/',
@@ -35,7 +35,7 @@ test('requires the full approved AAT environment before enabling legacy migratio
       IDAM_URL: 'https://idam-api.aat.platform.hmcts.net',
       S2S_URL: 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal',
     });
-    expect(canRunAatLegacyMigration()).toBe(true);
+    expect(() => assertAatLegacyMigrationEnvironment()).not.toThrow();
   } finally {
     for (const name of guardedEnvironment) {
       const value = originalEnvironment[name];
