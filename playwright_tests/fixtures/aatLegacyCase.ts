@@ -1,6 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { resolve } from 'node:path';
-import type { APIRequestContext } from '@playwright/test';
+import type { APIRequestContext, Page } from '@playwright/test';
+import { AatCasePage } from '../pages/aatCasePage';
 
 const totp = require('totp-generator') as (secret: string, options: { digits: number; period: number }) => string;
 
@@ -88,4 +89,32 @@ export const createAatCcdCase = async (request: APIRequestContext): Promise<stri
   );
 
   return created.id;
+};
+
+export type AatLegacyJourney = {
+  caseId: string;
+  casePage: AatCasePage;
+  openUploadedImage: () => Promise<Page>;
+  uploadDocument: (position: number, filename: string, description: string) => Promise<void>;
+};
+
+export const createAatLegacyJourney = async (request: APIRequestContext, page: Page): Promise<AatLegacyJourney> => {
+  const caseId = await createAatCcdCase(request);
+  const casePage = new AatCasePage(page);
+  await casePage.signIn();
+
+  return {
+    caseId,
+    casePage,
+    uploadDocument: async (position, filename, description) => {
+      await casePage.openUploadDocument(caseId);
+      await casePage.upload(position, filename, description);
+    },
+    openUploadedImage: async () => {
+      await casePage.openUploadDocument(caseId);
+      await casePage.upload(1, 'quote.jpg', 'Playwright image document');
+      await page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
+      return casePage.openUploadedDocument('quote.jpg');
+    },
+  };
 };

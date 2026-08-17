@@ -1,59 +1,40 @@
-import { expect, test } from '@playwright/test';
-import { assertAatLegacyMigrationEnvironment, createAatCcdCase } from '../fixtures/aatLegacyCase';
-import { AatCasePage } from '../pages/aatCasePage';
+import { expect, test as base } from '@playwright/test';
+import { createAatLegacyJourney, type AatLegacyJourney } from '../fixtures/aatLegacyCase';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
 
+const test = base.extend<{ aatJourney: AatLegacyJourney }>({
+  aatJourney: async ({ page, request }, use) => {
+    await use(await createAatLegacyJourney(request, page));
+  },
+});
+
 test.describe('AAT legacy Codecept migration', () => {
-  test.describe.configure({ mode: 'serial' });
   test.setTimeout(120_000);
 
-  let caseId = '';
-  let initialComment = '';
-  let updatedComment = '';
-
-  test.beforeAll(async ({ request }) => {
-    assertAatLegacyMigrationEnvironment();
-    caseId = await createAatCcdCase(request);
+  test('creates the CCD case used by Media Viewer journeys', { tag: ['@e2e-functional', '@feature-ccd-case-creation'] }, async ({ aatJourney, page }) => {
+    await page.goto(`/case-details/${aatJourney.caseId}`, { waitUntil: 'domcontentloaded' });
+    await expect(page).toHaveURL(new RegExp(`/case-details/${aatJourney.caseId}$`));
   });
 
-  test('creates the CCD case used by Media Viewer journeys', { tag: ['@e2e-functional', '@feature-ccd-case-creation'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
-    await expect(page).toHaveURL(new RegExp(`/case-details/${caseId}$`));
-  });
-
-  test('uploads a PDF document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await casePage.openUploadDocument(caseId);
-    await casePage.upload(0, 'example.pdf', 'Playwright PDF document');
+  test('uploads a PDF document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ aatJourney, page }) => {
+    await aatJourney.uploadDocument(0, 'example.pdf', 'Playwright PDF document');
     await expect(page.getByText('example.pdf', { exact: true })).toBeVisible();
   });
 
-  test('uploads an image document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await casePage.openUploadDocument(caseId);
-    await casePage.upload(1, 'quote.jpg', 'Playwright image document');
+  test('uploads an image document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ aatJourney, page }) => {
+    await aatJourney.uploadDocument(1, 'quote.jpg', 'Playwright image document');
     await expect(page.getByText('quote.jpg', { exact: true })).toBeVisible();
   });
 
-  test('uploads a Word document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await casePage.openUploadDocument(caseId);
-    await casePage.upload(2, 'ThankYou.doc', 'Playwright Word document');
+  test('uploads a Word document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ aatJourney, page }) => {
+    await aatJourney.uploadDocument(2, 'ThankYou.doc', 'Playwright Word document');
     await expect(page.getByText('ThankYou.doc', { exact: true })).toBeVisible();
   });
 
-  test('creates a non-text image highlight and comment through the live annotation service', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
-    const viewerPage = await casePage.openUploadedDocument('quote.jpg');
+  test('creates a non-text image highlight and comment through the live annotation service', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ aatJourney }) => {
+    const viewerPage = await aatJourney.openUploadedImage();
     const mediaViewer = new MediaViewerPage(viewerPage);
-    initialComment = `Playwright image comment ${Date.now()}`;
+    const initialComment = `Playwright image comment ${Date.now()}`;
 
     await expect(mediaViewer.loadState.image).toBeVisible();
     await mediaViewer.enableAnnotations();
@@ -65,11 +46,8 @@ test.describe('AAT legacy Codecept migration', () => {
     await expect(mediaViewer.comments.comment(initialComment)).toBeVisible();
   });
 
-  test('creates a real draw-box image highlight', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
-    const mediaViewer = new MediaViewerPage(await casePage.openUploadedDocument('quote.jpg'));
+  test('creates a real draw-box image highlight', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ aatJourney }) => {
+    const mediaViewer = new MediaViewerPage(await aatJourney.openUploadedImage());
 
     await expect(mediaViewer.loadState.image).toBeVisible();
     await mediaViewer.enableAnnotations();
@@ -77,28 +55,26 @@ test.describe('AAT legacy Codecept migration', () => {
     await expect(mediaViewer.annotations.renderedRectangles.last()).toBeVisible();
   });
 
-  test('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
-    const mediaViewer = new MediaViewerPage(await casePage.openUploadedDocument('quote.jpg'));
-    updatedComment = `${initialComment} updated`;
+  test('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ aatJourney }) => {
+    const mediaViewer = new MediaViewerPage(await aatJourney.openUploadedImage());
+    const initialComment = `Playwright image comment ${Date.now()}`;
+    const updatedComment = `${initialComment} updated`;
 
-    await mediaViewer.sidePanels.openComments();
-    await expect(mediaViewer.comments.comment(initialComment)).toBeVisible();
+    await mediaViewer.enableAnnotations();
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await mediaViewer.comments.addToOnlyAnnotation(initialComment);
     await mediaViewer.comments.edit(initialComment, updatedComment);
     await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
   });
 
-  test('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ page }) => {
-    const casePage = new AatCasePage(page);
-    await casePage.signIn();
-    await page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
-    const mediaViewer = new MediaViewerPage(await casePage.openUploadedDocument('quote.jpg'));
+  test('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ aatJourney }) => {
+    const mediaViewer = new MediaViewerPage(await aatJourney.openUploadedImage());
+    const initialComment = `Playwright image comment ${Date.now()}`;
 
-    await mediaViewer.sidePanels.openComments();
-    await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
-    await mediaViewer.comments.remove(updatedComment);
-    await expect(mediaViewer.comments.comment(updatedComment)).toHaveCount(0);
+    await mediaViewer.enableAnnotations();
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await mediaViewer.comments.addToOnlyAnnotation(initialComment);
+    await mediaViewer.comments.remove(initialComment);
+    await expect(mediaViewer.comments.comment(initialComment)).toHaveCount(0);
   });
 });

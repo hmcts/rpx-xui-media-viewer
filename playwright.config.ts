@@ -10,7 +10,6 @@ const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
-const aatLegacyMigrationSpecPattern = 'playwright_tests/functional/aatLegacyMigration.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
@@ -191,9 +190,6 @@ export default defineConfig({
     {
       name: 'functional',
       testMatch: [functionalSpecPattern],
-      // Credentialed journeys belong exclusively to the Jenkins AAT lane. They
-      // are deliberately not selected locally, rather than reported as skips.
-      testIgnore: process.env.TEST_TYPE === 'aat' ? undefined : [aatLegacyMigrationSpecPattern],
       use: {
         ...devices['Desktop Chrome'],
       },
