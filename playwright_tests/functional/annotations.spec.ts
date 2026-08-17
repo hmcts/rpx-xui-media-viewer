@@ -27,8 +27,10 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
+    await mediaViewer.annotations.renderedRectangles.first().scrollIntoViewIfNeeded();
     const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     expect(rehydratedBounds).not.toBeNull();
     expect(rehydratedBounds?.width).toBeGreaterThan(0);
@@ -61,12 +63,45 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.loadState.pdfPage(1)).toHaveAttribute('data-loaded', 'true');
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
+    await mediaViewer.annotations.renderedRectangles.first().scrollIntoViewIfNeeded();
     const rehydratedBounds = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     expect(rehydratedBounds).not.toBeNull();
     expect(rehydratedBounds?.width).toBeGreaterThan(0);
     expect(rehydratedBounds?.height).toBeGreaterThan(0);
+  });
+
+  annotationsTest('keeps independently drawn highlight geometry distinct after reload', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    const firstPage = mediaViewer.loadState.pdfPage(1);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+
+    const firstSave = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(firstPage, { x: 80, y: 80 });
+    const firstAnnotation = (await firstSave).postDataJSON();
+
+    const secondSave = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(firstPage, { x: 250, y: 200 });
+    const secondAnnotation = (await secondSave).postDataJSON();
+
+    expect(firstAnnotation.id).not.toBe(secondAnnotation.id);
+    expect(firstAnnotation.rectangles[0]).not.toEqual(secondAnnotation.rectangles[0]);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(2);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    await mediaViewer.annotations.renderedRectangles.last().scrollIntoViewIfNeeded();
+    const [firstBounds, secondBounds] = await Promise.all([
+      mediaViewer.annotations.renderedRectangles.first().boundingBox(),
+      mediaViewer.annotations.renderedRectangles.last().boundingBox(),
+    ]);
+    expect(firstBounds).not.toBeNull();
+    expect(secondBounds).not.toBeNull();
+    expect(firstBounds?.x).not.toBe(secondBounds?.x);
+    expect(firstBounds?.y).not.toBe(secondBounds?.y);
   });
 
   annotationsTest('keeps a comment on a selected PDF highlight through rotation and rehydration', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {

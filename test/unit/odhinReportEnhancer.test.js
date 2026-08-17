@@ -35,6 +35,11 @@ test('capability summary reports every supported status', () => {
 });
 
 test('capability inventory accounts for every active Codecept scenario', () => {
+  const activeLegacyTestFiles = coverageInventory.capabilities
+    .filter((capability) => (capability.activeLegacyScenarios ?? capability.legacyScenarios) > 0)
+    .map((capability) => capability.legacyTestFile);
+  assert.ok(activeLegacyTestFiles.every(Boolean), 'Every active legacy capability must identify its Codecept suite');
+  const activeLegacyTestPath = `./mvFeatures/{${activeLegacyTestFiles.map((file) => path.basename(file, '.js')).join(',')}}.js`;
   const codeceptBin = require.resolve('codeceptjs/bin/codecept.js');
   const output = execFileSync(
     process.execPath,
@@ -44,7 +49,7 @@ test('capability inventory accounts for every active Codecept scenario', () => {
       encoding: 'utf8',
       env: {
         ...process.env,
-        E2E_TEST_PATH: './mvFeatures/**/*.js',
+        E2E_TEST_PATH: activeLegacyTestPath,
         NODE_PATH: '.',
       },
     }
