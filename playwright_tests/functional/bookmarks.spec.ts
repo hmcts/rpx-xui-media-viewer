@@ -138,7 +138,6 @@ test.describe('Bookmarks', () => {
   });
 
   test('persists reorder through the drag-and-drop API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
-    test.skip(true, 'Blocked by EXUI-5097: re-enable after the Media Viewer rendered-order fix is delivered and verified in AAT/preview');
     await mediaViewer.bookmarks.stubApi([
       bookmark('bookmark-1', 'First bookmark', 0),
       bookmark('bookmark-2', 'Second bookmark', 1),

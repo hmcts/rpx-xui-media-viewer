@@ -44,6 +44,10 @@ export class Annotations {
     await this.drawRectangle(page);
   }
 
+  async deleteSelected(): Promise<void> {
+    await this.contextToolbar.getByRole('button', { name: 'Delete' }).click();
+  }
+
   private async drawRectangle(page: Locator): Promise<void> {
     const bounds = await page.boundingBox();
     if (!bounds) {

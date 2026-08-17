@@ -1,4 +1,4 @@
-import { annotationsTest, expect, mediaAssets } from '../fixtures/mediaViewerTest';
+import { annotationsTest, commentsTest as deletionTest, expect, mediaAssets } from '../fixtures/mediaViewerTest';
 
 const annotationRequest = (url: string) => url.endsWith('/em-anno/annotations');
 
@@ -173,6 +173,21 @@ annotationsTest.describe('PDF annotations', () => {
 
     await mediaViewer.reloadDocument(mediaAssets.pdf);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(savedAnnotationSet.annotations.length);
+  });
+
+  deletionTest('deletes every existing PDF highlight through the annotation API', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(2);
+
+    for (const remaining of [1, 0]) {
+      const deleteRequest = page.waitForRequest((request) =>
+        request.method() === 'DELETE' && new URL(request.url()).pathname.startsWith('/em-anno/annotations/')
+      );
+      await mediaViewer.annotations.renderedRectangles.first().click();
+      await mediaViewer.annotations.deleteSelected();
+      await deleteRequest;
+      await expect(mediaViewer.annotations.rectangles).toHaveCount(remaining);
+    }
   });
 
 });
