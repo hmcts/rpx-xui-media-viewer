@@ -47,10 +47,12 @@ export class Redactions {
     await this.page.mouse.up();
   }
 
-  async redactExampleFixtureText(): Promise<void> {
+  async redactExampleFixtureText(): Promise<string> {
     await this.redactTextButton.click();
-    const text = this.page.locator('.textLayer').first().locator(':scope > *').nth(4);
+    const text = this.page.locator('.textLayer span').filter({ hasText: 'Brendan Eich' });
     await text.waitFor({ state: 'visible' });
+    const selectedText = await text.textContent();
+    if (!selectedText) throw new Error('PDF fixture text was not available for redaction selection');
     const bounds = await text.boundingBox();
     if (!bounds) throw new Error('PDF text was not visible for redaction selection');
     const y = bounds.y + bounds.height / 2;
@@ -58,6 +60,7 @@ export class Redactions {
     await this.page.mouse.down();
     await this.page.mouse.move(bounds.x + bounds.width - 2, y);
     await this.page.mouse.up();
+    return selectedText;
   }
 
   async redactCurrentPage(): Promise<void> {
