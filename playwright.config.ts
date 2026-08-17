@@ -9,8 +9,10 @@ type EnvMap = NodeJS.ProcessEnv;
 const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
+const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
+const defaultFunctionalWorkerCount = 7;
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
@@ -71,7 +73,7 @@ const resolveTestEnvironmentLabel = (env: EnvMap, workerCount: number): string =
 const resolveWorkerCount = (raw: string | undefined): number => {
   const configured = raw?.trim();
   if (!configured) {
-    return 7;
+    return defaultFunctionalWorkerCount;
   }
   if (!/^[1-9]\d*$/.test(configured)) {
     throw new Error(`FUNCTIONAL_TESTS_WORKERS must be an integer between 1 and ${maxWorkerCount}`);
@@ -173,14 +175,21 @@ export default defineConfig({
   reporter: resolveReporters(process.env, workerCount),
   use: {
     baseURL: resolveBaseUrl(process.env),
-    trace: 'on-first-retry',
+    trace: 'retain-on-failure',
     screenshot: 'only-on-failure',
-    video: 'retain-on-failure',
+    video: 'off',
   },
   projects: [
     {
       name: 'smoke',
       testMatch: [smokeSpecPattern],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'functional',
+      testMatch: [functionalSpecPattern],
       use: {
         ...devices['Desktop Chrome'],
       },
