@@ -30,6 +30,9 @@ secret_name_for_key() {
     IDAM_SECRET) echo "show-oauth2-token" ;;
     IDAM_PASSWORD) echo "password" ;;
     S2S_KEY) echo "microservicekey-em-gw" ;;
+    CCD_CASEWORKER_E2E_EMAIL) echo "ccd-user-email" ;;
+    CCD_CASEWORKER_E2E_PASSWORD) echo "ccd-user-password" ;;
+    MICROSERVICE_CCD_GW) echo "microservicekey-ccd-gw" ;;
     *) echo "" ;;
   esac
 }

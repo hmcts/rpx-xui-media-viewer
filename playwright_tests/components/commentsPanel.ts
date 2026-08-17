@@ -62,13 +62,13 @@ export class CommentsPanel {
     const comment = await this.card(content);
     await comment.locator('p.commentText').click();
     await comment.getByRole('button', { name: 'Edit' }).click();
-    await comment.locator('textarea[aria-label="comment"]').waitFor();
+    await comment.locator('textarea[name="content"]').waitFor();
     return comment;
   }
 
   async edit(content: string, replacement: string): Promise<void> {
     const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[aria-label="comment"]');
+    const editor = comment.locator('textarea[name="content"]');
     await editor.fill(replacement);
     await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
     await editor.waitFor({ state: 'hidden' });
@@ -76,7 +76,7 @@ export class CommentsPanel {
 
   async cancelEdit(content: string, replacement: string): Promise<void> {
     const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[aria-label="comment"]');
+    const editor = comment.locator('textarea[name="content"]');
     await editor.fill(replacement);
     await comment.getByRole('button', { name: 'Cancel' }).click();
     await editor.waitFor({ state: 'hidden' });
@@ -89,10 +89,10 @@ export class CommentsPanel {
 
   async addToSelectedAnnotation(content: string): Promise<void> {
     await this.page.locator('button[title="Comment"]').click();
-    const editor = this.panel.locator('textarea[aria-label="comment"]');
+    const editor = this.panel.locator('textarea[name="content"]');
     await editor.waitFor();
     await editor.fill(content);
-    await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
+    await editor.locator('~ .commentBtns > button').first().click();
     await editor.waitFor({ state: 'hidden' });
   }
 

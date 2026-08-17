@@ -116,10 +116,10 @@ For browser-level proof that the standalone viewer is using AAT-backed services,
 yarn test:local:aat
 ```
 
-This opens `http://localhost:3000/#/media-viewer`, loads
-`/documents/<MV_SMOKE_PDF_DOCUMENT_ID>/binary`, and waits for the rendered PDF viewer
-and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
-default AAT PDF document id.
+This executes the functional Playwright lane against the local standalone Media Viewer.
+It creates the same AAT-backed CCD cases and DM Store documents as the migrated legacy
+scenarios, while keeping the browser at `http://localhost:3000/`. The lightweight
+route and health check remains available as `yarn smoke:local:aat`.
 
 ### 5. Run Playwright tests
 Media Viewer is starting its Playwright migration with the same runner and
