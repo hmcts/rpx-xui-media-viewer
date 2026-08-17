@@ -118,7 +118,8 @@ test.describe('Redaction', () => {
     await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-text-case', mediaAssets.pdf.contentType);
     await mediaViewer.openRedactions();
     const saveRequest = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
-    await mediaViewer.redactions.redactExampleFixtureText();
+    const selectedText = await mediaViewer.redactions.redactExampleFixtureText();
+    expect(selectedText).toContain('Brendan Eich');
     const redaction = await saveRequest;
     const payload = redaction.postDataJSON() as { documentId: string; page: number; redactionId: string; rectangles: Array<{ width: number; height: number }> };
     expect(payload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
@@ -139,7 +140,8 @@ test.describe('Redaction', () => {
     await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-combined-case', mediaAssets.pdf.contentType);
     await mediaViewer.openRedactions();
     const firstSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
-    await mediaViewer.redactions.redactExampleFixtureText();
+    const selectedText = await mediaViewer.redactions.redactExampleFixtureText();
+    expect(selectedText).toContain('Brendan Eich');
     await firstSave;
     const secondSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
     await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
