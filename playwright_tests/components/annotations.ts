@@ -24,7 +24,7 @@ export class Annotations {
     this.resultCount = page.locator('#findRedactResultsCount');
     this.rectangles = page.locator('mv-anno-rectangle');
     this.renderedRectangles = page.locator('mv-anno-rectangle .rectangle');
-    this.imageDrawSurface = page.locator('mv-box-highlight-create > div').first();
+    this.imageDrawSurface = page.locator('.pageContainer__page--draw mv-box-highlight-create > div[tabindex="0"]');
     this.contextToolbar = page.locator('mv-ctx-toolbar');
     this.createButton = this.contextToolbar.getByRole('button', { name: 'Highlight' });
   }
@@ -54,21 +54,9 @@ export class Annotations {
     await this.drawOnPage(this.imageDrawSurface, start);
   }
 
-  private async drawRectangle(page: Locator, start: { x: number; y: number }): Promise<void> {
-    await page.waitFor({ state: 'visible' });
-    await this.page.waitForFunction(
-      (minimumSize) => {
-        const element = document.querySelector('mv-box-highlight-create > div');
-        if (!element) {
-          return false;
-        }
-        const bounds = element.getBoundingClientRect();
-        return bounds.width >= minimumSize.width && bounds.height >= minimumSize.height;
-      },
-      { width: start.x + 100, height: start.y + 50 },
-      { timeout: 5_000 }
-    );
-    const bounds = await page.boundingBox();
+  private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {
+    await surface.waitFor({ state: 'visible' });
+    const bounds = await surface.boundingBox();
     if (!bounds || bounds.width < start.x + 100 || bounds.height < start.y + 50) {
       throw new Error('Media page did not reach a drawable size for draw-box annotation');
     }
