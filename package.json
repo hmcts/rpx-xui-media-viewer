@@ -108,7 +108,7 @@
     "ngx-chips": "3.0.0",
     "nunjucks": "^3.2.4",
     "otp": "^2.0.1",
-    "pdfjs-dist": "^6.1.200",
+    "pdfjs-dist": "^6.2.108",
     "rpx-xui-translation": "1.2.12",
     "rxjs": "^7.8.2",
     "sass": "^1.102.0",
