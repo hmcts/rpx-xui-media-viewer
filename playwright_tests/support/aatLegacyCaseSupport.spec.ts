@@ -2,7 +2,6 @@ import { expect, test } from '@playwright/test';
 import { assertAatLegacyMigrationEnvironment, missingAatEnvironment } from '../fixtures/aatLegacyCase';
 
 const guardedEnvironment = [
-  'TEST_TYPE',
   'TEST_URL',
   'PLAYWRIGHT_BASE_URL',
   'CCD_CASEWORKER_E2E_EMAIL',
@@ -18,8 +17,6 @@ test('fails visibly when the AAT legacy migration environment is incomplete', { 
     for (const name of guardedEnvironment) {
       delete process.env[name];
     }
-    process.env.TEST_TYPE = 'aat';
-
     expect(missingAatEnvironment()).toEqual(expect.arrayContaining([
       'CCD_CASEWORKER_E2E_EMAIL',
       'CCD_CASEWORKER_E2E_PASSWORD',

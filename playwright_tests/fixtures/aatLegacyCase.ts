@@ -25,9 +25,6 @@ export const missingAatEnvironment = (): string[] => {
 
 export const assertAatLegacyMigrationEnvironment = (): void => {
   const missing = missingAatEnvironment();
-  if (process.env.TEST_TYPE !== 'aat') {
-    missing.unshift('TEST_TYPE=aat');
-  }
   if (missing.length > 0) {
     throw new Error(`AAT legacy migration requires: ${missing.join(', ')}`);
   }
