@@ -10,9 +10,11 @@ const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
+const e2eSpecPattern = 'playwright_tests/e2e/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
+const defaultE2eWorkerCount = 1;
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
@@ -159,6 +161,7 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
 };
 
 const workerCount = resolveWorkerCount(process.env.FUNCTIONAL_TESTS_WORKERS);
+const e2eWorkerCount = resolveWorkerCount(process.env.E2E_TESTS_WORKERS ?? String(defaultE2eWorkerCount));
 
 export default defineConfig({
   testDir: '.',
@@ -190,6 +193,16 @@ export default defineConfig({
     {
       name: 'functional',
       testMatch: [functionalSpecPattern],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      // These journeys use live IdAM, CCD, DM Store and annotation services.
+      // Keep AAT writes serial while this project runs alongside Functional in CI.
+      name: 'e2e',
+      testMatch: [e2eSpecPattern],
+      workers: e2eWorkerCount,
       use: {
         ...devices['Desktop Chrome'],
       },

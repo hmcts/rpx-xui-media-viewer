@@ -7,14 +7,14 @@ const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = [
   ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
-  ['createCCDCase.js', 'Create CCD Case for MV...', 'aatLegacyMigration.spec.ts', 'creates the CCD case used by Media Viewer journeys'],
-  ['dmStoreScenarios.js', 'Upload PDF Document', 'aatLegacyMigration.spec.ts', 'uploads a PDF document through CCD and DM Store'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'aatLegacyMigration.spec.ts', 'uploads an image document through CCD and DM Store'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'aatLegacyMigration.spec.ts', 'uploads a Word document through CCD and DM Store'],
-  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'aatLegacyMigration.spec.ts', 'creates a non-text image highlight and comment through the live annotation service'],
-  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'aatLegacyMigration.spec.ts', 'creates a real draw-box image highlight'],
-  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'aatLegacyMigration.spec.ts', 'updates a persisted non-text image comment'],
-  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'aatLegacyMigration.spec.ts', 'deletes a persisted non-text image comment'],
+  ['createCCDCase.js', 'Create CCD Case for MV...', 'e2e/aatLegacyMigration.spec.ts', 'creates the CCD case used by Media Viewer journeys'],
+  ['dmStoreScenarios.js', 'Upload PDF Document', 'e2e/aatLegacyMigration.spec.ts', 'uploads a PDF document through CCD and DM Store'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'e2e/aatLegacyMigration.spec.ts', 'uploads an image document through CCD and DM Store'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'e2e/aatLegacyMigration.spec.ts', 'uploads a Word document through CCD and DM Store'],
+  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'creates a non-text image highlight and comment through the live annotation service'],
+  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'e2e/aatLegacyMigration.spec.ts', 'creates a real draw-box image highlight'],
+  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'updates a persisted non-text image comment'],
+  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'deletes a persisted non-text image comment'],
   ['indexAndOutline.js', 'Navigate Bundle Documents Through Page Index Number', 'indexOutline.spec.ts', 'navigates a top-level outline document destination'],
   ['indexAndOutline.js', 'Navigate Nested Documents Using Index', 'indexOutline.spec.ts', 'navigates a nested outline document destination and retains the parent selection'],
   ['redact.js', 'Mark Content For Redaction Using Draw Box Function', 'redactions.spec.ts', 'creates a draw-box redaction, previews it and clears the persisted marker'],
@@ -55,7 +55,10 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
 
     for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
       assert.match(source(`test/end-to-end/mvFeatures/${legacyFile}`), new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
-      assert.match(source(`playwright_tests/functional/${playwrightFile}`), new RegExp(`^\\s*(?:test|annotationsTest|deletionTest)\\('${playwrightContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`, 'm'));
+      const playwrightPath = playwrightFile.includes('/')
+        ? `playwright_tests/${playwrightFile}`
+        : `playwright_tests/functional/${playwrightFile}`;
+      assert.match(source(playwrightPath), new RegExp(`^\\s*(?:test|annotationsTest|deletionTest)\\('${playwrightContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`, 'm'));
     }
   });
 });

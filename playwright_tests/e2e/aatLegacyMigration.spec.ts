@@ -38,7 +38,8 @@ test.describe('AAT legacy Codecept migration', () => {
     await mediaViewer.enableAnnotations();
     const savedAnnotation = page.waitForResponse((response) => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/annotations'));
     await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
-    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
     await mediaViewer.comments.addToSelectedAnnotation(initialComment);
     await savedAnnotation;
     await expect(mediaViewer.comments.comment(initialComment)).toBeVisible();
@@ -60,6 +61,8 @@ test.describe('AAT legacy Codecept migration', () => {
 
     await mediaViewer.enableAnnotations();
     await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
     await mediaViewer.comments.addToSelectedAnnotation(initialComment);
     await mediaViewer.comments.edit(initialComment, updatedComment);
   });
@@ -70,6 +73,8 @@ test.describe('AAT legacy Codecept migration', () => {
 
     await mediaViewer.enableAnnotations();
     await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
+    await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
     await mediaViewer.comments.addToSelectedAnnotation(initialComment);
     await mediaViewer.comments.remove(initialComment);
     await expect(mediaViewer.comments.comment(initialComment)).toHaveCount(0);

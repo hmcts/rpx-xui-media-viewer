@@ -27,11 +27,15 @@ def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-sup
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
 def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
+def playwrightPreviewE2eOutputRoot = 'functional-output/tests/playwright-e2e/preview'
+def playwrightAatE2eOutputRoot = 'functional-output/tests/playwright-e2e/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
+def playwrightE2eOdhinReportFile = 'xui-playwright-e2e.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
+def playwrightE2eOdhinTitle = 'RPX XUI Media Viewer Playwright E2E'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -120,6 +124,26 @@ def runPlaywrightFunctionalTests = { String outputRoot, String reportName, Strin
       yarnBuilder.yarn('test:playwright:functional')
     } finally {
       publishPlaywrightReport(outputRoot, reportName, playwrightFunctionalOdhinReportFile)
+    }
+  }
+}
+
+def runPlaywrightE2ETests = { String outputRoot, String reportName, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-e2e-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightE2eOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightE2eOdhinTitle}",
+    "TEST_TYPE=${targetEnvironment}",
+    'E2E_TESTS_WORKERS=1',
+    'PLAYWRIGHT_SKIP_INSTALL=true'
+  ]) {
+    try {
+      yarnBuilder.yarn('test:playwright:e2e')
+    } finally {
+      publishPlaywrightReport(outputRoot, reportName, playwrightE2eOdhinReportFile)
     }
   }
 }
@@ -223,11 +247,25 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('smoketest:preview') {
-    stage('Playwright Viewer Functional Test - preview') {
-      runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
-    }
-    stage('Playwright Viewer Support Test - preview') {
-      runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
+    stage('Playwright Viewer Tests - preview') {
+      parallel(
+        failFast: false,
+        functional: {
+          stage('Playwright Viewer Functional Test - preview') {
+            runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
+          }
+        },
+        e2e: {
+          stage('Playwright Viewer E2E Test - preview') {
+            runPlaywrightE2ETests(playwrightPreviewE2eOutputRoot, 'PREVIEW Playwright Viewer E2E Test', 'preview')
+          }
+        },
+        support: {
+          stage('Playwright Viewer Support Test - preview') {
+            runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
+          }
+        }
+      )
     }
   }
 
@@ -251,11 +289,25 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('smoketest:aat') {
-    stage('Playwright Viewer Functional Test - AAT') {
-      runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
-    }
-    stage('Playwright Viewer Support Test - AAT') {
-      runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
+    stage('Playwright Viewer Tests - AAT') {
+      parallel(
+        failFast: false,
+        functional: {
+          stage('Playwright Viewer Functional Test - AAT') {
+            runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
+          }
+        },
+        e2e: {
+          stage('Playwright Viewer E2E Test - AAT') {
+            runPlaywrightE2ETests(playwrightAatE2eOutputRoot, 'AAT Playwright Viewer E2E Test', 'aat')
+          }
+        },
+        support: {
+          stage('Playwright Viewer Support Test - AAT') {
+            runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
+          }
+        }
+      )
     }
   }
 
