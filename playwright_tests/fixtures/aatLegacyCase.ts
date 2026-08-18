@@ -1,7 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
-import type { APIRequestContext, APIResponse, Page } from '@playwright/test';
-import { MediaViewerPage } from '../pages/mediaViewerPage';
+import type { APIRequestContext, APIResponse } from '@playwright/test';
 
 const totp = require('totp-generator') as (secret: string, options: { digits: number; period: number }) => string;
 
@@ -140,19 +139,4 @@ export const uploadAatDocument = async (request: APIRequestContext, filename: st
     throw new Error('AAT DM Store upload did not return a document identifier');
   }
   return { id, url: `/documents/${id}/binary` };
-};
-
-export const openAatDocumentInMediaViewer = async (
-  request: APIRequestContext,
-  page: Page,
-  caseId: string,
-  filename: string,
-  contentType: 'pdf' | 'image'
-): Promise<MediaViewerPage> => {
-  const document = await uploadAatDocument(request, filename);
-  const mediaViewer = new MediaViewerPage(page);
-  await mediaViewer.goto();
-  await mediaViewer.enableAnnotations();
-  await mediaViewer.loadDocument(document.url, caseId, contentType);
-  return mediaViewer;
 };

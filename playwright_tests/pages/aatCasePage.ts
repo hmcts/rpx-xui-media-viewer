@@ -14,7 +14,7 @@ export class AatCasePage {
     await this.page.locator('input[name="username"]').fill(username);
     await this.page.locator('input[name="password"]').fill(password);
     await this.page.locator('input[value="Sign in"]').click();
-    await this.page.getByText('Case list').waitFor();
+    await this.page.getByRole('heading', { name: 'Case list' }).waitFor();
   }
 
   async openUploadDocument(caseId: string): Promise<void> {
@@ -38,18 +38,4 @@ export class AatCasePage {
     await this.page.getByRole('button', { name: 'Submit' }).click();
   }
 
-  async openUploadedDocument(filename: string): Promise<Page> {
-    const documentLink = this.page.getByRole('link', { name: filename, exact: true });
-    const target = await documentLink.getAttribute('target');
-    if (target === '_blank') {
-      const popup = this.page.waitForEvent('popup');
-      await documentLink.click();
-      const viewer = await popup;
-      await viewer.waitForLoadState('domcontentloaded');
-      return viewer;
-    }
-    await documentLink.click();
-    await this.page.waitForLoadState('domcontentloaded');
-    return this.page;
-  }
 }
