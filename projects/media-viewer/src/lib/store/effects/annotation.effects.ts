@@ -42,7 +42,7 @@ export class AnnotationEffects {
           return successAction;
         }),
         catchError(error => {
-          return of(new annotationsActions.LoadAnnotationSetFail(error));
+          return of(new annotationsActions.SaveAnnotationFail(error));
         }));
     }))
   );

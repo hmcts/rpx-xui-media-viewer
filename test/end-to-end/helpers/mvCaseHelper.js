@@ -35,162 +35,10 @@ async function loadNewDocument(I, caseId, mediaType, newCaseId) {
   await I.loadDocumentAndCheckSuccessLoad(newCaseId)
 }
 
-async function contentSearchTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executeContentSearch(searchKeyword, noOfFindings);
-}
-
-async function navigateSearchResultsUsingPreviousNextLinksTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.searchResultsNavigationUsingPreviousAndNextLinks(searchKeyword, noOfFindings);
-}
-
-async function searchResultsNotFoundTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executeContentSearch(searchKeyword, noOfFindings);
-}
-
-async function enterShouldJumpViewerToNextSearchResultsTest(I, caseId, searchKeyword, noOfFindings, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.enterShouldJumpViewerToNextSearchResult(searchKeyword, noOfFindings);
-}
-
-async function pdfViewerPageNavigationTest(I, caseId, mediaType, pageNoToNavigate) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.pdfViewerPageNavigation(pageNoToNavigate);
-}
-
-async function pdfViewerZoomInOutTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.executePdfViewerZoom();
-}
-
-async function downloadPdfDocFromMVTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.downloadPdfDocument();
-}
-
-async function printDocumentFromMVTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.mvPrintDocument();
-}
-
-async function pdfAndImageRotationTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.rotatePdfAndJpg();
-}
-
-async function createBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-}
-
-async function deleteBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-}
-
-async function updateBookmarkTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-  await I.updateBookMarks();
-}
-
-async function addEmptyBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.addEmptyBookmarks();
-}
-
-async function sortBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.sortBookmarks();
-}
-
-async function bookmarkBoxBlankTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.bookmarkBoxBlank();
-}
-
-async function multiMediaAudioTest(I, caseId, mediaType) {
-  await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
-  await I.mvAudioScenario();
-}
-
-async function multiMediaAudioPauseAndRewindTest(I, caseId, mediaType) {
-  await openCaseDocumentsInMediaViewer(I, caseId, mediaType);
-  await I.clearBookMarks();
-}
-
-async function highlightTextTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.highlightPdfText();
-}
-
-async function addCommentAndRotateTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addCommentAndRotate();
-}
-
-async function addCommentTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addComments(commonConfig.firstComment1);
-}
-
-async function updateCommentTest(I, caseId, mediaType, comment, updatedComment) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.addComments(comment);
-  await I.updateComment(comment, updatedComment);
-}
-
-async function deleteCommentTest(I, caseId, mediaType, comment, updatedComment) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.deleteComments(comment, updatedComment);
-}
-
 async function deleteHighlightsTest(I, caseId, mediaType) {
   await executeTestsOnPreview(I, caseId, mediaType);
   await I.highlightPdfText();
   await I.deleteAllExistingTextHighlights();
-}
-
-async function annotateFromSearchTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.deleteAllExistingTextHighlights();
-  await I.annotateFromSearch();
-}
-
-async function collateCommentsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.collateComments();
-}
-
-async function collateCommentsNotBlankTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.addMultipleComments();
-  await I.collateComments();
-  await I.collateCommentsNotBlank();
-}
-
-async function commentsSearchTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clickCommentsPanel();
-  await I.deleteAllExistingComments();
-  await I.commentsSearch();
-}
-
-async function addMultipleCommentsTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.addMultipleComments();
 }
 
 async function markContentForRedactionUsingDrawBoxTest(I, caseId, mediaType) {
@@ -336,52 +184,12 @@ async function uploadDocumentEvent(I, caseId, eventName) {
   await I.chooseNextStep(eventName, 3)
 }
 
-async function customAndReorderBookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.createBookMark();
-  await I.customOrderBookmarks();
-  await I.reorderBookmarks();
-}
-
-async function add30BookmarksTest(I, caseId, mediaType) {
-  await executeTestsOnPreview(I, caseId, mediaType);
-  await I.clearBookMarks();
-  await I.add30Bookmarks();
-}
-
 module.exports = {
   loginTest,
   submittedState,
   uploadPdf,
   uploadJpeg,
   uploadWorDoc,
-  contentSearchTest,
-  searchResultsNotFoundTest,
-  downloadPdfDocFromMVTest,
-  pdfViewerZoomInOutTest,
-  printDocumentFromMVTest,
-  pdfViewerPageNavigationTest,
-  pdfAndImageRotationTest,
-  navigateSearchResultsUsingPreviousNextLinksTest,
-  enterShouldJumpViewerToNextSearchResultsTest,
-  createBookmarkTest,
-  deleteBookmarkTest,
-  updateBookmarkTest,
-  addEmptyBookmarksTest,
-  sortBookmarksTest,
-  multiMediaAudioTest,
-  multiMediaAudioPauseAndRewindTest,
-  highlightTextTest,
-  addCommentAndRotateTest,
-  addCommentTest,
-  deleteCommentTest,
-  deleteHighlightsTest,
-  updateCommentTest,
-  collateCommentsTest,
-  collateCommentsNotBlankTest,
-  commentsSearchTest,
-  addMultipleCommentsTest,
   markContentForRedactionUsingDrawBoxTest,
   redactContentUsingRedactTextTest,
   navigateBundleDocsUsingPageIndexTest,
@@ -397,9 +205,6 @@ module.exports = {
   updateNonTextualCommentTest,
   deleteNonTextualCommentTest,
   redactSearchAndRedactAllTest,
-  customAndReorderBookmarksTest,
-  bookmarkBoxBlankTest,
-  add30BookmarksTest,
-  annotateFromSearchTest,
-  loadNewDocument
+  loadNewDocument,
+  deleteHighlightsTest
 }
