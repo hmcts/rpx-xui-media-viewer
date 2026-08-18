@@ -162,7 +162,7 @@
     "@angular/compiler-cli": "20.3.26",
     "@angular/language-service": "20.3.26",
     "@ngrx/schematics": "^20",
-    "@playwright/test": "1.61.1",
+    "@playwright/test": "1.62.1",
     "@types/chai": "4.3.20",
     "@types/cucumber": "^6",
     "@types/jasmine": "~5.1.0",
