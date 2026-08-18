@@ -1,82 +1,50 @@
-import { expect, test as base } from '@playwright/test';
-import { createAatCcdCase, openAatDocumentInMediaViewer, uploadAatDocument } from '../fixtures/aatLegacyCase';
+import { expect, test } from '@playwright/test';
+import { openAatDocumentInMediaViewer } from '../fixtures/aatLegacyCase';
 
-const test = base.extend<{ caseId: string }>({
-  caseId: async ({ request }, use) => {
-    await use(await createAatCcdCase(request));
-  },
-});
+test.describe('Live image annotation lifecycle', () => {
+  test.setTimeout(45_000);
 
-test.describe('AAT legacy Codecept migration', () => {
-  test.setTimeout(120_000);
-
-  test('creates the CCD case used by Media Viewer journeys', { tag: ['@e2e-functional', '@feature-ccd-case-creation'] }, async ({ caseId, page, request }) => {
-    const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'example.pdf', 'pdf');
-    await expect(mediaViewer.loadState.firstPdfPage).toBeVisible();
-  });
-
-  test('uploads a PDF document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ caseId, page, request }) => {
-    const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'example.pdf', 'pdf');
-    await expect(mediaViewer.loadState.firstPdfPage).toBeVisible();
-  });
-
-  test('uploads an image document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ caseId, page, request }) => {
-    const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'quote.jpg', 'image');
-    await expect(mediaViewer.loadState.image).toBeVisible();
-  });
-
-  test('uploads a Word document through CCD and DM Store', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
-    const document = await uploadAatDocument(request, 'ThankYou.doc');
-    await expect(document.id).toMatch(/^[0-9a-f-]+$/i);
-  });
-
-  test('creates a non-text image highlight and comment through the live annotation service', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ caseId, page, request }) => {
+  test('persists a complete non-text image annotation lifecycle through the live service', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ page, request }) => {
+    const caseId = `playwright-image-${Date.now()}`;
     const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'quote.jpg', 'image');
     const initialComment = `Playwright image comment ${Date.now()}`;
+    const updatedComment = `Updated Playwright image comment ${Date.now()}`;
 
-    await expect(mediaViewer.loadState.image).toBeVisible();
-    await mediaViewer.enableAnnotations();
-    const savedAnnotation = page.waitForResponse((response) => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/annotations'));
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
-    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
-    await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
-    await mediaViewer.comments.addToSelectedAnnotation(initialComment);
-    await savedAnnotation;
-    await expect(mediaViewer.comments.comment(initialComment)).toBeVisible();
-  });
+    await test.step('creates a real draw-box image highlight', async () => {
+      await expect(mediaViewer.loadState.image).toBeVisible();
+      await mediaViewer.annotations.drawOnImage();
+      await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
+    });
 
-  test('creates a real draw-box image highlight', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ caseId, page, request }) => {
-    const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'quote.jpg', 'image');
+    await test.step('creates a non-text image highlight and comment through the live annotation service', async () => {
+      const savedAnnotation = page.waitForResponse(
+        (response) => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/annotations'),
+        { timeout: 15_000 }
+      );
+      await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
+      await mediaViewer.comments.addToSelectedAnnotation(initialComment);
+      await expect((await savedAnnotation).ok()).toBeTruthy();
+      await expect(mediaViewer.comments.comment(initialComment)).toBeVisible();
+    });
 
-    await expect(mediaViewer.loadState.image).toBeVisible();
-    await mediaViewer.enableAnnotations();
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image, { x: 220, y: 140 });
-    await expect(mediaViewer.annotations.renderedRectangles.last()).toBeVisible();
-  });
+    await test.step('updates a persisted non-text image comment', async () => {
+      const updatedAnnotation = page.waitForResponse(
+        (response) => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/annotations'),
+        { timeout: 15_000 }
+      );
+      await mediaViewer.comments.edit(initialComment, updatedComment);
+      await expect((await updatedAnnotation).ok()).toBeTruthy();
+      await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
+    });
 
-  test('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ caseId, page, request }) => {
-    const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'quote.jpg', 'image');
-    const initialComment = `Playwright image comment ${Date.now()}`;
-    const updatedComment = `${initialComment} updated`;
-
-    await mediaViewer.enableAnnotations();
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
-    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
-    await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
-    await mediaViewer.comments.addToSelectedAnnotation(initialComment);
-    await mediaViewer.comments.edit(initialComment, updatedComment);
-  });
-
-  test('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ caseId, page, request }) => {
-    const mediaViewer = await openAatDocumentInMediaViewer(request, page, caseId, 'quote.jpg', 'image');
-    const initialComment = `Playwright image comment ${Date.now()}`;
-
-    await mediaViewer.enableAnnotations();
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
-    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
-    await expect(page.getByRole('button', { name: 'Comment' })).toBeVisible();
-    await mediaViewer.comments.addToSelectedAnnotation(initialComment);
-    await mediaViewer.comments.remove(initialComment);
-    await expect(mediaViewer.comments.comment(initialComment)).toHaveCount(0);
+    await test.step('deletes a persisted non-text image comment', async () => {
+      const deletedAnnotation = page.waitForResponse(
+        (response) => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/annotations'),
+        { timeout: 15_000 }
+      );
+      await mediaViewer.comments.remove(updatedComment);
+      await expect((await deletedAnnotation).ok()).toBeTruthy();
+      await expect(mediaViewer.comments.comment(updatedComment)).toHaveCount(0);
+    });
   });
 });

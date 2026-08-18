@@ -11,10 +11,12 @@ const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
 const e2eSpecPattern = 'playwright_tests/e2e/**/*.spec.ts';
+const integrationSpecPattern = 'playwright_tests/integration/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
 const defaultE2eWorkerCount = 1;
+const defaultIntegrationWorkerCount = 1;
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
@@ -162,6 +164,7 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
 
 const workerCount = resolveWorkerCount(process.env.FUNCTIONAL_TESTS_WORKERS);
 const e2eWorkerCount = resolveWorkerCount(process.env.E2E_TESTS_WORKERS ?? String(defaultE2eWorkerCount));
+const integrationWorkerCount = resolveWorkerCount(process.env.INTEGRATION_TESTS_WORKERS ?? String(defaultIntegrationWorkerCount));
 
 export default defineConfig({
   testDir: '.',
@@ -199,12 +202,29 @@ export default defineConfig({
     },
     {
       // These journeys use live IdAM, CCD, DM Store and annotation services.
-      // Keep AAT writes serial while this project runs alongside Functional in CI.
+      // Keep the live annotation lifecycle serial while it runs alongside Functional in CI.
       name: 'e2e',
       testMatch: [e2eSpecPattern],
       workers: e2eWorkerCount,
       use: {
         ...devices['Desktop Chrome'],
+        // Keep CI retries for transient AAT faults, but fail a missing or
+        // obstructed user action with a trace in seconds rather than minutes.
+        actionTimeout: 10_000,
+        navigationTimeout: 20_000,
+      },
+    },
+    {
+      // API contracts for the legacy CCD/DM Store prerequisites. They are kept
+      // separate from the browser E2E lane because the legacy steps are setup,
+      // not Media Viewer browser interactions.
+      name: 'integration',
+      testMatch: [integrationSpecPattern],
+      workers: integrationWorkerCount,
+      use: {
+        ...devices['Desktop Chrome'],
+        actionTimeout: 10_000,
+        navigationTimeout: 20_000,
       },
     },
     {

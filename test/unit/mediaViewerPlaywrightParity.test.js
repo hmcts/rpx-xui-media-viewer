@@ -7,14 +7,10 @@ const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = [
   ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
-  ['createCCDCase.js', 'Create CCD Case for MV...', 'e2e/aatLegacyMigration.spec.ts', 'creates the CCD case used by Media Viewer journeys'],
-  ['dmStoreScenarios.js', 'Upload PDF Document', 'e2e/aatLegacyMigration.spec.ts', 'uploads a PDF document through CCD and DM Store'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'e2e/aatLegacyMigration.spec.ts', 'uploads an image document through CCD and DM Store'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'e2e/aatLegacyMigration.spec.ts', 'uploads a Word document through CCD and DM Store'],
-  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'creates a non-text image highlight and comment through the live annotation service'],
-  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'e2e/aatLegacyMigration.spec.ts', 'creates a real draw-box image highlight'],
-  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'updates a persisted non-text image comment'],
-  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'deletes a persisted non-text image comment'],
+  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
+  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
+  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
+  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
   ['indexAndOutline.js', 'Navigate Bundle Documents Through Page Index Number', 'indexOutline.spec.ts', 'navigates a top-level outline document destination'],
   ['indexAndOutline.js', 'Navigate Nested Documents Using Index', 'indexOutline.spec.ts', 'navigates a nested outline document destination and retains the parent selection'],
   ['redact.js', 'Mark Content For Redaction Using Draw Box Function', 'redactions.spec.ts', 'creates a draw-box redaction, previews it and clears the persisted marker'],
@@ -31,6 +27,13 @@ const replacementContracts = [
   ['redact.js', 'Unmark all content (marked for redaction)', 'redactions.spec.ts', 'clears persisted redactions across PDF pages without restoring them after reload'],
 ];
 
+const retainedLegacyContracts = [
+  ['createCCDCase.js', 'Create CCD Case for MV...'],
+  ['dmStoreScenarios.js', 'Upload PDF Document'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario'],
+];
+
 function source(relativePath) {
   return readFileSync(resolve(repositoryRoot, relativePath), 'utf8');
 }
@@ -40,7 +43,7 @@ function executableScenarioNames(legacySource) {
 }
 
 describe('Media Viewer Codecept-to-Playwright parity', () => {
-  it('maps every executable legacy scenario to a named Playwright contract', () => {
+  it('maps every retired legacy scenario to a named Playwright contract and keeps CCD browser journeys explicit', () => {
     const legacyScenarioNames = new Set();
 
     for (const [legacyFile] of replacementContracts) {
@@ -50,8 +53,15 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       }
     }
 
+    for (const [legacyFile, legacyScenario] of retainedLegacyContracts) {
+      const legacySource = source(`test/end-to-end/mvFeatures/${legacyFile}`);
+      assert.match(legacySource, new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`));
+      legacyScenarioNames.add(legacyScenario);
+    }
+
     assert.equal(legacyScenarioNames.size, 23, 'Codecept dry-run must still expose 23 executable scenarios');
-    assert.equal(replacementContracts.length, legacyScenarioNames.size, 'every legacy scenario needs exactly one explicit replacement mapping');
+    assert.equal(replacementContracts.length, 19, 'only retired scenarios can claim a Playwright replacement');
+    assert.equal(retainedLegacyContracts.length, 4, 'CCD browser journeys remain explicitly active until their owning UI migrates');
 
     for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
       assert.match(source(`test/end-to-end/mvFeatures/${legacyFile}`), new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));

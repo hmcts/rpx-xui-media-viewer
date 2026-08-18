@@ -1,6 +1,6 @@
 import { readFile } from 'node:fs/promises';
 import { basename, resolve } from 'node:path';
-import type { APIRequestContext, Page } from '@playwright/test';
+import type { APIRequestContext, APIResponse, Page } from '@playwright/test';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
 
 const totp = require('totp-generator') as (secret: string, options: { digits: number; period: number }) => string;
@@ -14,6 +14,7 @@ const requiredEnvironment = [
 ] as const;
 
 const aatUrl = (value: string | undefined, fallback: string): string => value ?? fallback;
+const aatRequestTimeout = 15_000;
 
 export const missingAatEnvironment = (): string[] => {
   const missing: string[] = requiredEnvironment.filter((name) => !process.env[name]);
@@ -30,14 +31,14 @@ export const assertAatLegacyMigrationEnvironment = (): void => {
   }
 };
 
-const responseJson = async <T>(response: Awaited<ReturnType<APIRequestContext['post']>>, description: string): Promise<T> => {
+const responseJson = async <T>(response: APIResponse, description: string): Promise<T> => {
   if (!response.ok()) {
     throw new Error(`${description} failed with ${response.status()}`);
   }
   return response.json() as Promise<T>;
 };
 
-const responseText = async (response: Awaited<ReturnType<APIRequestContext['post']>>, description: string): Promise<string> => {
+const responseText = async (response: APIResponse, description: string): Promise<string> => {
   if (!response.ok()) {
     throw new Error(`${description} failed with ${response.status()}`);
   }
@@ -55,16 +56,17 @@ export const createAatCcdCase = async (request: APIRequestContext): Promise<stri
   const ccdUrl = aatUrl(process.env.CCD_DATA_STORE_API_URL, 'http://ccd-data-store-api-aat.service.core-compute-aat.internal').replace(/\/$/, '');
 
   const login = await responseJson<{ access_token: string }>(
-    await request.post(`${idamUrl}/loginUser`, { form: { username, password } }),
+    await request.post(`${idamUrl}/loginUser`, { form: { username, password }, timeout: aatRequestTimeout }),
     'AAT IdAM login'
   );
   const user = await responseJson<{ id: string }>(
-    await request.get(`${idamUrl}/details`, { headers: { Authorization: `Bearer ${login.access_token}` } }),
+    await request.get(`${idamUrl}/details`, { headers: { Authorization: `Bearer ${login.access_token}` }, timeout: aatRequestTimeout }),
     'AAT IdAM user lookup'
   );
   const serviceToken = await responseText(
     await request.post(`${s2sUrl}/testing-support/lease`, {
       data: { microservice: 'ccd_gw', oneTimePassword: totp(ccdGatewayKey, { digits: 6, period: 30 }) },
+      timeout: aatRequestTimeout,
     }),
     'AAT S2S lease'
   );
@@ -77,6 +79,7 @@ export const createAatCcdCase = async (request: APIRequestContext): Promise<stri
           ServiceAuthorization: `Bearer ${serviceToken}`,
           'Content-Type': 'application/json',
         },
+        timeout: aatRequestTimeout,
       }
     ),
     'AAT CCD create-case event'
@@ -94,6 +97,7 @@ export const createAatCcdCase = async (request: APIRequestContext): Promise<stri
         event: { id: 'initiateCase', summary: 'Creating CCD Case', description: 'For Media Viewer Playwright migration' },
         event_token: eventToken.token,
       }),
+      timeout: aatRequestTimeout,
     }),
     'AAT CCD case creation'
   );
@@ -131,6 +135,7 @@ export const uploadAatDocument = async (request: APIRequestContext, filename: st
       'metadata[type]': 'civil',
       'metadata[jurisdiction]': 'probate',
     },
+    timeout: aatRequestTimeout,
   });
   const uploaded = await responseJson<DmStoreUploadResponse>(response, 'AAT DM Store upload');
   const url = uploaded._embedded?.documents?.[0]?._links?.self?.href;
@@ -151,6 +156,7 @@ export const openAatDocumentInMediaViewer = async (
   const document = await uploadAatDocument(request, filename);
   const mediaViewer = new MediaViewerPage(page);
   await mediaViewer.goto();
+  await mediaViewer.enableAnnotations();
   await mediaViewer.loadDocument(document.url, caseId, contentType);
   return mediaViewer;
 };

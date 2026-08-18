@@ -62,13 +62,13 @@ export class CommentsPanel {
     const comment = await this.card(content);
     await comment.locator('p.commentText').click();
     await comment.getByRole('button', { name: 'Edit' }).click();
-    await comment.locator('textarea[name="content"]').waitFor();
+    await this.panel.locator('textarea[name="content"]').waitFor();
     return comment;
   }
 
   async edit(content: string, replacement: string): Promise<void> {
     const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[name="content"]');
+    const editor = this.panel.locator('textarea[name="content"]');
     await editor.fill(replacement);
     await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
     await editor.waitFor({ state: 'hidden' });
