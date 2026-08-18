@@ -6,15 +6,15 @@ const { resolve } = require('node:path');
 const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = [
-  ['createCCDCase.js', 'Create CCD Case for MV...', 'e2e/aatCcdLegacyMigration.spec.ts', 'creates the CCD case used by Media Viewer journeys through the authenticated browser route'],
-  ['dmStoreScenarios.js', 'Upload PDF Document', 'e2e/aatCcdLegacyMigration.spec.ts', 'uploads a PDF document through the CCD browser event'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'e2e/aatCcdLegacyMigration.spec.ts', 'uploads an image document through the CCD browser event'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'e2e/aatCcdLegacyMigration.spec.ts', 'uploads a Word document through the CCD browser event'],
+  ['createCCDCase.js', 'Create CCD Case for MV...', 'integration/aatCcdBrowserDefects.spec.ts', 'creates the CCD case used by Media Viewer journeys through the authenticated browser route'],
+  ['dmStoreScenarios.js', 'Upload PDF Document', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads a PDF document through the CCD browser event'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads an image document through the CCD browser event'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads a Word document through the CCD browser event'],
   ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
-  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
-  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
-  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
-  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
+  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'annotations.spec.ts', 'creates a non-text image highlight and comment through the stubbed annotation-service contract'],
+  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'annotations.spec.ts', 'creates a draw-box image highlight with a positive rectangle contract'],
+  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'annotations.spec.ts', 'updates a persisted non-text image comment'],
+  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'annotations.spec.ts', 'deletes a persisted non-text image comment'],
   ['indexAndOutline.js', 'Navigate Bundle Documents Through Page Index Number', 'indexOutline.spec.ts', 'navigates a top-level outline document destination'],
   ['indexAndOutline.js', 'Navigate Nested Documents Using Index', 'indexOutline.spec.ts', 'navigates a nested outline document destination and retains the parent selection'],
   ['redact.js', 'Mark Content For Redaction Using Draw Box Function', 'redactions.spec.ts', 'creates a draw-box redaction, previews it and clears the persisted marker'],
@@ -69,10 +69,14 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       const playwrightPath = playwrightFile.includes('/')
         ? `playwright_tests/${playwrightFile}`
         : `playwright_tests/functional/${playwrightFile}`;
-      assert.match(source(playwrightPath), new RegExp(`^\\s*(?:test|annotationsTest|deletionTest)\\('${playwrightContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`, 'm'));
+      assert.match(source(playwrightPath), new RegExp(`^\\s*(?:test|annotationsTest|deletionTest|imageAnnotationsTest)\\('${playwrightContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`, 'm'));
     }
 
-    const knownDefectContracts = source('playwright_tests/e2e/aatCcdLegacyMigration.spec.ts');
+    assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'e2e'/, 'the flaky live E2E project must not be selectable');
+    assert.equal(packageScripts['test:playwright:e2e'], undefined, 'the retired E2E command must not be selectable');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightE2ETests|Playwright Viewer E2E Test/, 'Jenkins must not schedule the retired E2E lane');
+
+    const knownDefectContracts = source('playwright_tests/integration/aatCcdBrowserDefects.spec.ts');
     assert.match(knownDefectContracts, /@defect-EXUI-5122/);
     assert.match(knownDefectContracts, /@defect-EXUI-5123/);
     assert.doesNotMatch(knownDefectContracts, /test\.(?:skip|fixme)\(/, 'known defects must be excluded by tag, never skipped');

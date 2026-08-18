@@ -1,4 +1,4 @@
-import { annotationsTest, commentsTest as deletionTest, expect, mediaAssets } from '../fixtures/mediaViewerTest';
+import { annotationsTest, commentsTest as deletionTest, expect, imageAnnotationsTest, mediaAssets } from '../fixtures/mediaViewerTest';
 
 const annotationRequest = (url: string) => url.endsWith('/em-anno/annotations');
 
@@ -225,4 +225,67 @@ annotationsTest.describe('PDF annotations', () => {
     }
   });
 
+});
+
+imageAnnotationsTest.describe('Image annotations and comments', () => {
+  imageAnnotationsTest('creates a non-text image highlight and comment through the stubbed annotation-service contract', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    const contract = await page.evaluate(async (documentId) => {
+      const annotation = {
+        id: 'pw-created-image-annotation', annotationSetId: 'pw-image-annotations-annotation-set', documentId, page: 1,
+        type: 'highlight', color: 'FFFF00', tags: [], rectangles: [{ id: 'pw-created-image-rectangle', annotationId: 'pw-created-image-annotation', x: 2, y: 2, width: 10, height: 10 }],
+        comments: [{ id: 'pw-created-image-comment', annotationId: 'pw-created-image-annotation', content: 'Created image annotation comment' }],
+      };
+      const create = await fetch('/em-anno/annotations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(annotation) });
+      const annotationSet = await fetch(`/em-anno/annotation-sets/filter?documentId=${encodeURIComponent(documentId)}`);
+      return { status: create.status, created: await create.json(), annotationSet: await annotationSet.json() };
+    }, mediaAssets.image.url);
+    expect(contract.status).toBe(200);
+    expect(contract.created).toMatchObject({ documentId: mediaAssets.image.url, comments: [expect.objectContaining({ content: 'Created image annotation comment' })] });
+    expect(contract.annotationSet.annotations).toContainEqual(expect.objectContaining({ id: 'pw-created-image-annotation' }));
+  });
+
+  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    const contract = await page.evaluate(async (documentId) => {
+      const annotation = {
+        id: 'pw-draw-box-image-annotation', annotationSetId: 'pw-image-annotations-annotation-set', documentId, page: 1,
+        type: 'highlight', color: 'FFFF00', tags: [], rectangles: [{ id: 'pw-draw-box-image-rectangle', annotationId: 'pw-draw-box-image-annotation', x: 2, y: 2, width: 10, height: 10 }], comments: [],
+      };
+      const response = await fetch('/em-anno/annotations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(annotation) });
+      return { status: response.status, annotation: await response.json() };
+    }, mediaAssets.image.url);
+    expect(contract.status).toBe(200);
+    expect(contract.annotation).toMatchObject({ annotationSetId: 'pw-image-annotations-annotation-set', documentId: mediaAssets.image.url, page: 1, type: 'highlight' });
+    expect(contract.annotation.rectangles[0]).toMatchObject({ x: expect.any(Number), y: expect.any(Number), width: expect.any(Number), height: expect.any(Number) });
+    expect(contract.annotation.rectangles[0].width).toBeGreaterThan(0);
+    expect(contract.annotation.rectangles[0].height).toBeGreaterThan(0);
+  });
+
+  imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
+    const updatedComment = 'Updated image annotation comment';
+    await mediaViewer.goto();
+    const contract = await page.evaluate(async ({ documentId, updatedComment }) => {
+      const existing = await fetch(`/em-anno/annotation-sets/filter?documentId=${encodeURIComponent(documentId)}`);
+      const annotationSet = await existing.json();
+      const annotation = { ...annotationSet.annotations[0], comments: [{ ...annotationSet.annotations[0].comments[0], content: updatedComment }] };
+      const update = await fetch('/em-anno/annotations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(annotation) });
+      return { status: update.status, annotation: await update.json() };
+    }, { documentId: mediaAssets.image.url, updatedComment });
+    expect(contract.status).toBe(200);
+    expect(contract.annotation.comments).toEqual([expect.objectContaining({ content: updatedComment })]);
+  });
+
+  imageAnnotationsTest('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    const contract = await page.evaluate(async (documentId) => {
+      const existing = await fetch(`/em-anno/annotation-sets/filter?documentId=${encodeURIComponent(documentId)}`);
+      const annotationSet = await existing.json();
+      const annotation = { ...annotationSet.annotations[0], comments: [] };
+      const update = await fetch('/em-anno/annotations', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(annotation) });
+      return { status: update.status, annotation: await update.json() };
+    }, mediaAssets.image.url);
+    expect(contract.status).toBe(200);
+    expect(contract.annotation.comments).toEqual([]);
+  });
 });

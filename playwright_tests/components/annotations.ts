@@ -10,7 +10,6 @@ export class Annotations {
   readonly resultCount: Locator;
   readonly rectangles: Locator;
   readonly renderedRectangles: Locator;
-  readonly imageDrawSurface: Locator;
   readonly contextToolbar: Locator;
   readonly createButton: Locator;
 
@@ -24,9 +23,6 @@ export class Annotations {
     this.resultCount = page.locator('#findRedactResultsCount');
     this.rectangles = page.locator('mv-anno-rectangle');
     this.renderedRectangles = page.locator('mv-anno-rectangle .rectangle');
-    this.imageDrawSurface = page.locator('.pageContainer__page--draw').filter({
-      has: page.locator('mv-box-highlight-create > div[tabindex="0"]'),
-    });
     this.contextToolbar = page.locator('mv-ctx-toolbar');
     this.createButton = this.contextToolbar.getByRole('button', { name: 'Highlight' });
   }
@@ -49,11 +45,6 @@ export class Annotations {
     await this.drawBoxButton.click();
     await this.page.locator('.pageContainer__page--draw').first().waitFor({ state: 'visible' });
     await this.drawRectangle(page, start);
-  }
-
-  async drawOnImage(start = { x: 80, y: 80 }): Promise<void> {
-    await this.page.locator('mv-image-viewer').waitFor({ state: 'visible' });
-    await this.drawOnPage(this.imageDrawSurface, start);
   }
 
   private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {

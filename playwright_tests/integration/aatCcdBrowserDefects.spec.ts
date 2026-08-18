@@ -5,10 +5,10 @@ import { AatCasePage } from '../pages/aatCasePage';
 const caseDetailsDefectTag = '@defect-EXUI-5122';
 const uploadDefectTag = '@defect-EXUI-5123';
 
-test.describe('AAT CCD legacy Codecept migration', () => {
+test.describe('AAT CCD browser legacy Codecept migration', () => {
   test.setTimeout(45_000);
 
-  test('creates the CCD case used by Media Viewer journeys through the authenticated browser route', { tag: ['@e2e-functional', '@feature-ccd-case-creation', caseDetailsDefectTag] }, async ({ page, request }) => {
+  test('creates the CCD case used by Media Viewer journeys through the authenticated browser route', { tag: ['@integration', '@feature-ccd-case-creation', caseDetailsDefectTag] }, async ({ page, request }) => {
     const caseId = await createAatCcdCase(request);
     const ccd = new AatCasePage(page);
 
@@ -17,7 +17,7 @@ test.describe('AAT CCD legacy Codecept migration', () => {
     await expect(page).toHaveURL(new RegExp(`/case-details/${caseId}$`));
   });
 
-  test('uploads a PDF document through the CCD browser event', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites', uploadDefectTag] }, async ({ page, request }) => {
+  test('uploads a PDF document through the CCD browser event', { tag: ['@integration', '@feature-aat-document-prerequisites', uploadDefectTag] }, async ({ page, request }) => {
     const ccd = new AatCasePage(page);
     await ccd.signIn();
     await ccd.openUploadDocument(await createAatCcdCase(request));
@@ -25,7 +25,7 @@ test.describe('AAT CCD legacy Codecept migration', () => {
     await expect(page.getByRole('link', { name: 'example.pdf', exact: true })).toBeVisible();
   });
 
-  test('uploads an image document through the CCD browser event', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites', uploadDefectTag] }, async ({ page, request }) => {
+  test('uploads an image document through the CCD browser event', { tag: ['@integration', '@feature-aat-document-prerequisites', uploadDefectTag] }, async ({ page, request }) => {
     const ccd = new AatCasePage(page);
     await ccd.signIn();
     await ccd.openUploadDocument(await createAatCcdCase(request));
@@ -33,7 +33,7 @@ test.describe('AAT CCD legacy Codecept migration', () => {
     await expect(page.getByRole('link', { name: 'quote.jpg', exact: true })).toBeVisible();
   });
 
-  test('uploads a Word document through the CCD browser event', { tag: ['@e2e-functional', '@feature-aat-document-prerequisites', uploadDefectTag] }, async ({ page, request }) => {
+  test('uploads a Word document through the CCD browser event', { tag: ['@integration', '@feature-aat-document-prerequisites', uploadDefectTag] }, async ({ page, request }) => {
     const ccd = new AatCasePage(page);
     await ccd.signIn();
     await ccd.openUploadDocument(await createAatCcdCase(request));
