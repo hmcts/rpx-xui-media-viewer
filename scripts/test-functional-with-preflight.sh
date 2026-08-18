@@ -1,27 +1,6 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-fixture_env="${MV_LOCAL_DOCUMENT_ENV_FILE:-.local-aat-documents.env}"
-if [ -f "${fixture_env}" ]; then
-  set -a
-  # shellcheck disable=SC1090
-  source "${fixture_env}"
-  set +a
-fi
-
-if [ "${RUN_LEGACY_CCD_JOURNEYS:-false}" != "true" ]; then
-  echo "Codecept has been retired for migrated contracts. Use yarn test:functional for Playwright, or set RUN_LEGACY_CCD_JOURNEYS=true for the four unresolved CCD browser journeys." >&2
-  exit 2
-fi
-
-if [ "${PUPPETEER_INSTALL_ALREADY_VERIFIED:-false}" != "true" ]; then
-  yarn puppeteer:install
-fi
-
-if [ "${E2E_FAIL_FAST_PREFLIGHT:-false}" = "true" ]; then
-  node scripts/functional-preflight.js
-else
-  node scripts/functional-preflight.js || echo "Functional preflight failed; continuing with Codecept functional suite"
-fi
-
-NODE_PATH=. node ./node_modules/codeceptjs/bin/codecept.js run -c ./test/end-to-end/ --grep "${E2E_GREP:-@np}" --steps --reporter mocha-multi
+echo "Codecept functional execution is retired: all 23 historical contracts have Playwright replacements." >&2
+echo "Use yarn test:functional. To deliberately exercise a known external CCD defect, set PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true and run yarn test:playwright:e2e." >&2
+exit 2

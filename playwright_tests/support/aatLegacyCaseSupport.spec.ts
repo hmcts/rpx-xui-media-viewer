@@ -2,8 +2,6 @@ import { expect, test } from '@playwright/test';
 import { assertAatLegacyMigrationEnvironment, missingAatEnvironment } from '../fixtures/aatLegacyCase';
 
 const guardedEnvironment = [
-  'TEST_URL',
-  'PLAYWRIGHT_BASE_URL',
   'CCD_CASEWORKER_E2E_EMAIL',
   'CCD_CASEWORKER_E2E_PASSWORD',
   'MICROSERVICE_CCD_GW',
@@ -20,12 +18,10 @@ test('fails visibly when the AAT legacy migration environment is incomplete', { 
     expect(missingAatEnvironment()).toEqual(expect.arrayContaining([
       'CCD_CASEWORKER_E2E_EMAIL',
       'CCD_CASEWORKER_E2E_PASSWORD',
-      'PLAYWRIGHT_BASE_URL or TEST_URL',
     ]));
     expect(() => assertAatLegacyMigrationEnvironment()).toThrow(/AAT legacy migration requires/);
 
     Object.assign(process.env, {
-      TEST_URL: 'https://xui-media-viewer-aat.service.core-compute-aat.internal/',
       CCD_CASEWORKER_E2E_EMAIL: 'aat-caseworker@example.invalid',
       CCD_CASEWORKER_E2E_PASSWORD: 'not-a-secret',
       MICROSERVICE_CCD_GW: 'not-a-secret',

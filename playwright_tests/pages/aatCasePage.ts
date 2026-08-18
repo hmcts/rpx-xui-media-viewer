@@ -24,6 +24,11 @@ export class AatCasePage {
     await this.page.getByText('Upload Document').waitFor();
   }
 
+  async openCaseDetails(caseId: string): Promise<void> {
+    await this.page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
+    await this.page.locator('#next-step').waitFor();
+  }
+
   async upload(index: number, filename: string, description: string): Promise<void> {
     const upload = this.page.locator(`#documentCollection_${index}_uploadedDocument`);
     await this.page.getByRole('button', { name: 'Add new' }).click();

@@ -6,6 +6,10 @@ const { resolve } = require('node:path');
 const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = [
+  ['createCCDCase.js', 'Create CCD Case for MV...', 'e2e/aatCcdLegacyMigration.spec.ts', 'creates the CCD case used by Media Viewer journeys through the authenticated browser route'],
+  ['dmStoreScenarios.js', 'Upload PDF Document', 'e2e/aatCcdLegacyMigration.spec.ts', 'uploads a PDF document through the CCD browser event'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'e2e/aatCcdLegacyMigration.spec.ts', 'uploads an image document through the CCD browser event'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'e2e/aatCcdLegacyMigration.spec.ts', 'uploads a Word document through the CCD browser event'],
   ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
   ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
   ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'e2e/aatLegacyMigration.spec.ts', 'persists a complete non-text image annotation lifecycle through the live service'],
@@ -27,13 +31,6 @@ const replacementContracts = [
   ['redact.js', 'Unmark all content (marked for redaction)', 'redactions.spec.ts', 'clears persisted redactions across PDF pages without restoring them after reload'],
 ];
 
-const retainedLegacyContracts = [
-  ['createCCDCase.js', 'Create CCD Case for MV...'],
-  ['dmStoreScenarios.js', 'Upload PDF Document'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario'],
-];
-
 function source(relativePath) {
   return readFileSync(resolve(repositoryRoot, relativePath), 'utf8');
 }
@@ -43,7 +40,7 @@ function executableScenarioNames(legacySource) {
 }
 
 describe('Media Viewer Codecept-to-Playwright parity', () => {
-  it('maps every retired legacy scenario to a named Playwright contract and leaves only CCD browser journeys selectable', () => {
+  it('maps every historical Codecept scenario to a named Playwright contract', () => {
     const legacyScenarioNames = new Set();
 
     for (const [legacyFile] of replacementContracts) {
@@ -53,19 +50,12 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       }
     }
 
-    for (const [legacyFile, legacyScenario] of retainedLegacyContracts) {
-      const legacySource = source(`test/end-to-end/mvFeatures/${legacyFile}`);
-      assert.match(legacySource, new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\\]\\\\]/g, '\\$&')}`));
-      legacyScenarioNames.add(legacyScenario);
-    }
-
     assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
-    assert.equal(replacementContracts.length, 19, 'only retired scenarios can claim a Playwright replacement');
-    assert.equal(retainedLegacyContracts.length, 4, 'CCD browser journeys remain explicitly active until their owning UI migrates');
+    assert.equal(replacementContracts.length, 23, 'every historical Codecept contract must have a Playwright replacement');
     assert.match(
       source('test/config.js'),
-      /TestPathToRun:\s*process\.env\.E2E_TEST_PATH\s*\|\|\s*'\.\/mvFeatures\/\{createCCDCase,dmStoreScenarios\}\.js'/,
-      'Codecept must not execute a migrated contract by default'
+      /TestPathToRun:\s*process\.env\.E2E_TEST_PATH\s*\|\|\s*'\.\/mvFeatures\/__retired__\/\*\.js'/,
+      'Codecept must have no default execution path after complete migration'
     );
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
@@ -78,5 +68,11 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
         : `playwright_tests/functional/${playwrightFile}`;
       assert.match(source(playwrightPath), new RegExp(`^\\s*(?:test|annotationsTest|deletionTest)\\('${playwrightContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}'`, 'm'));
     }
+
+    const knownDefectContracts = source('playwright_tests/e2e/aatCcdLegacyMigration.spec.ts');
+    assert.match(knownDefectContracts, /@defect-EXUI-5122/);
+    assert.match(knownDefectContracts, /@defect-EXUI-5123/);
+    assert.doesNotMatch(knownDefectContracts, /test\.(?:skip|fixme)\(/, 'known defects must be excluded by tag, never skipped');
+    assert.match(source('playwright.config.ts'), /grepInvert:\s*includeKnownDefectTests \? undefined : knownExternalDefectTags/);
   });
 });

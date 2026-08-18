@@ -17,11 +17,7 @@ const aatUrl = (value: string | undefined, fallback: string): string => value ??
 const aatRequestTimeout = 15_000;
 
 export const missingAatEnvironment = (): string[] => {
-  const missing: string[] = requiredEnvironment.filter((name) => !process.env[name]);
-  if (!process.env.PLAYWRIGHT_BASE_URL && !process.env.TEST_URL) {
-    missing.push('PLAYWRIGHT_BASE_URL or TEST_URL');
-  }
-  return missing;
+  return requiredEnvironment.filter((name) => !process.env[name]);
 };
 
 export const assertAatLegacyMigrationEnvironment = (): void => {
