@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.32",
+  "version": "4.2.33",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -123,6 +123,7 @@
     "minimist": "^1.2.3",
     "tar": "7.5.21",
     "serialize-javascript": "^5.0.1",
+    "socket.io-parser": "4.2.7",
     "ssri": "^8.0.1",
     "trim-newlines": "^4.0.1",
     "ws": "^7.5.10",
