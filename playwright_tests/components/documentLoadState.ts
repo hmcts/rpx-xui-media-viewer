@@ -24,4 +24,10 @@ export class DocumentLoadState {
   pdfCanvas(pageNumber: number): Locator {
     return this.pdfPage(pageNumber).locator('canvas[role="presentation"]');
   }
+
+  async pdfOrientation(pageNumber: number): Promise<'portrait' | 'landscape'> {
+    return this.pdfCanvas(pageNumber).evaluate((element: HTMLCanvasElement) =>
+      element.width < element.height ? 'portrait' : 'landscape'
+    );
+  }
 }
