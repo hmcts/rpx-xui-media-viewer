@@ -60,6 +60,9 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
     assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
+    assert.doesNotMatch(packageScripts['test:crossbrowser'], /codeceptjs/, 'cross-browser coverage must not execute Codecept');
+    assert.match(packageScripts['test:crossbrowser'], /test-functional-with-preflight/);
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /codeceptjs|test:crossbrowser/, 'the Jenkins pipeline must select Playwright, never Codecept');
 
     for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
       assert.match(source(`test/end-to-end/mvFeatures/${legacyFile}`), new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));

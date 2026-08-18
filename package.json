@@ -80,7 +80,7 @@
     "e2e:fullfunctional": "bash scripts/test-functional-with-preflight.sh",
     "sonar-scan": "node_modules/sonar-scanner/bin/sonar-scanner",
     "rebuild-node-sass": "yarn add node-sass@^4.14.1",
-    "test:crossbrowser": "NODE_PATH=. codeceptjs run-multiple ${BROWSER_GROUP:-'--all'} -c test/end-to-end/saucelabs.conf.js --plugins retryFailedStep --steps --grep '@xb' --reporter mocha-multi"
+    "test:crossbrowser": "bash scripts/test-functional-with-preflight.sh"
   },
   "dependencies": {
     "@angular-eslint/utils": "20.3.0",

@@ -62,7 +62,7 @@ export class Annotations {
     }
     await this.page.mouse.move(bounds.x + start.x, bounds.y + start.y);
     await this.page.mouse.down();
-    await this.page.mouse.move(bounds.x + start.x + 100, bounds.y + start.y + 50);
+    await this.page.mouse.move(bounds.x + start.x + 100, bounds.y + start.y + 50, { steps: 10 });
     await this.page.mouse.up();
   }
 
