@@ -283,16 +283,5 @@ withNightlyPipeline(type, product, component) {
     }
   }
 
-  afterAlways('fullFunctionalTest') {
-    publishHTML([
-      allowMissing         : true,
-      alwaysLinkToLastBuild: true,
-      keepAll              : true,
-      reportDir            : "functional-output",
-      reportFiles          : 'mv-e2e-result.html',
-      reportName           : 'Functional Tests'
-    ])
-  }
-
 }
 }

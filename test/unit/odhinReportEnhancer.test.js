@@ -30,6 +30,22 @@ test('capability summary reports every supported status', () => {
   assert.match(html, /odhin-capability-status-not-covered/);
 });
 
+test('capability summary reports whether a contract runs by default', () => {
+  const coveredCapability = capability('Covered');
+  coveredCapability.execution = 'Runs by default';
+
+  const html = __test__.buildCapabilityCoverageBlock(
+    {
+      title: 'Capability coverage',
+      capabilities: [coveredCapability],
+    },
+    []
+  );
+
+  assert.match(html, /<th>Execution<\/th>/);
+  assert.match(html, /Runs by default/);
+});
+
 test('capability inventory does not leave a Codecept scenario active after migration', () => {
   const activeLegacyTestFiles = coverageInventory.capabilities
     .filter((capability) => (capability.activeLegacyScenarios ?? capability.legacyScenarios) > 0)

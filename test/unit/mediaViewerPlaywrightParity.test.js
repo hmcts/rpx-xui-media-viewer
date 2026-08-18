@@ -11,7 +11,7 @@ const replacementContracts = [
   ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads an image document through the CCD browser event'],
   ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads a Word document through the CCD browser event'],
   ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
-  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'annotations.spec.ts', 'creates a non-text image highlight and comment through the stubbed annotation-service contract'],
+  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'annotations.spec.ts', 'creates a non-text image highlight and comment through the rendered Media Viewer'],
   ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'annotations.spec.ts', 'creates a draw-box image highlight with a positive rectangle contract'],
   ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'annotations.spec.ts', 'updates a persisted non-text image comment'],
   ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'annotations.spec.ts', 'deletes a persisted non-text image comment'],
@@ -60,8 +60,10 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
     assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
-    assert.doesNotMatch(packageScripts['test:crossbrowser'], /codeceptjs/, 'cross-browser coverage must not execute Codecept');
-    assert.match(packageScripts['test:crossbrowser'], /test-functional-with-preflight/);
+    assert.doesNotMatch(packageScripts['test:crossbrowser'], /codeceptjs|test-functional-with-preflight/, 'cross-browser coverage must not execute a retired runner');
+    assert.equal(packageScripts['test:e2e:local:aat'], undefined, 'the retired local E2E command must not be selectable');
+    assert.equal(packageScripts['e2e:fullfunctional'], undefined, 'the retired full-functional E2E alias must not be selectable');
+    assert.doesNotMatch(source('scripts/test-local-aat.sh'), /test:playwright:e2e/, 'the local AAT launcher must select an existing Playwright project');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /codeceptjs|test:crossbrowser/, 'the Jenkins pipeline must select Playwright, never Codecept');
 
     for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
@@ -79,6 +81,11 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     const knownDefectContracts = source('playwright_tests/integration/aatCcdBrowserDefects.spec.ts');
     assert.match(knownDefectContracts, /@defect-EXUI-5122/);
     assert.match(knownDefectContracts, /@defect-EXUI-5123/);
+    const imageAnnotationContracts = source('playwright_tests/functional/annotations.spec.ts');
+    assert.match(imageAnnotationContracts, /@defect-EXUI-5124/);
+    assert.match(imageAnnotationContracts, /openAnnotatedDocument\(mediaAssets\.image\)/, 'image contracts must load the rendered viewer before exercising it');
+    assert.match(imageAnnotationContracts, /drawOnPage\(mediaViewer\.loadState\.image\)/, 'image create coverage must use a real user-level draw gesture');
+    assert.doesNotMatch(imageAnnotationContracts, /page\.evaluate\(async/, 'image UI parity must not be replaced by direct browser-context API calls');
     assert.doesNotMatch(knownDefectContracts, /test\.(?:skip|fixme)\(/, 'known defects must be excluded by tag, never skipped');
     assert.match(source('playwright.config.ts'), /grepInvert:\s*includeKnownDefectTests \? undefined : knownExternalDefectTags/);
   });

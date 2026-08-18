@@ -16,9 +16,7 @@
     "env:populate:aat": "bash ./scripts/populate-env-from-keyvault.sh aat",
     "smoke:local:aat": "bash ./scripts/smoke-local-aat.sh",
     "test:local:aat": "bash ./scripts/test-local-aat.sh",
-    "test:e2e:local:aat": "bash ./scripts/test-local-aat-e2e.sh",
     "local-aat:documents": "node scripts/create-local-aat-test-documents.js",
-    "test:functional:local:self-contained": "MV_CREATE_DOCUMENT_PER_SCENARIO=true bash scripts/test-functional-with-preflight.sh",
     "test:functional:local:isolated": "bash scripts/test-functional-local-isolated.sh",
     "setup": "yarn setup:api && yarn setup:demo",
     "setup:api": "cross-env NODE_PATH=. rm -rf ./dist/api && tsc -p ./api --outDir dist/api",
@@ -75,10 +73,9 @@
     "e2e:local": "yarn webdriver:update && protractor e2e/local.protractor.conf.js",
     "e2e:fullfunctional_PT": "yarn webdriver:update && protractor e2e/ci.protractor.conf.js",
     "functional:preflight": "node scripts/functional-preflight.js",
-    "e2e:fullfunctional": "bash scripts/test-functional-with-preflight.sh",
     "sonar-scan": "node_modules/sonar-scanner/bin/sonar-scanner",
     "rebuild-node-sass": "yarn add node-sass@^4.14.1",
-    "test:crossbrowser": "bash scripts/test-functional-with-preflight.sh"
+    "test:crossbrowser": "yarn test:playwright:functional"
   },
   "dependencies": {
     "@angular-eslint/utils": "20.3.0",

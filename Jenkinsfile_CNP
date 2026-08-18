@@ -269,17 +269,6 @@ withPipeline(type, product, component) {
     }
   }
 
-  afterAlways('functionalTest:preview') {
-      publishHTML([
-              allowMissing         : true,
-              alwaysLinkToLastBuild: true,
-              keepAll              : true,
-              reportDir            : "functional-output/",
-              reportFiles          : 'mv-e2e-result.html',
-              reportName           : 'PREVIEW Functional Test'
-      ])
-  }
-
   before('smoketest:aat') {
     configurePlaywrightSmoke(playwrightAatSmokeOutputRoot, 'aat')
   }
@@ -311,15 +300,5 @@ withPipeline(type, product, component) {
     }
   }
 
-  afterAlways('functionalTest:aat') {
-      publishHTML([
-              allowMissing         : true,
-              alwaysLinkToLastBuild: true,
-              keepAll              : true,
-              reportDir            : "functional-output/",
-              reportFiles          : 'mv-e2e-result.html',
-              reportName           : 'AAT Functional Test'
-      ])
-  }
 }
 }
