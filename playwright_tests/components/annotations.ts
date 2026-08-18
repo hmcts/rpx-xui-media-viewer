@@ -50,13 +50,27 @@ export class Annotations {
   }
 
   async drawOnImage(start = { x: 80, y: 80 }): Promise<void> {
+    await this.page.locator('mv-image-viewer').waitFor({ state: 'visible' });
     await this.drawOnPage(this.imageDrawSurface, start);
   }
 
   private async drawRectangle(page: Locator, start: { x: number; y: number }): Promise<void> {
+    await page.waitFor({ state: 'visible' });
+    await this.page.waitForFunction(
+      (minimumSize) => {
+        const element = document.querySelector('mv-box-highlight-create > div');
+        if (!element) {
+          return false;
+        }
+        const bounds = element.getBoundingClientRect();
+        return bounds.width >= minimumSize.width && bounds.height >= minimumSize.height;
+      },
+      { width: start.x + 100, height: start.y + 50 },
+      { timeout: 5_000 }
+    );
     const bounds = await page.boundingBox();
-    if (!bounds) {
-      throw new Error('Media page was not visible for draw-box annotation');
+    if (!bounds || bounds.width < start.x + 100 || bounds.height < start.y + 50) {
+      throw new Error('Media page did not reach a drawable size for draw-box annotation');
     }
     await this.page.mouse.move(bounds.x + start.x, bounds.y + start.y);
     await this.page.mouse.down();

@@ -13,7 +13,7 @@ test.describe('Live image annotation lifecycle', () => {
     await test.step('creates a real draw-box image highlight', async () => {
       await expect(mediaViewer.loadState.image).toBeVisible();
       await mediaViewer.annotations.drawOnImage();
-      await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1);
+      await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(1, { timeout: 5_000 });
     });
 
     await test.step('creates a non-text image highlight and comment through the live annotation service', async () => {

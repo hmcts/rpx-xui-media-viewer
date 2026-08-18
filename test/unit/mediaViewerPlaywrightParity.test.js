@@ -43,7 +43,7 @@ function executableScenarioNames(legacySource) {
 }
 
 describe('Media Viewer Codecept-to-Playwright parity', () => {
-  it('maps every retired legacy scenario to a named Playwright contract and keeps CCD browser journeys explicit', () => {
+  it('maps every retired legacy scenario to a named Playwright contract and leaves only CCD browser journeys selectable', () => {
     const legacyScenarioNames = new Set();
 
     for (const [legacyFile] of replacementContracts) {
@@ -59,9 +59,17 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       legacyScenarioNames.add(legacyScenario);
     }
 
-    assert.equal(legacyScenarioNames.size, 23, 'Codecept dry-run must still expose 23 executable scenarios');
+    assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
     assert.equal(replacementContracts.length, 19, 'only retired scenarios can claim a Playwright replacement');
     assert.equal(retainedLegacyContracts.length, 4, 'CCD browser journeys remain explicitly active until their owning UI migrates');
+    assert.match(
+      source('test/config.js'),
+      /TestPathToRun:\s*process\.env\.E2E_TEST_PATH\s*\|\|\s*'\.\/mvFeatures\/\{createCCDCase,dmStoreScenarios\}\.js'/,
+      'Codecept must not execute a migrated contract by default'
+    );
+    const packageScripts = JSON.parse(source('package.json')).scripts;
+    assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
+    assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
 
     for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
       assert.match(source(`test/end-to-end/mvFeatures/${legacyFile}`), new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));

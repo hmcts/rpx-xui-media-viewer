@@ -9,6 +9,11 @@ if [ -f "${fixture_env}" ]; then
   set +a
 fi
 
+if [ "${RUN_LEGACY_CCD_JOURNEYS:-false}" != "true" ]; then
+  echo "Codecept has been retired for migrated contracts. Use yarn test:functional for Playwright, or set RUN_LEGACY_CCD_JOURNEYS=true for the four unresolved CCD browser journeys." >&2
+  exit 2
+fi
+
 if [ "${PUPPETEER_INSTALL_ALREADY_VERIFIED:-false}" != "true" ]; then
   yarn puppeteer:install
 fi
@@ -19,4 +24,4 @@ else
   node scripts/functional-preflight.js || echo "Functional preflight failed; continuing with Codecept functional suite"
 fi
 
-NODE_PATH=. node ./node_modules/codeceptjs/bin/codecept.js run -c ./test/end-to-end/ --grep "${E2E_GREP:-@ci}" --steps --reporter mocha-multi
+NODE_PATH=. node ./node_modules/codeceptjs/bin/codecept.js run -c ./test/end-to-end/ --grep "${E2E_GREP:-@np}" --steps --reporter mocha-multi
