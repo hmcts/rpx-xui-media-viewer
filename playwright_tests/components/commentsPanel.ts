@@ -74,6 +74,16 @@ export class CommentsPanel {
     await editor.waitFor({ state: 'hidden' });
   }
 
+  async editSelected(content: string, replacement: string): Promise<void> {
+    const comment = await this.card(content);
+    const editor = comment.locator('textarea[name="content"]');
+    await comment.getByRole('button', { name: 'Edit' }).click();
+    await editor.waitFor();
+    await editor.fill(replacement);
+    await comment.getByRole('button', { name: 'Save' }).click();
+    await editor.waitFor({ state: 'hidden' });
+  }
+
   async cancelEdit(content: string, replacement: string): Promise<void> {
     const comment = await this.openEditor(content);
     const editor = comment.locator('textarea[name="content"]');

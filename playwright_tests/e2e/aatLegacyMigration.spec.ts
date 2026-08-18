@@ -32,7 +32,7 @@ test.describe('Live image annotation lifecycle', () => {
         (response) => response.request().method() === 'POST' && new URL(response.url()).pathname.endsWith('/annotations'),
         { timeout: 15_000 }
       );
-      await mediaViewer.comments.edit(initialComment, updatedComment);
+      await mediaViewer.comments.editSelected(initialComment, updatedComment);
       await expect((await updatedAnnotation).ok()).toBeTruthy();
       await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
     });

@@ -24,7 +24,9 @@ export class Annotations {
     this.resultCount = page.locator('#findRedactResultsCount');
     this.rectangles = page.locator('mv-anno-rectangle');
     this.renderedRectangles = page.locator('mv-anno-rectangle .rectangle');
-    this.imageDrawSurface = page.locator('.pageContainer__page--draw mv-box-highlight-create > div[tabindex="0"]');
+    this.imageDrawSurface = page.locator('.pageContainer__page--draw').filter({
+      has: page.locator('mv-box-highlight-create > div[tabindex="0"]'),
+    });
     this.contextToolbar = page.locator('mv-ctx-toolbar');
     this.createButton = this.contextToolbar.getByRole('button', { name: 'Highlight' });
   }
