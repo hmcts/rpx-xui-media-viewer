@@ -10,9 +10,6 @@ import { ServiceAuthProviderClient } from './security/service-auth-provider-clie
 import { IdamClient } from './security/idam-client';
 import { healthcheckRoutes } from './health';
 
-// For development purposes only, to allow self-signed certificates when proxying to
-// process.env.NODE_TLS_REJECT_UNAUTHORIZED = '0';
-
 const frontendRoot = path.join(__dirname, '..', 'demo-app');
 const app = express();
 
