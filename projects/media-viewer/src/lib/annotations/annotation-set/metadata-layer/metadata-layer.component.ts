@@ -14,6 +14,11 @@ import * as fromBookmarks from '../../../store/selectors/bookmark.selectors';
 import { ToolbarEventService } from '../../../toolbar/toolbar-event.service';
 import { Highlight, ViewerEventService } from '../../../viewers/viewer-event.service';
 import { CtxToolbarComponent } from '../ctx-toolbar/ctx-toolbar.component';
+import { DocumentPages } from '../../../store/reducers/document.reducer';
+
+interface MetadataPage extends DocumentPages {
+  pageNumber: number;
+}
 
 @Component({
     selector: 'mv-metadata-layer',
@@ -27,7 +32,7 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
 
   @ViewChild(CtxToolbarComponent, { static: false }) ctxToolbar: CtxToolbarComponent;
 
-  pages: any[] = []; // todo add type
+  pages: MetadataPage[] = [];
   annoPages$: Observable<any>; // todo add type
 
   drawMode = false;
@@ -44,7 +49,9 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
 
   ngOnInit(): void {
     this.$subscriptions = this.store.pipe(select(fromDocument.getPages))
-      .subscribe(pages => this.pages = Object.values(pages));
+      .subscribe(pages => this.pages = Object.entries(pages)
+        .map(([pageNumber, page]) => ({ ...page, pageNumber: parseInt(pageNumber, 10) }))
+        .sort((a, b) => a.pageNumber - b.pageNumber));
     this.annoPages$ = this.store.pipe(select(fromSelectors.getPageEntities));
 
     this.$subscriptions.add(this.toolbarEvents.drawModeSubject.subscribe(drawMode => this.drawMode = drawMode));

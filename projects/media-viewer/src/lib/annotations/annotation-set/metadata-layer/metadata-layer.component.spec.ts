@@ -142,6 +142,29 @@ describe('MetadataLayerComponent', () => {
     }
   ));
 
+  it('should keep metadata pages ordered by their document page number',
+    inject([Store], (store) => {
+      spyOn(store, 'pipe').and.returnValue(of({
+        2: {
+          styles: { height: 200, width: 200 },
+          scaleRotation: { scale: 1, rotation: 0 },
+          viewportScale: 1
+        },
+        1: {
+          styles: { height: 100, width: 100 },
+          scaleRotation: { scale: 1, rotation: 0 },
+          viewportScale: 1
+        }
+      }));
+
+      component.ngOnInit();
+
+      expect(component.pages.map(page => page.pageNumber)).toEqual([1, 2]);
+      expect(component.pages[0].styles.height).toBe(100);
+      expect(component.pages[1].styles.height).toBe(200);
+    }
+  ));
+
   it('should destroy subscriptions',
     inject([Store, ViewerEventService, ToolbarEventService],
       (store, viewerEvents, toolbarEvents) => {
