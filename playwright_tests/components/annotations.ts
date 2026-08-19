@@ -43,18 +43,24 @@ export class Annotations {
       await this.page.locator('#mvHighlightBtn').click();
     }
     await this.drawBoxButton.click();
+    await this.page.locator('.pageContainer__page--draw').first().waitFor({ state: 'visible' });
     await this.drawRectangle(page, start);
   }
 
-  private async drawRectangle(page: Locator, start: { x: number; y: number }): Promise<void> {
-    const bounds = await page.boundingBox();
-    if (!bounds) {
-      throw new Error('Media page was not visible for draw-box annotation');
+  private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {
+    await surface.waitFor({ state: 'visible' });
+    const bounds = await surface.boundingBox();
+    if (!bounds || bounds.width < start.x + 100 || bounds.height < start.y + 50) {
+      throw new Error('Media page did not reach a drawable size for draw-box annotation');
     }
     await this.page.mouse.move(bounds.x + start.x, bounds.y + start.y);
     await this.page.mouse.down();
-    await this.page.mouse.move(bounds.x + start.x + 100, bounds.y + start.y + 50);
+    await this.page.mouse.move(bounds.x + start.x + 100, bounds.y + start.y + 50, { steps: 10 });
     await this.page.mouse.up();
+  }
+
+  async deleteSelected(): Promise<void> {
+    await this.contextToolbar.getByRole('button', { name: 'Delete' }).click();
   }
 
   async openSearch(): Promise<void> {
