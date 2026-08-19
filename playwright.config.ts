@@ -10,13 +10,14 @@ const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
-const integrationSpecPattern = 'playwright_tests/integration/**/*.spec.ts';
+const externalServiceContractSpecPattern = 'playwright_tests/integration/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
-const defaultIntegrationWorkerCount = 1;
+const defaultExternalServiceContractWorkerCount = 1;
 const knownExternalDefectTags = /@defect-EXUI-(5122|5123|5124)/;
 const includeKnownDefectTests = process.env.PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS === 'true';
+const runExternalServiceContracts = process.env.PLAYWRIGHT_RUN_EXTERNAL_SERVICE_CONTRACTS === 'true';
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
@@ -74,17 +75,17 @@ const resolveTestEnvironmentLabel = (env: EnvMap, workerCount: number): string =
   return `${targetEnvironment} | ${runContext} | workers=${workerCount} | agent_cpu_cores=${cpuCores} | agent_ram_gib=${totalRamGiB}`;
 };
 
-const resolveWorkerCount = (raw: string | undefined): number => {
+const resolveWorkerCount = (raw: string | undefined, environmentVariable: string, defaultWorkerCount: number): number => {
   const configured = raw?.trim();
   if (!configured) {
-    return defaultFunctionalWorkerCount;
+    return defaultWorkerCount;
   }
   if (!/^[1-9]\d*$/.test(configured)) {
-    throw new Error(`FUNCTIONAL_TESTS_WORKERS must be an integer between 1 and ${maxWorkerCount}`);
+    throw new Error(`${environmentVariable} must be an integer between 1 and ${maxWorkerCount}`);
   }
   const workers = Number(configured);
   if (!Number.isSafeInteger(workers) || workers > maxWorkerCount) {
-    throw new Error(`FUNCTIONAL_TESTS_WORKERS must be an integer between 1 and ${maxWorkerCount}`);
+    throw new Error(`${environmentVariable} must be an integer between 1 and ${maxWorkerCount}`);
   }
   return workers;
 };
@@ -162,8 +163,14 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
   });
 };
 
-const workerCount = resolveWorkerCount(process.env.FUNCTIONAL_TESTS_WORKERS);
-const integrationWorkerCount = resolveWorkerCount(process.env.INTEGRATION_TESTS_WORKERS ?? String(defaultIntegrationWorkerCount));
+const workerCount = resolveWorkerCount(process.env.FUNCTIONAL_TESTS_WORKERS, 'FUNCTIONAL_TESTS_WORKERS', defaultFunctionalWorkerCount);
+const externalServiceContractWorkerCount = runExternalServiceContracts
+  ? resolveWorkerCount(
+      process.env.EXTERNAL_SERVICE_CONTRACT_TESTS_WORKERS,
+      'EXTERNAL_SERVICE_CONTRACT_TESTS_WORKERS',
+      defaultExternalServiceContractWorkerCount
+    )
+  : defaultExternalServiceContractWorkerCount;
 
 export default defineConfig({
   testDir: '.',
@@ -203,22 +210,22 @@ export default defineConfig({
         ...devices['Desktop Chrome'],
       },
     },
-    {
-      // Live service contracts for the migrated CCD, DM Store and annotation
-      // prerequisites. They run serially alongside the deterministic Functional lane.
-      name: 'integration',
-      testMatch: [integrationSpecPattern],
-      workers: integrationWorkerCount,
-      // Known external CCD browser defects remain discoverable through their Jira tags.
-      // They are not skipped: set PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true to run
-      // them deliberately once the owning product reports a fix.
-      grepInvert: includeKnownDefectTests ? undefined : knownExternalDefectTags,
-      use: {
-        ...devices['Desktop Chrome'],
-        actionTimeout: 10_000,
-        navigationTimeout: 20_000,
-      },
-    },
+    ...(runExternalServiceContracts
+      ? [{
+          // External CCD, DM Store and annotation probes are deliberately opt-in.
+          // The standalone Media Viewer migration is proved by Functional route
+          // fakes; these are retained only for deliberate environment diagnostics.
+          name: 'external-service-contracts',
+          testMatch: [externalServiceContractSpecPattern],
+          workers: externalServiceContractWorkerCount,
+          grepInvert: includeKnownDefectTests ? undefined : knownExternalDefectTags,
+          use: {
+            ...devices['Desktop Chrome'],
+            actionTimeout: 10_000,
+            navigationTimeout: 20_000,
+          },
+        }]
+      : []),
     {
       name: 'support',
       testMatch: [supportSpecPattern],

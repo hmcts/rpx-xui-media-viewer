@@ -27,15 +27,11 @@ def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-sup
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
 def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
-def playwrightPreviewIntegrationOutputRoot = 'functional-output/tests/playwright-integration/preview'
-def playwrightAatIntegrationOutputRoot = 'functional-output/tests/playwright-integration/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
-def playwrightIntegrationOdhinReportFile = 'xui-playwright-integration.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
-def playwrightIntegrationOdhinTitle = 'RPX XUI Media Viewer Playwright Integration'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -128,26 +124,6 @@ def runPlaywrightFunctionalTests = { String outputRoot, String reportName, Strin
   }
 }
 
-def runPlaywrightIntegrationTests = { String outputRoot, String reportName, String targetEnvironment ->
-  steps.sh("rm -rf -- '${outputRoot}'")
-  withEnv(playwrightBrowsersEnv() + [
-    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
-    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-integration-junit.xml",
-    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
-    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightIntegrationOdhinReportFile}",
-    "PLAYWRIGHT_REPORT_TITLE=${playwrightIntegrationOdhinTitle}",
-    "TEST_TYPE=${targetEnvironment}",
-    'INTEGRATION_TESTS_WORKERS=1',
-    'PLAYWRIGHT_SKIP_INSTALL=true'
-  ]) {
-    try {
-      yarnBuilder.yarn('test:playwright:integration')
-    } finally {
-      publishPlaywrightReport(outputRoot, reportName, playwrightIntegrationOdhinReportFile)
-    }
-  }
-}
-
 env.DOCASSEMBLY_URL = "http://dg-docassembly-aat.service.core-compute-aat.internal"
 env.DM_STORE_APP_URL = "http://dm-store-aat.service.core-compute-aat.internal"
 env.HRS_API_URL = "http://em-hrs-api-aat.service.core-compute-aat.internal"
@@ -166,11 +142,7 @@ def vaultOverrides = [
 def secrets = [
         'rpx-${env}': [
           secret('microservicekey-em-gw', 'S2S_KEY'),
-          secret('show-oauth2-token', 'IDAM_SECRET'),
-          secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
-          secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
-          secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),
-          secret('idam-client-secret', 'IDAM_CLIENT_SECRET')
+          secret('show-oauth2-token', 'IDAM_SECRET')
         ]
 ]
 
@@ -255,11 +227,6 @@ withPipeline(type, product, component) {
             runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
           }
         },
-        integration: {
-          stage('Playwright Viewer Integration Test - preview') {
-            runPlaywrightIntegrationTests(playwrightPreviewIntegrationOutputRoot, 'PREVIEW Playwright Viewer Integration Test', 'preview')
-          }
-        },
         support: {
           stage('Playwright Viewer Support Test - preview') {
             runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
@@ -284,11 +251,6 @@ withPipeline(type, product, component) {
         functional: {
           stage('Playwright Viewer Functional Test - AAT') {
             runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
-          }
-        },
-        integration: {
-          stage('Playwright Viewer Integration Test - AAT') {
-            runPlaywrightIntegrationTests(playwrightAatIntegrationOutputRoot, 'AAT Playwright Viewer Integration Test', 'aat')
           }
         },
         support: {

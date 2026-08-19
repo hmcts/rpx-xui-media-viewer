@@ -133,14 +133,13 @@ Current Playwright lanes:
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
 | Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 71 fixture-backed browser contracts across 13 feature files. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
-| Live integration | `playwright.config.ts`, project `integration` | `yarn test:playwright:integration` | Five bounded AAT service contracts, including CCD/DM Store document setup and live annotation create/retrieve/update/delete. Four CCD browser-route contracts are discoverable and ticketed against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123). |
+| External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional AAT CCD/DM Store/annotation probes for a deliberate environment investigation. They are never part of normal PR assurance; the standalone migration is covered by deterministic Functional route fakes. Four CCD browser-route contracts remain discoverable and ticketed against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123). |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
 the application is ready, functional proves user-facing viewer behaviour, and
-support proves the reusable automation contracts, and Integration proves the
-live AAT service boundaries without making the standalone browser suite depend
-on shared CCD state. Every Playwright Odhín report includes a capability
+support proves the reusable automation contracts. External service diagnostics
+are opt-in and never gate a standalone Media Viewer change. Every Playwright Odhín report includes a capability
 inventory that states whether each contract is selected by default or is a
 discoverable, ticketed product-defect contract.
 
@@ -280,21 +279,14 @@ case or DM Store document. Run the fixture-backed Functional lane locally with:
 yarn test:playwright:functional
 ```
 
-For live service-boundary proof, load the approved local AAT settings, start
-the AAT proxy, then run the serial Integration lane:
+The default local suite is standalone: it needs neither AAT credentials nor
+shared CCD, DM Store or annotation-service state. External service diagnostics
+are deliberately opt-in and must not be used as normal migration assurance.
+Known product-defect contracts are not skipped: they remain discoverable and
+run only when explicitly selected:
 
 ```
-yarn check:aat-config
-yarn start:aat
-PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright:integration
-```
-
-Integration creates a unique CCD case and documents for its own lifecycle; it
-does not share them with Functional tests. Known product-defect contracts are
-not skipped: they remain discoverable and run only when explicitly selected:
-
-```
-PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn playwright test --grep @defect-EXUI-5124
+PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn test:playwright:functional -- --grep @defect-EXUI-5124
 ```
 
 ### Useful overrides

@@ -65,6 +65,11 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.equal(packageScripts['e2e:fullfunctional'], undefined, 'the retired full-functional E2E alias must not be selectable');
     assert.doesNotMatch(source('scripts/test-local-aat.sh'), /test:playwright:e2e/, 'the local AAT launcher must select an existing Playwright project');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /codeceptjs|test:crossbrowser/, 'the Jenkins pipeline must select Playwright, never Codecept');
+    assert.doesNotMatch(
+      source('Jenkinsfile_CNP'),
+      /CCD_CASEWORKER_E2E_EMAIL|CCD_CASEWORKER_E2E_PASSWORD|MICROSERVICE_CCD_GW|IDAM_CLIENT_SECRET/,
+      'normal Jenkins assurance must not load credentials that belong only to retired external contracts'
+    );
 
     for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
       assert.match(source(`test/end-to-end/mvFeatures/${legacyFile}`), new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
