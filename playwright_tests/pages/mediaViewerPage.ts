@@ -10,6 +10,7 @@ import { ZoomControls } from '../components/zoomControls';
 import { Bookmarks } from '../components/bookmarks';
 import { Annotations } from '../components/annotations';
 import { Redactions } from '../components/redactions';
+import { IndexOutline } from '../components/indexOutline';
 import type { AnnotationFixture, AnnotationSetFixture } from '../fixtures/mediaViewerComments';
 import type { MediaAsset } from '../fixtures/mediaAssets';
 
@@ -43,6 +44,7 @@ export class MediaViewerPage {
   readonly bookmarks: Bookmarks;
   readonly annotations: Annotations;
   readonly redactions: Redactions;
+  readonly indexOutline: IndexOutline;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -56,6 +58,7 @@ export class MediaViewerPage {
     this.bookmarks = new Bookmarks(page);
     this.annotations = new Annotations(page);
     this.redactions = new Redactions(page);
+    this.indexOutline = new IndexOutline(page);
   }
 
   async stubAnnotationResponses(annotationSets?: AnnotationSetFixture[]): Promise<void> {
