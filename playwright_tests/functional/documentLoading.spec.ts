@@ -29,4 +29,22 @@ test.describe('Document loading and media types', () => {
     await expect(mediaViewer.loadState.unsupportedViewer).toBeVisible();
     await expect(mediaViewer.loadState.errorMessage).toContainText('UNSUPPORTED');
   });
+
+  test('reports a failed PDF load through the rendered viewer state', { tag: ['@e2e-functional', '@feature-document-loading'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await page.route('**/assets/missing.pdf', async (route) => route.fulfill({ status: 404 }));
+
+    await mediaViewer.submitDocumentDetails('assets/missing.pdf', 'playwright-missing-pdf', 'pdf');
+    await expect(mediaViewer.loadState.errorMessage).toContainText('FAILURE');
+    await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
+  });
+
+  test('reports a failed image load through the rendered viewer state', { tag: ['@e2e-functional', '@feature-document-loading'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+    await page.route('**/assets/missing-image.jpg', async (route) => route.fulfill({ status: 404 }));
+
+    await mediaViewer.submitDocumentDetails('assets/missing-image.jpg', 'playwright-missing-image', 'image');
+    await expect(mediaViewer.loadState.errorMessage).toContainText('FAILURE');
+    await expect(mediaViewer.loadState.image).toHaveCount(0);
+  });
 });

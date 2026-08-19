@@ -27,15 +27,11 @@ def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-sup
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
 def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
-def playwrightPreviewIntegrationOutputRoot = 'functional-output/tests/playwright-integration/preview'
-def playwrightAatIntegrationOutputRoot = 'functional-output/tests/playwright-integration/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
-def playwrightIntegrationOdhinReportFile = 'xui-playwright-integration.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
-def playwrightIntegrationOdhinTitle = 'RPX XUI Media Viewer Playwright Integration'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -124,25 +120,6 @@ def runPlaywrightFunctionalTests = { String outputRoot, String reportName, Strin
       yarnBuilder.yarn('test:playwright:functional')
     } finally {
       publishPlaywrightReport(outputRoot, reportName, playwrightFunctionalOdhinReportFile)
-    }
-  }
-}
-
-def runPlaywrightIntegrationTests = { String outputRoot, String reportName, String targetEnvironment ->
-  steps.sh("rm -rf -- '${outputRoot}'")
-  withEnv(playwrightBrowsersEnv() + [
-    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
-    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-integration-junit.xml",
-    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
-    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightIntegrationOdhinReportFile}",
-    "PLAYWRIGHT_REPORT_TITLE=${playwrightIntegrationOdhinTitle}",
-    "TEST_TYPE=${targetEnvironment}",
-    'PLAYWRIGHT_SKIP_INSTALL=true'
-  ]) {
-    try {
-      yarnBuilder.yarn('test:playwright:integration')
-    } finally {
-      publishPlaywrightReport(outputRoot, reportName, playwrightIntegrationOdhinReportFile)
     }
   }
 }
@@ -250,11 +227,6 @@ withPipeline(type, product, component) {
             runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
           }
         },
-        integration: {
-          stage('Playwright Viewer Integration Test - preview') {
-            runPlaywrightIntegrationTests(playwrightPreviewIntegrationOutputRoot, 'PREVIEW Playwright Viewer Integration Test', 'preview')
-          }
-        },
         support: {
           stage('Playwright Viewer Support Test - preview') {
             runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
@@ -279,11 +251,6 @@ withPipeline(type, product, component) {
         functional: {
           stage('Playwright Viewer Functional Test - AAT') {
             runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
-          }
-        },
-        integration: {
-          stage('Playwright Viewer Integration Test - AAT') {
-            runPlaywrightIntegrationTests(playwrightAatIntegrationOutputRoot, 'AAT Playwright Viewer Integration Test', 'aat')
           }
         },
         support: {

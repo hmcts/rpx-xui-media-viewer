@@ -82,11 +82,9 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'e2e'/, 'the flaky live E2E project must not be selectable');
     assert.equal(packageScripts['test:playwright:e2e'], undefined, 'the retired E2E command must not be selectable');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightE2ETests|Playwright Viewer E2E Test/, 'Jenkins must not schedule the retired E2E lane');
-    assert.match(source('Jenkinsfile_CNP'), /runPlaywrightIntegrationTests/);
-    assert.match(source('Jenkinsfile_CNP'), /Playwright Viewer Integration Test - preview/);
-    assert.match(source('Jenkinsfile_CNP'), /Playwright Viewer Integration Test - AAT/);
-    assert.match(packageScripts['test:playwright:integration'], /--project=integration/);
-    assert.match(source('playwright.config.ts'), /playwright_tests\/integration\/\*\*\/\*\.spec\.ts/);
+    assert.equal(packageScripts['test:playwright:integration'], undefined, 'a duplicate Integration command must not be selectable');
+    assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'integration'/, 'a duplicate Integration project must not be selectable');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightIntegrationTests|Playwright Viewer Integration Test/, 'Jenkins must not schedule duplicate Integration coverage');
     assert.match(source('playwright.config.ts'), /playwright_tests\/external-service-contracts\/\*\*\/\*\.spec\.ts/);
     assert.doesNotMatch(
       source('Jenkinsfile_CNP'),

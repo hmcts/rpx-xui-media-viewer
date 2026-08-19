@@ -1,15 +1,15 @@
 # Media Viewer functional coverage
 
 These are migrated viewer behaviour tests. The `functional` project executes
-the feature files below; the separate `smoke` project supplies one standalone
-PDF-readiness contract and the `integration` project owns deterministic
-Viewer/service request-response contracts. The full product capability inventory, including
+the feature files below and uses deterministic route fakes where a viewer
+contract needs a service response. The separate `smoke` project supplies one standalone
+PDF-readiness contract. The full product capability inventory, including
 legacy-only areas and the next assurance gaps, is stored in
 `mediaViewerCoverage.json` and is rendered into the Odhín report.
 
 | Feature | File | Tests | Main contracts |
 | --- | --- | ---: | --- |
-| Document loading and media types | `smokeTest.spec.ts` (smoke), `documentLoading.spec.ts` (functional) | 4 across both lanes (3 functional) | Local PDF readiness, image loading, PDF replacement/page identity and unsupported-media diagnostics. |
+| Document loading and media types | `smokeTest.spec.ts` (smoke), `documentLoading.spec.ts` (functional) | 6 across both lanes (5 functional) | Local PDF readiness, image loading, PDF replacement/page identity, unsupported-media diagnostics, and separate failed PDF/image viewer states. |
 | Zoom | `zoom.spec.ts` | 3 | PDF/image round-trip and PDF minimum/maximum boundaries |
 | Page navigation | `navigation.spec.ts` | 2 | Page identity, viewport rendering, page count and first/last boundaries |
 | Rotation | `rotation.spec.ts` | 6 | Image transform and PDF orientation round-trips, reset after PDF replacement, default-state restoration after reload for both media types, and server-supplied PDF orientation restoration from metadata |
@@ -23,8 +23,8 @@ legacy-only areas and the next assurance gaps, is stored in
 | Redaction | `redactions.spec.ts` | 11 | Playwright covers all 12 historical redaction scenarios through real draw-box and text-selection gestures, combined markers, full-page and multi-page redaction, single-marker and clear-all deletion, preview state, search/redact-all persistence, redaction request payload, downloaded PDF filename and post-download reset. It exceeds legacy coverage with multi-page save aggregation, multi-page clear/reload and multi-page selective-delete/reload contracts, all against deterministic redaction-service responses. |
 | Multimedia playback | `multimedia.spec.ts` | 4 | MP4 readiness, real MP3 play/pause/rewind state transitions, disabled-player download fallback and unsupported-media diagnostics |
 | In-court presentation (ICP) | — | 0 | Not claimed in Playwright. Add leader/follower page, zoom and rotation synchronisation after a separate product fix; live session-service/Web PubSub coverage remains separately tracked. |
-| **Functional total** | 13 feature files | **73 discovered / 71 default** | Behaviour-level Functional coverage; the two non-default contracts are ticketed product defects, not skipped tests. |
-| **Playwright migration total** | Functional plus smoke | **74 discovered / 72 default** | Adds one standalone PDF-readiness contract. External service diagnostics are intentionally excluded from normal migration assurance. Support checks are reported separately. |
+| **Functional total** | 13 feature files | **75 discovered / 73 default** | Behaviour-level Functional coverage; the two non-default contracts are ticketed product defects, not skipped tests. |
+| **Playwright migration total** | Functional plus smoke | **76 discovered / 74 default** | Adds one standalone PDF-readiness contract. External service diagnostics are intentionally excluded from normal migration assurance. Support checks are reported separately. |
 
 Run the whole migrated functional suite:
 

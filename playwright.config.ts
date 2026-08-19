@@ -10,7 +10,6 @@ const defaultOutputRoot = 'functional-output/tests/playwright';
 const defaultOdhinReportFile = 'xui-playwright.html';
 const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
-const integrationSpecPattern = 'playwright_tests/integration/**/*.spec.ts';
 const externalServiceContractSpecPattern = 'playwright_tests/external-service-contracts/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const maxWorkerCount = 64;
@@ -207,15 +206,6 @@ export default defineConfig({
       // skipped. Set PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true after the owning
       // product has been fixed to execute the exact browser contract.
       grepInvert: includeKnownDefectTests ? undefined : knownExternalDefectTags,
-      use: {
-        ...devices['Desktop Chrome'],
-      },
-    },
-    {
-      // Integration is deterministic by design: it uses page-scoped service
-      // route fakes and therefore needs neither AAT credentials nor shared data.
-      name: 'integration',
-      testMatch: [integrationSpecPattern],
       use: {
         ...devices['Desktop Chrome'],
       },
