@@ -6,10 +6,10 @@ const { resolve } = require('node:path');
 const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = [
-  ['createCCDCase.js', 'Create CCD Case for MV...', 'integration/aatCcdBrowserDefects.spec.ts', 'creates the CCD case used by Media Viewer journeys through the authenticated browser route'],
-  ['dmStoreScenarios.js', 'Upload PDF Document', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads a PDF document through the CCD browser event'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads an image document through the CCD browser event'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'integration/aatCcdBrowserDefects.spec.ts', 'uploads a Word document through the CCD browser event'],
+  ['createCCDCase.js', 'Create CCD Case for MV...', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'creates the CCD case used by Media Viewer journeys through the authenticated browser route'],
+  ['dmStoreScenarios.js', 'Upload PDF Document', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'uploads a PDF document through the CCD browser event'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'uploads an image document through the CCD browser event'],
+  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'uploads a Word document through the CCD browser event'],
   ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
   ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'annotations.spec.ts', 'creates a non-text image highlight and comment through the rendered Media Viewer'],
   ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'annotations.spec.ts', 'creates a draw-box image highlight with a positive rectangle contract'],
@@ -82,8 +82,19 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'e2e'/, 'the flaky live E2E project must not be selectable');
     assert.equal(packageScripts['test:playwright:e2e'], undefined, 'the retired E2E command must not be selectable');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightE2ETests|Playwright Viewer E2E Test/, 'Jenkins must not schedule the retired E2E lane');
+    assert.match(source('Jenkinsfile_CNP'), /runPlaywrightIntegrationTests/);
+    assert.match(source('Jenkinsfile_CNP'), /Playwright Viewer Integration Test - preview/);
+    assert.match(source('Jenkinsfile_CNP'), /Playwright Viewer Integration Test - AAT/);
+    assert.match(packageScripts['test:playwright:integration'], /--project=integration/);
+    assert.match(source('playwright.config.ts'), /playwright_tests\/integration\/\*\*\/\*\.spec\.ts/);
+    assert.match(source('playwright.config.ts'), /playwright_tests\/external-service-contracts\/\*\*\/\*\.spec\.ts/);
+    assert.doesNotMatch(
+      source('Jenkinsfile_CNP'),
+      /test:playwright:external-service-contracts|PLAYWRIGHT_RUN_EXTERNAL_SERVICE_CONTRACTS/,
+      'normal Jenkins assurance must not execute external service diagnostics'
+    );
 
-    const knownDefectContracts = source('playwright_tests/integration/aatCcdBrowserDefects.spec.ts');
+    const knownDefectContracts = source('playwright_tests/external-service-contracts/aatCcdBrowserDefects.spec.ts');
     assert.match(knownDefectContracts, /@defect-EXUI-5122/);
     assert.match(knownDefectContracts, /@defect-EXUI-5123/);
     const imageAnnotationContracts = source('playwright_tests/functional/annotations.spec.ts');

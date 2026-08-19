@@ -2,7 +2,8 @@
 
 These are migrated viewer behaviour tests. The `functional` project executes
 the feature files below; the separate `smoke` project supplies one standalone
-PDF-readiness contract. The full product capability inventory, including
+PDF-readiness contract and the `integration` project owns deterministic
+Viewer/service request-response contracts. The full product capability inventory, including
 legacy-only areas and the next assurance gaps, is stored in
 `mediaViewerCoverage.json` and is rendered into the Odhín report.
 

@@ -133,11 +133,13 @@ Current Playwright lanes:
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
 | Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 71 fixture-backed browser contracts across 13 feature files. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
-| External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional AAT CCD/DM Store/annotation probes for a deliberate environment investigation. They are never part of normal PR assurance; the standalone migration is covered by deterministic Functional route fakes. Four CCD browser-route contracts remain discoverable and ticketed against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123). |
+| Deterministic integration | `playwright.config.ts`, project `integration` | `yarn test:playwright:integration` | Three browser/service contracts validate Document Assembly conversion, annotation persistence and redaction persistence through page-scoped stateful route fakes. This lane runs in parallel with Functional in Jenkins and requires no AAT credentials or shared service data. |
+| External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. They are never part of normal PR assurance. Four CCD browser-route contracts remain discoverable and ticketed against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123). |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
-the application is ready, functional proves user-facing viewer behaviour, and
+the application is ready, functional proves user-facing viewer behaviour,
+integration proves deterministic Viewer/service request-response contracts, and
 support proves the reusable automation contracts. External service diagnostics
 are opt-in and never gate a standalone Media Viewer change. Every Playwright Odhín report includes a capability
 inventory that states whether each contract is selected by default or is a
