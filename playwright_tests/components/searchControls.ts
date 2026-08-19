@@ -38,12 +38,14 @@ export class SearchControls {
   }
 
   async searchFor(term: string): Promise<void> {
+    await this.waitForPdfTextLayer();
     await this.open();
     await this.input.fill(term);
     await this.input.press('Enter');
   }
 
   async submitSearch(): Promise<void> {
+    await this.waitForPdfTextLayer();
     await this.submitButton.click();
   }
 
@@ -66,6 +68,15 @@ export class SearchControls {
   async openAdvancedOptions(): Promise<void> {
     if (!(await this.highlightAllCheckbox.isVisible())) {
       await this.advancedOptionsButton.click();
+    }
+  }
+
+  private async waitForPdfTextLayer(): Promise<void> {
+    if (await this.page.locator('mv-pdf-viewer').isVisible()) {
+      await this.page
+        .locator('mv-pdf-viewer div.page[data-page-number="1"][data-loaded="true"] .textLayer span')
+        .first()
+        .waitFor({ state: 'visible' });
     }
   }
 }
