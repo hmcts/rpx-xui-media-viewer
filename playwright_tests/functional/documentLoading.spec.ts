@@ -32,18 +32,24 @@ test.describe('Document loading and media types', () => {
 
   test('reports a failed PDF load through the rendered viewer state', { tag: ['@e2e-functional', '@feature-document-loading'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.goto();
+    const documentUrl = mediaViewer.resolveDocumentUrl('assets/missing.pdf');
     await page.route('**/assets/missing.pdf', async (route) => route.fulfill({ status: 404 }));
+    const documentResponse = page.waitForResponse((response) => response.url() === documentUrl);
 
     await mediaViewer.submitDocumentDetails('assets/missing.pdf', 'playwright-missing-pdf', 'pdf');
+    expect((await documentResponse).status()).toBe(404);
     await expect(mediaViewer.loadState.errorMessage).toContainText('FAILURE');
     await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
   });
 
   test('reports a failed image load through the rendered viewer state', { tag: ['@e2e-functional', '@feature-document-loading'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.goto();
+    const documentUrl = mediaViewer.resolveDocumentUrl('assets/missing-image.jpg');
     await page.route('**/assets/missing-image.jpg', async (route) => route.fulfill({ status: 404 }));
+    const documentResponse = page.waitForResponse((response) => response.url() === documentUrl);
 
     await mediaViewer.submitDocumentDetails('assets/missing-image.jpg', 'playwright-missing-image', 'image');
+    expect((await documentResponse).status()).toBe(404);
     await expect(mediaViewer.loadState.errorMessage).toContainText('FAILURE');
     await expect(mediaViewer.loadState.image).toHaveCount(0);
   });
