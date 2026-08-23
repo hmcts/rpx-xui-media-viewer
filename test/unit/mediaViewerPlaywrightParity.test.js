@@ -31,6 +31,17 @@ const replacementContracts = [
   ['redact.js', 'Unmark all content (marked for redaction)', 'redactions.spec.ts', 'clears persisted redactions across PDF pages without restoring them after reload'],
 ];
 
+const intentionalManyToOneCoverage = [
+  [
+    'creates a draw-box redaction, previews it and clears the persisted marker',
+    ['Mark Content For Redaction Using Draw Box Function', 'Preview all content marked for redaction'],
+  ],
+  [
+    'redacts selected text and removes the persisted marker',
+    ['Redact Content Using Redact Text Function', 'Redact text and then removing the redaction'],
+  ],
+];
+
 function source(relativePath) {
   return readFileSync(resolve(repositoryRoot, relativePath), 'utf8');
 }
@@ -52,6 +63,25 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
 
     assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
     assert.equal(replacementContracts.length, 23, 'every historical Codecept contract must have a Playwright replacement');
+
+    const legacyScenariosByPlaywrightContract = new Map();
+    for (const [, legacyScenario, , playwrightContract] of replacementContracts) {
+      const scenarios = legacyScenariosByPlaywrightContract.get(playwrightContract) ?? [];
+      scenarios.push(legacyScenario);
+      legacyScenariosByPlaywrightContract.set(playwrightContract, scenarios);
+    }
+    const duplicateCoverage = [...legacyScenariosByPlaywrightContract.entries()]
+      .filter(([, scenarios]) => scenarios.length > 1)
+      .map(([playwrightContract, scenarios]) => [playwrightContract, scenarios.sort()])
+      .sort(([left], [right]) => left.localeCompare(right));
+    assert.deepEqual(
+      duplicateCoverage,
+      intentionalManyToOneCoverage
+        .map(([playwrightContract, scenarios]) => [playwrightContract, [...scenarios].sort()])
+        .sort(([left], [right]) => left.localeCompare(right)),
+      'any many-to-one mapping must be explicitly declared and reviewed'
+    );
+    assert.equal(legacyScenariosByPlaywrightContract.size, 21, 'the migration inventory must retain 21 unique Playwright contracts plus two declared many-to-one mappings');
     assert.match(
       source('test/config.js'),
       /TestPathToRun:\s*process\.env\.E2E_TEST_PATH\s*\|\|\s*'\.\/mvFeatures\/__retired__\/\*\.js'/,
