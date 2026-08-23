@@ -26,7 +26,7 @@ const replacementContracts = [
   ['redact.js', 'Redact text and then removing the redaction', 'redactions.spec.ts', 'redacts selected text and removes the persisted marker'],
   ['redact.js', 'Redact first page', 'redactions.spec.ts', 'redacts a full PDF page with positive geometry'],
   ['redact.js', 'Redact multiple pages', 'redactions.spec.ts', 'retains redactions on multiple PDF pages'],
-  ['redact.js', 'Clear redactions that are added when document has been downloaded', 'redactions.spec.ts', 'clears persisted redactions across PDF pages without restoring them after reload'],
+  ['redact.js', 'Clear redactions that are added when document has been downloaded', 'redactions.spec.ts', 'downloads draw-box redactions, adds text redaction and clears all markers'],
   ['redact.js', 'Unmark selected content (marked for redaction)', 'redactions.spec.ts', 'deletes one persisted marker while keeping its sibling redaction'],
   ['redact.js', 'Unmark all content (marked for redaction)', 'redactions.spec.ts', 'clears persisted redactions across PDF pages without restoring them after reload'],
 ];
