@@ -290,6 +290,24 @@ describe('PdfJsWrapper', () => {
     expect(searchResultsCountSubjectNext).toHaveBeenCalled();
     expect(redactionSerachSubjectNext).toHaveBeenCalled();
   });
+
+  it('dispatches search details from private selected find state', () => {
+    const redactionSerachSubjectNext = spyOn(toolbarEventService.redactionSerachSubject, 'next').and.callThrough();
+
+    wrapper.sendSearchDetails({
+      state: 0,
+      matchesCount: { total: 8 },
+      source: {
+        _selected: { pageIdx: 2, matchIdx: 3 },
+      }
+    });
+
+    expect(redactionSerachSubjectNext).toHaveBeenCalledWith({
+      page: 2,
+      matchedIndex: 3,
+      matchesCount: 8
+    });
+  });
 });
 
 describe('drawMissingPages', () => {

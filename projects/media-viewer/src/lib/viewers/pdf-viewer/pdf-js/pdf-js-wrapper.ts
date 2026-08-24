@@ -2,7 +2,7 @@ import { Outline } from './../side-bar/outline-item/outline.model';
 import { RedactionSearch } from './../../../toolbar/redaction-search-bar/redaction-search.model';
 import * as pdfjs from 'pdfjs-dist';
 import { DownloadManager, PDFLinkService, PDFViewer } from 'pdfjs-dist/web/pdf_viewer.mjs';
-import 'pdfjs-dist/build/pdf.worker';
+import 'pdfjs-dist/build/pdf.worker.mjs';
 import 'pdfjs-dist/build/pdf.mjs';
 import { Subject } from 'rxjs';
 import { SearchOperation, SearchResultsCount, ToolbarEventService } from '../../../toolbar/toolbar-event.service';
@@ -68,10 +68,11 @@ export class PdfJsWrapper {
     if (event.state !== FindState.PENDING) {
       const result = { ...event.matchesCount, isPrevious: event?.source?.state?.findPrevious } as SearchResultsCount
       this.toolbarEvents.searchResultsCountSubject.next(result);
-      if (event?.source?.selected?.pageIdx !== -1 && event.matchesCount.total > 0) {
+      const selected = event?.source?.selected ?? event?.source?._selected;
+      if (selected?.pageIdx >= 0 && event.matchesCount.total > 0) {
         this.toolbarEvents.redactionSerachSubject.next({
-          page: event?.source?.selected?.pageIdx,
-          matchedIndex: event?.source?.selected?.matchIdx,
+          page: selected.pageIdx,
+          matchedIndex: selected.matchIdx,
           matchesCount: event.matchesCount.total
         } as RedactionSearch
         );
@@ -186,10 +187,9 @@ export class PdfJsWrapper {
   private createLoadingTask(documentUrl: string) {
     return pdfjs.getDocument({
       url: documentUrl,
-      cMapUrl: 'assets/minified/cmaps',
+      cMapUrl: 'assets/minified/cmaps/',
       cMapPacked: true,
-      withCredentials: true,
-      isEvalSupported: false
+      withCredentials: true
     });
   }
 

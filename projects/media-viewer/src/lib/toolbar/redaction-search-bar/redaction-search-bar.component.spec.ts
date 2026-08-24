@@ -271,6 +271,47 @@ describe('RedactionSearchBarComponent', () => {
     expect(component.resultsText).toEqual(`${searchResultsCount.total} results founds`);
   }));
 
+  it('should find selected highlights when PDF.js adds extra classes', () => {
+    const highlight = document.createElement('span');
+    highlight.className = 'highlight begin selected appended';
+    document.body.appendChild(highlight);
+
+    const selectedHighlights = (component as any).getSelectedHighlightElements();
+
+    expect(selectedHighlights).toEqual([highlight]);
+
+    document.body.removeChild(highlight);
+  });
+
+  it('should identify selected range boundary highlights regardless of class order', () => {
+    const beginHighlight = document.createElement('span');
+    beginHighlight.className = 'selected extra begin highlight';
+    const endHighlight = document.createElement('span');
+    endHighlight.className = 'end highlight selected';
+    const unselectedHighlight = document.createElement('span');
+    unselectedHighlight.className = 'highlight begin';
+
+    expect((component as any).isRangeBoundaryHighlight(beginHighlight)).toBeTrue();
+    expect((component as any).isRangeBoundaryHighlight(endHighlight)).toBeTrue();
+    expect((component as any).isRangeBoundaryHighlight(unselectedHighlight)).toBeFalse();
+  });
+
+  it('should support lightweight highlight mocks without classList', () => {
+    const highlight = { className: 'highlight begin selected' } as Element;
+
+    expect((component as any).isRangeBoundaryHighlight(highlight)).toBeTrue();
+  });
+
+  it('should use selected highlight element rectangles when range rectangles are unavailable', () => {
+    const highlight = document.createElement('span');
+    const domRect = jasmine.createSpyObj<DOMRect>('DOMRect', [], { x: 10, y: 20, height: 30, width: 40 });
+    spyOn(highlight, 'getClientRects').and.returnValue([domRect] as any);
+
+    const rectangles = (component as any).getSelectedHighlightClientRects([highlight]);
+
+    expect(rectangles).toEqual([domRect]);
+  });
+
   it('should set highlight text', fakeAsync(() => {
     component.inProgressText = '';
     component.titleText = '';

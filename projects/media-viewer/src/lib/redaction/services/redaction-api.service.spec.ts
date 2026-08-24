@@ -88,4 +88,24 @@ describe('RedactionApiService', () => {
     expect(req.request.body.searchRedactions[0].page).toBe(1);
     req.flush(bulkRedaction);
   }));
+
+  it('should use submitted bulk redaction markup when response body is empty', fakeAsync((done) => {
+    api.saveBulkRedaction(bulkRedaction).subscribe((response) => {
+      expect(response).toEqual(bulkRedaction);
+    }, error => done(error));
+
+    const req = httpMock.expectOne('/api/markups/search');
+    expect(req.request.method).toBe('POST');
+    req.flush(null);
+  }));
+
+  it('should use submitted bulk redaction markup when save fails', fakeAsync((done) => {
+    api.saveBulkRedaction(bulkRedaction).subscribe((response) => {
+      expect(response).toEqual(bulkRedaction);
+    }, error => done(error));
+
+    const req = httpMock.expectOne('/api/markups/search');
+    expect(req.request.method).toBe('POST');
+    req.flush('problem saving redaction', { status: 500, statusText: 'Server Error' });
+  }));
 });

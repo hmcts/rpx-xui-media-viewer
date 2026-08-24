@@ -67,9 +67,9 @@ test.describe('media viewer Playwright support layer', () => {
     await mediaViewer.goto();
     await page.route('**/assets/missing.pdf', async (route) => route.fulfill({ status: 404 }));
 
-    await expect(mediaViewer.loadDocument('assets/missing.pdf', 'missing-asset')).rejects.toThrow(
-      'Document request failed: 404'
-    );
+    await expect(
+      mediaViewer.loadDocument('assets/missing.pdf', 'missing-asset')
+    ).rejects.toThrow('Document request failed: 404');
   });
 
   test('accepts a cache-revalidated document response', async ({ mediaViewer, page }) => {

@@ -2,10 +2,12 @@
 const commonConfig = require('../../data/commonConfig.json');
 const saveActiveComment = require('./saveActiveComment');
 
-module.exports = async function () {
+module.exports = async function (commentText) {
   const I = this;
   const comments = await I.grabNumberOfVisibleElements(commonConfig.commentsCount);
-  await I.highlightOnImage(900, 900, 900, 900, ['mousedown', 'mousemove', 'mouseup'], 'box-highlight', 0);
+  await I.highlightPdfText();
+  await I.click(commonConfig.highLightTextCount);
+  await I.waitForElement(commonConfig.commentPopup);
   await I.retry(2).click(commonConfig.commentPopup);
-  await saveActiveComment(I, commonConfig.firstComment1, comments + 1);
+  await saveActiveComment(I, commentText, comments + 1);
 }

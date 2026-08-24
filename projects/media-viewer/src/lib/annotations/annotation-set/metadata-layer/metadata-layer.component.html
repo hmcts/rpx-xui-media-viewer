@@ -7,14 +7,14 @@
        }"
        [ngClass]="{ 'pageContainer__page--draw' : drawMode }">
     <mv-box-highlight-create
-      [page]="i + 1"
+      [page]="page.pageNumber"
       [pageHeight]="page.styles.height"
       [pageWidth]="page.styles.width"
       [rotate]="rotate"
       [zoom]="zoom"
       (saveSelection)="saveAnnotation($event)">
     </mv-box-highlight-create>
-    <mv-ctx-toolbar *ngIf="rectangles && highlightPage === (i + 1)"
+    <mv-ctx-toolbar *ngIf="rectangles && highlightPage === page.pageNumber"
                     [rectangles]="rectangles"
                     [canBookmark]="true" [canHighlight]="true"
                     [zoom]="zoom"
@@ -31,7 +31,7 @@
                          [rotate]="rotate"
                          [pageHeight]="page.styles.height"
                          [pageWidth]="page.styles.width"
-                         [page]="i" [annotations]="annoPages[i + 1]"></mv-annotation-set>
+                         [page]="page.pageNumber - 1" [annotations]="annoPages[page.pageNumber]"></mv-annotation-set>
     </div>
   </div>
 </div>
