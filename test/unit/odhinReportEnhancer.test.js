@@ -26,7 +26,7 @@ test('capability summary reports every supported status', () => {
     []
   );
 
-  assert.match(html, /4 areas — 1 covered, 1 partial, 1 legacy-only, 1 not covered/);
+  assert.match(html, /4 areas — 1 migration-covered, 1 partial, 1 legacy-only, 1 not covered/);
   assert.match(html, /odhin-capability-status-not-covered/);
 });
 
@@ -42,7 +42,7 @@ test('capability summary reports whether a contract runs by default', () => {
     []
   );
 
-  assert.match(html, /<th>Execution<\/th>/);
+  assert.match(html, /<th>Default execution<\/th>/);
   assert.match(html, /Runs by default/);
 });
 
