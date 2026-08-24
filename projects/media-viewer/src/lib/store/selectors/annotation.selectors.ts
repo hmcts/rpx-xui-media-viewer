@@ -119,22 +119,15 @@ export const getCommentSummary = createSelector(
   getCommentSummaryFilters,
   (commentSummary = [], filters) => {
     const comments = StoreUtils.filterCommentsSummary(commentSummary, filters.filters);
-    if (comments.length) {
-      const savedComments  = comments.filter((comment) => {
-        return comment.createdByDetails !== undefined;
-      }
-      );
-      return savedComments.map((comment) => {
-        return {
-          page: comment.page,
-          user: comment.createdByDetails.forename.concat(' ').concat(comment.createdByDetails.surname),
-          date: moment(comment.lastModifiedDate).format('D MMMM YYYY'),
-          tags: comment.tags,
-          comment: comment.content
-        };
-      });
-    }
-    return [''];
+    return comments
+      .filter(comment => comment.createdByDetails !== undefined)
+      .map(comment => ({
+        page: comment.page,
+        user: `${comment.createdByDetails.forename} ${comment.createdByDetails.surname}`,
+        date: moment(comment.lastModifiedDate).format('D MMMM YYYY'),
+        tags: comment.tags,
+        comment: comment.content
+      }));
   }
 );
 

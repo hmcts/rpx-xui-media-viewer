@@ -4,8 +4,19 @@ export class MediaViewerToolbar {
   readonly root: Locator;
   readonly moreOptionsButton: Locator;
 
-  constructor(page: Page) {
+  constructor(private readonly page: Page) {
     this.root = page.locator('#toolbarContainer');
     this.moreOptionsButton = page.getByRole('button', { name: 'More options' });
+  }
+
+  async clickAction(name: 'Download' | 'Print' | 'Present' | 'Redact'): Promise<void> {
+    const toolbarAction = this.root.getByRole('button', { name });
+    if (await toolbarAction.isVisible()) {
+      await toolbarAction.click();
+      return;
+    }
+
+    await this.moreOptionsButton.click();
+    await this.page.locator('.dropdown-menu').getByRole('button', { name }).click();
   }
 }

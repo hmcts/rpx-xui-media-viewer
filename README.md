@@ -116,10 +116,11 @@ For browser-level proof that the standalone viewer is using AAT-backed services,
 yarn test:local:aat
 ```
 
-This opens `http://localhost:3000/#/media-viewer`, loads
-`/documents/<MV_SMOKE_PDF_DOCUMENT_ID>/binary`, and waits for the rendered PDF viewer
-and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
-default AAT PDF document id.
+This executes the Functional Playwright contracts against the local standalone Media
+Viewer and AAT-backed proxy configuration while keeping the browser at
+`http://localhost:3000/`. It does not create CCD cases or DM Store documents; use
+the opt-in external-service contracts for those live service probes. The lightweight
+route and health check remains available as `yarn smoke:local:aat`.
 
 ### 5. Run Playwright tests
 Media Viewer is starting its Playwright migration with the same runner and
@@ -131,13 +132,25 @@ Current Playwright lanes:
 
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
-| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | Loads standalone PDF and image fixtures and verifies rendered-document readiness, PDF zoom and navigation, image rotation and deterministic PDF search. |
+| Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
-The Playwright config runs tests fully in parallel with seven workers. Each test
-gets its own browser context and page-scoped route mocks. Tests must not depend
-on execution order or share mutable documents; mutation-heavy AAT journeys must
-provision a document per test or reset it before reuse.
+The current migration slice is deliberately separated from smoke: smoke proves
+the application is ready, functional proves user-facing viewer behaviour and
+its deterministic Viewer/service request-response contracts, and support proves
+the reusable automation contracts. External service diagnostics
+are opt-in and never gate a standalone Media Viewer change. Every Playwright Odhín report includes a capability
+inventory that states whether each contract is selected by default or is a
+discoverable, ticketed product-defect contract.
+
+The Playwright config runs tests fully in parallel with seven workers by
+default. Set `FUNCTIONAL_TESTS_WORKERS` to a positive integer (up to 64) for an
+intentional capacity run. Each test gets its own browser context and page-scoped
+route mocks. Tests must not depend on execution order or share mutable
+documents; mutation-heavy AAT journeys must provision a document per test or
+reset it before reuse.
 
 Install Chromium once before local runs when the browser cache is empty:
 
@@ -159,16 +172,17 @@ yarn test:playwright:smoke
 ```
 
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
-`MV_SMOKE_CASE_ID`. `yarn test:smoke` now runs the Playwright smoke so Jenkins
-CNP uses the same smoke entrypoint style as MC/MO. The previous CodeceptJS smoke
-remains available as `yarn test:smoke:legacy` while migration work continues.
+`MV_SMOKE_CASE_ID`. `yarn test:smoke` and `yarn test:local:aat` run the
+Playwright smoke, so the standalone and local-AAT PDF loading journeys no longer
+fall back to CodeceptJS.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
-| Lane | Odhín | JUnit | Trace, screenshot and video output |
+| Lane | Odhín | JUnit | Trace and screenshot output |
 | --- | --- | --- | --- |
 | Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
+| Migrated functional | `functional-output/tests/playwright-functional/odhin-report/xui-playwright-functional.html` | `functional-output/tests/playwright-functional/playwright-functional-junit.xml` | `functional-output/tests/playwright-functional/test-results` |
 
 Those are the default lane-specific paths. CNP keeps preview and AAT viewer
 support evidence separate under `functional-output/tests/playwright-support/preview`
@@ -187,8 +201,8 @@ Reporting behavior follows the MC/MO pattern:
   count and total RAM in its run information.
 - CI logs Odhín finalisation progress using the same progress reporter as MC/MO.
 - Odhín is the only standard human-readable report. JUnit is retained for
-  Jenkins ingestion. Screenshots and videos are kept on failure; traces are
-  captured on the first retry.
+  Jenkins ingestion. Screenshots and traces are kept for failed and timed-out
+  attempts; videos are disabled.
   The standard Playwright HTML reporter is not supported.
 - `PLAYWRIGHT_SKIP_INSTALL=true` skips browser installation when Jenkins or a
   local setup step has already installed Chromium.
@@ -217,7 +231,7 @@ Useful overrides:
 - `PLAYWRIGHT_REPORT_BRANCH`: branch override used by the default release label
 - `PLAYWRIGHT_REPORT_TEST_ENVIRONMENT` or `PW_ODHIN_ENV`: complete Odhín test-environment label override
 - `TEST_TYPE`: target-environment label, otherwise inferred from the test URL
-- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces, screenshots and videos folder
+- `PLAYWRIGHT_TEST_OUTPUT_DIR`: traces and screenshots folder
 - `FUNCTIONAL_TESTS_WORKERS`: worker-count override from `1` to `64`, default `7`
 - `PLAYWRIGHT_SKIP_INSTALL=true`: skip the automatic Chromium install in Playwright scripts
 
@@ -248,8 +262,10 @@ Migration boundaries:
 - Put new native Playwright specs under `playwright_tests/`.
 - Keep screen interactions and reusable locators in page objects under
   `playwright_tests/pages/`; keep assertions visible in specs.
-- Keep legacy Protractor and CodeceptJS coverage until replacement coverage and
-  Jenkins evidence are agreed.
+- Historical CodeceptJS scenarios are retained as source traceability only;
+  their executable pipeline routing is retired once the mapped Playwright
+  contract is selected by default or is represented by a discoverable,
+  ticketed product-defect contract.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
   logic.
@@ -257,72 +273,25 @@ Migration boundaries:
   an error page, blank page, wrong route or service-down page as a valid ready
   signal.
 
-### 6. Create isolated AAT test documents
-For mutation-heavy functional tests, do not share one document across parallel tests.
-Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
-is running:
+### 6. Run local Playwright lanes
+`yarn test:local:aat` is the standalone smoke lane; it does not create a CCD
+case or DM Store document. Run the fixture-backed Functional lane locally with:
 
 ```
-yarn local-aat:documents -- --pdf-count 7 --image-count 1 --output .local-aat-documents.env
+yarn test:playwright:functional
 ```
 
-This writes:
-- `MV_SMOKE_PDF_DOCUMENT_ID`
-- `MV_SMOKE_IMAGE_DOCUMENT_ID`
-- `MV_FUNCTIONAL_PDF_DOCUMENT_IDS`
-- `MV_FUNCTIONAL_IMAGE_DOCUMENT_IDS`
-
-The upload path mirrors em-showcase: multipart `files`, `classification=PUBLIC`,
-and civil/probate metadata are posted to `/documents`.
-
-### 7. Run isolated local functional tests
-With `yarn start:aat` still running, execute the functional groups with separate
-documents and separate reports:
+The default local suite is standalone: it needs neither AAT credentials nor
+shared CCD, DM Store or annotation-service state. External service diagnostics
+are deliberately opt-in and must not be used as normal migration assurance. The
+external command runs 6 contracts by default; `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true`
+runs the full 10-contract inventory, including the four ticketed CCD browser defects.
+Known product-defect contracts are not skipped: they remain discoverable and
+run only when explicitly selected:
 
 ```
-yarn test:functional:local:isolated
+PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn test:playwright:functional -- --grep @defect-EXUI-5124
 ```
-
-By default this creates fresh documents, runs up to three feature files at a time,
-and writes reports under `functional-output/local-isolated/`. Override with:
-- `MV_LOCAL_PARALLEL_MAX_JOBS=1` to run the same isolated groups serially
-- `MV_CREATE_LOCAL_AAT_DOCS=false` to reuse IDs from `.local-aat-documents.env`
-- `E2E_PARALLEL_OUTPUT_ROOT=<path>` to change report location
-
-Each feature writes its own report directory, including:
-- `mv-e2e-result.html`
-- `mv-e2e-result.json`
-- `result.xml`
-
-The validated local AAT sequence is:
-
-```
-yarn check:aat-config
-yarn start:aat
-yarn smoke:local:aat
-yarn test:local:aat
-yarn test:functional:local:isolated
-```
-
-Expected `test:functional:local:isolated` feature groups:
-- `annotationsAndComments`
-- `bookMarks`
-- `redact`
-- `printAndDownload`
-- `rotate`
-- `search`
-- `zoomAndnavigation`
-- `imageViewerAnnotationsAndComments`
-
-For the strongest isolation proof, make each scenario upload and use its own document:
-
-```
-yarn test:functional:local:self-contained
-```
-
-This is slower because it creates a fresh AAT DM Store document for each scenario, but
-it is the best local check when diagnosing interference between bookmarks,
-annotations, comments, and redactions.
 
 ### Useful overrides
 Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.
