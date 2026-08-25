@@ -48,6 +48,45 @@ test.describe('Redaction', () => {
     await expect(mediaViewer.redactions.markers).toHaveCount(0);
   });
 
+  test('downloads draw-box redactions, adds text redaction and clears all markers', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
+    const caseId = 'playwright-redaction-download-clear-case';
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, caseId, mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+
+    const drawBoxSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    const drawBoxRedaction = await drawBoxSave;
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
+
+    const redactionRequest = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/redaction');
+    const download = page.waitForEvent('download');
+    await mediaViewer.redactions.saveDocumentButton.click();
+    const [request, completedDownload] = await Promise.all([redactionRequest, download]);
+    expect((request.postDataJSON() as { redactions: Array<{ redactionId: string }> }).redactions).toEqual([
+      expect.objectContaining({ redactionId: (drawBoxRedaction.postDataJSON() as { redactionId: string }).redactionId }),
+    ]);
+    expect(completedDownload.suggestedFilename()).toBe('redacted.pdf');
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+
+    const textSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
+    const selectedText = await mediaViewer.redactions.redactExampleFixtureText();
+    expect(selectedText).toContain('Brendan Eich');
+    const textPayload = (await textSave).postDataJSON() as { documentId: string; page: number; redactionId: string; rectangles: Array<{ width: number; height: number }> };
+    expect(textPayload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
+    expect(textPayload.rectangles).not.toHaveLength(0);
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
+
+    const clearRequest = page.waitForRequest((request) => request.method() === 'DELETE' && new URL(request.url()).pathname.endsWith(mediaAssets.pdf.url));
+    await mediaViewer.redactions.clearAllButton.click();
+    await clearRequest;
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+    await mediaViewer.reloadDocument(mediaAssets.pdf, caseId);
+    await mediaViewer.openRedactions();
+    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+  });
+
   test('deletes one persisted marker while keeping its sibling redaction', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.goto();
     await mediaViewer.enableRedactions();

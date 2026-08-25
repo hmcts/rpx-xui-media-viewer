@@ -11,19 +11,19 @@ const test = base.extend<{ caseId: string }>({
 test.describe('AAT CCD and DM Store prerequisites', () => {
   test.setTimeout(45_000);
 
-  test('creates the CCD case used by Media Viewer journeys through the live CCD API', { tag: ['@integration', '@feature-ccd-case-creation'] }, async ({ caseId }) => {
+  test('creates the CCD case used by Media Viewer journeys through the live CCD API', { tag: ['@external-service-contracts', '@feature-ccd-case-creation'] }, async ({ caseId }) => {
     expect(caseId).toMatch(/^\d+$/);
   });
 
-  test('uploads a PDF document through the live DM Store API', { tag: ['@integration', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
+  test('uploads a PDF document through the live DM Store API', { tag: ['@external-service-contracts', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
     await expect((await uploadAatDocument(request, 'example.pdf')).id).toMatch(/^[0-9a-f-]+$/i);
   });
 
-  test('uploads an image document through the live DM Store API', { tag: ['@integration', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
+  test('uploads an image document through the live DM Store API', { tag: ['@external-service-contracts', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
     await expect((await uploadAatDocument(request, 'quote.jpg')).id).toMatch(/^[0-9a-f-]+$/i);
   });
 
-  test('persists an image annotation lifecycle through the live annotation service after DM Store upload', { tag: ['@integration', '@feature-image-annotations'] }, async ({ request }) => {
+  test('persists an image annotation lifecycle through the live annotation service after DM Store upload', { tag: ['@external-service-contracts', '@feature-image-annotations'] }, async ({ request }) => {
     const document = await uploadAatDocument(request, 'quote.jpg');
     const annotationSetId = randomUUID();
     const annotationId = randomUUID();
@@ -68,7 +68,7 @@ test.describe('AAT CCD and DM Store prerequisites', () => {
     expect(await afterDeleteResponse.json()).toEqual(expect.objectContaining({ id: annotationSetId, annotations: [] }));
   });
 
-  test('uploads a Word document through the live DM Store API', { tag: ['@integration', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
+  test('uploads a Word document through the live DM Store API', { tag: ['@external-service-contracts', '@feature-aat-document-prerequisites'] }, async ({ request }) => {
     await expect((await uploadAatDocument(request, 'ThankYou.doc')).id).toMatch(/^[0-9a-f-]+$/i);
   });
 });
