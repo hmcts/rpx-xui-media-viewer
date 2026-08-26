@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.26-exui-5039-rc-1",
+  "version": "4.2.37",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
@@ -23,7 +23,7 @@
     "pdfjs-dist": "^4.10.38",
     "socket.io-client": "^4.8.0",
     "tslib": "^2.3.0",
-    "uuid": "^11.0.3"
+    "uuid": "^11.1.1"
   },
   "peerDependencies": {
     "@angular/animations": "^20.0.0",
@@ -37,8 +37,11 @@
     "@ngrx/store": "^20",
     "@ngrx/store-devtools": "^20",
     "ngx-chips": "3.0.0",
-    "rpx-xui-translation": "1.2.7",
+    "rpx-xui-translation": "1.2.12",
     "rxjs": "^7.8.2"
+  },
+  "resolutions": {
+    "socket.io-parser": "4.2.7"
   },
   "devDependencies": {
     "@types/uuid": "^10.0.0",

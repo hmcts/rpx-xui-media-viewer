@@ -1,12 +1,36 @@
 import type { Page } from '@playwright/test';
 import { DocumentLoadState } from '../components/documentLoadState';
 import { MediaViewerSidePanels } from '../components/mediaViewerSidePanels';
+import { CommentsPanel } from '../components/commentsPanel';
 import { MediaViewerToolbar } from '../components/mediaViewerToolbar';
 import { PageNavigation } from '../components/pageNavigation';
 import { RotationControls } from '../components/rotationControls';
 import { SearchControls } from '../components/searchControls';
 import { ZoomControls } from '../components/zoomControls';
+import { Bookmarks } from '../components/bookmarks';
+import { Annotations } from '../components/annotations';
+import { Redactions } from '../components/redactions';
+import { IndexOutline } from '../components/indexOutline';
+import type { AnnotationFixture, AnnotationSetFixture } from '../fixtures/mediaViewerComments';
 import type { MediaAsset } from '../fixtures/mediaAssets';
+
+const persistComment = (comment: Record<string, unknown>, annotation: AnnotationFixture): Record<string, unknown> => {
+  const page = typeof annotation.page === 'number' ? annotation.page : 1;
+  return {
+    ...comment,
+    createdBy: comment.createdBy ?? 'pw-user',
+    createdByDetails: comment.createdByDetails ?? { forename: 'Playwright', surname: 'User' },
+    lastModifiedBy: comment.lastModifiedBy ?? 'pw-user',
+    lastModifiedByDetails: comment.lastModifiedByDetails ?? { forename: 'Playwright', surname: 'User' },
+    createdDate: comment.createdDate ?? '2026-01-01T00:00:00.000Z',
+    lastModifiedDate: comment.lastModifiedDate ?? '2026-01-01T00:00:00.000Z',
+    page: comment.page ?? page,
+    pageHeight: comment.pageHeight ?? 1122,
+    pages: comment.pages ?? { [page]: { styles: { height: 1122 } } },
+    editable: false,
+    selected: false,
+  };
+};
 
 export class MediaViewerPage {
   readonly loadState: DocumentLoadState;
@@ -16,6 +40,11 @@ export class MediaViewerPage {
   readonly rotation: RotationControls;
   readonly search: SearchControls;
   readonly sidePanels: MediaViewerSidePanels;
+  readonly comments: CommentsPanel;
+  readonly bookmarks: Bookmarks;
+  readonly annotations: Annotations;
+  readonly redactions: Redactions;
+  readonly indexOutline: IndexOutline;
 
   constructor(private readonly page: Page) {
     this.loadState = new DocumentLoadState(page);
@@ -25,13 +54,157 @@ export class MediaViewerPage {
     this.rotation = new RotationControls(page);
     this.search = new SearchControls(page);
     this.sidePanels = new MediaViewerSidePanels(page);
+    this.comments = new CommentsPanel(page);
+    this.bookmarks = new Bookmarks(page);
+    this.annotations = new Annotations(page);
+    this.redactions = new Redactions(page);
+    this.indexOutline = new IndexOutline(page);
   }
 
-  async stubAnnotationResponses(): Promise<void> {
-    await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => route.fulfill({ json: [] }));
+  async stubAnnotationResponses(annotationSets?: AnnotationSetFixture[]): Promise<void> {
+    const annotationSetsByDocumentId = new Map(
+      annotationSets?.map((annotationSet) => [annotationSet.documentId, annotationSet])
+    );
+    await this.page.route('**/em-anno/annotation-sets/filter**', async (route) => {
+      const requestedDocumentId = new URL(route.request().url()).searchParams.get('documentId');
+      if (!annotationSets) {
+        await route.fulfill({
+          status: 200,
+          json: { id: 'annotation-set-fixture', documentId: requestedDocumentId, annotations: [] },
+        });
+        return;
+      }
+      const currentAnnotationSet = requestedDocumentId && annotationSetsByDocumentId.get(requestedDocumentId);
+      if (!currentAnnotationSet) {
+        await route.fulfill({ status: 404, json: { message: `Unexpected annotation document: ${requestedDocumentId}` } });
+        return;
+      }
+      await route.fulfill({ status: 200, json: currentAnnotationSet });
+    });
+    await this.page.route('**/em-anno/annotation-sets', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+      const annotationSet = await route.request().postDataJSON() as AnnotationSetFixture;
+      annotationSetsByDocumentId.set(annotationSet.documentId, annotationSet);
+      await route.fulfill({ status: 200, json: annotationSet });
+    });
+    await this.page.route('**/em-anno/annotations', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.continue();
+        return;
+      }
+      const updatedAnnotation = await route.request().postDataJSON() as AnnotationFixture;
+      const persistedAnnotation = {
+        ...updatedAnnotation,
+        comments: (updatedAnnotation.comments as Array<Record<string, unknown>>).map((comment) => persistComment(comment, updatedAnnotation)),
+      };
+      const currentAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
+        annotationSet.annotations.some((annotation) => annotation.id === updatedAnnotation.id)
+      );
+      if (currentAnnotationSet) {
+        if (currentAnnotationSet.id !== updatedAnnotation.annotationSetId) {
+          await route.fulfill({
+            status: 404,
+            json: { message: `Annotation ${updatedAnnotation.id} does not belong to set ${updatedAnnotation.annotationSetId}` },
+          });
+          return;
+        }
+        currentAnnotationSet.annotations = currentAnnotationSet.annotations.map((annotation: { id: string }) =>
+          annotation.id === updatedAnnotation.id ? persistedAnnotation : annotation
+        );
+      } else {
+        const owningAnnotationSet = [...annotationSetsByDocumentId.values()].find((annotationSet) =>
+          annotationSet.id === updatedAnnotation.annotationSetId
+        );
+        if (!owningAnnotationSet) {
+          await route.fulfill({ status: 404, json: { message: `Unknown annotation set: ${updatedAnnotation.annotationSetId}` } });
+          return;
+        }
+        owningAnnotationSet.annotations.push(persistedAnnotation);
+      }
+      await route.fulfill({ status: 200, json: persistedAnnotation });
+    });
+    await this.page.route('**/em-anno/annotations/**', async (route) => {
+      if (route.request().method() !== 'DELETE') {
+        await route.fallback();
+        return;
+      }
+      const annotationId = decodeURIComponent(new URL(route.request().url()).pathname.split('/').pop() ?? '');
+      for (const annotationSet of annotationSetsByDocumentId.values()) {
+        annotationSet.annotations = annotationSet.annotations.filter(annotation => annotation.id !== annotationId);
+      }
+      await route.fulfill({ status: 200, json: null });
+    });
     await this.page.route('**/api/markups/**', async (route) => route.fulfill({ json: [] }));
-    await this.page.route('**/em-anno/**/bookmarks', async (route) => route.fulfill({ json: [] }));
-    await this.page.route('**/em-anno/metadata/**', async (route) => route.fulfill({ json: {} }));
+  }
+
+  async stubRotationResponses(initialRotations: Readonly<Record<string, number>> = {}): Promise<void> {
+    await this.page.route('**/em-anno/metadata/**', async (route) => {
+      const request = route.request();
+      if (request.method() !== 'GET') {
+        await route.continue();
+        return;
+      }
+      const metadataPath = '/em-anno/metadata/';
+      const pathname = new URL(request.url()).pathname;
+      const documentId = decodeURIComponent(pathname.slice(pathname.indexOf(metadataPath) + metadataPath.length));
+      const rotationAngle = initialRotations[documentId];
+      await route.fulfill({
+        status: 200,
+        json: rotationAngle === undefined ? {} : { documentId, rotationAngle },
+      });
+    });
+  }
+
+  async stubRedactionResponses(): Promise<void> {
+    const redactions: Array<Record<string, unknown>> = [];
+    await this.page.route('**/api/markups', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
+      const redaction = await route.request().postDataJSON() as Record<string, unknown>;
+      redactions.push(redaction);
+      await route.fulfill({ status: 200, json: redaction });
+    });
+    await this.page.route('**/api/markups/**', async (route) => {
+      const request = route.request();
+      if (request.method() === 'GET') {
+        await route.fulfill({ status: 200, json: redactions });
+        return;
+      }
+      if (request.method() === 'DELETE') {
+        const redactionId = decodeURIComponent(new URL(request.url()).pathname.split('/').pop() ?? '');
+        const deletedIndex = redactions.findIndex((redaction) => redaction.redactionId === redactionId);
+        if (deletedIndex === -1) {
+          redactions.splice(0, redactions.length);
+        } else {
+          redactions.splice(deletedIndex, 1);
+        }
+        await route.fulfill({ status: 200, json: null });
+        return;
+      }
+      await route.fallback();
+    });
+    await this.page.route('**/api/markups/search', async (route) => {
+      if (route.request().method() !== 'POST') {
+        await route.fallback();
+        return;
+      }
+      const bulkRedaction = await route.request().postDataJSON() as { searchRedactions: Array<Record<string, unknown>> };
+      redactions.push(...bulkRedaction.searchRedactions);
+      await route.fulfill({ status: 200, json: bulkRedaction });
+    });
+    await this.page.route('**/api/redaction', async (route) => {
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/pdf',
+        headers: { 'content-disposition': 'attachment; filename="redacted.pdf"' },
+        path: 'src/assets/example.pdf',
+      });
+    });
   }
 
   async goto(): Promise<void> {
@@ -43,13 +216,20 @@ export class MediaViewerPage {
     }
   }
 
+  async reload(): Promise<void> {
+    const response = await this.page.reload({ waitUntil: 'domcontentloaded' });
+    const isViewerRoute = new URL(this.page.url()).hash === '#/media-viewer';
+    const responseFailed = response !== null && !response.ok() && response.status() !== 304;
+    if (!isViewerRoute || responseFailed) {
+      throw new Error(`Media viewer reload failed: ${response?.status() ?? 'no response'} ${this.page.url()}`);
+    }
+  }
+
   resolveDocumentUrl(documentUrl: string): string {
     return new URL(documentUrl, this.page.url()).href;
   }
 
-  async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
-    const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
-    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
+  async submitDocumentDetails(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
     const documentUrlInput = this.page.getByLabel('document url');
 
     if (!(await documentUrlInput.isVisible())) {
@@ -58,11 +238,18 @@ export class MediaViewerPage {
     await documentUrlInput.fill(documentUrl);
     await this.page.getByLabel('document type').fill(contentType);
     await this.page.getByLabel('case id').fill(caseId);
+    await this.page.getByRole('button', { name: 'Load document' }).click();
+  }
+
+  async loadDocument(documentUrl: string, caseId: string, contentType = 'pdf'): Promise<void> {
+    const expectedDocumentUrl = this.resolveDocumentUrl(documentUrl);
+    const [previousFirstPage] = await this.loadState.firstPdfPage.elementHandles();
 
     const documentResponse = this.page.waitForResponse((response) => response.url() === expectedDocumentUrl).catch((error) => {
-      throw new Error(`Document request was not observed: ${expectedDocumentUrl}`, { cause: error });
+      const cause = error instanceof Error ? error.message : String(error);
+      throw new Error(`Document request was not observed: ${expectedDocumentUrl} (${cause})`);
     });
-    await this.page.getByRole('button', { name: 'Load document' }).click();
+    await this.submitDocumentDetails(documentUrl, caseId, contentType);
     const response = await documentResponse;
     if (!response.ok() && response.status() !== 304) {
       throw new Error(`Document request failed: ${response.status()} ${expectedDocumentUrl}`);
@@ -75,5 +262,45 @@ export class MediaViewerPage {
   async openDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
     await this.goto();
     await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async reloadDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
+    await this.reload();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async openAnnotatedDocument(asset: MediaAsset, caseId = 'standalone-media-viewer-fixture'): Promise<void> {
+    await this.goto();
+    await this.enableAnnotations();
+    await this.loadDocument(asset.url, caseId, asset.contentType);
+  }
+
+  async enableAnnotations(): Promise<void> {
+    const annotationCheckbox = this.page.locator('#toggleAnnotations');
+    const annotationToggle = this.page.locator('label[for="toggleAnnotations"]');
+    await annotationCheckbox.waitFor({ state: 'attached' });
+    if (!(await annotationCheckbox.isChecked())) {
+      await annotationToggle.click();
+    }
+    if (!(await annotationCheckbox.isChecked())) {
+      throw new Error('Annotation toggle did not enable annotations');
+    }
+  }
+
+  async enableRedactions(): Promise<void> {
+    const redactionCheckbox = this.page.locator('#toggleRedact');
+    const redactionToggle = this.page.locator('label[for="toggleRedact"]');
+    await redactionCheckbox.waitFor({ state: 'attached' });
+    if (!(await redactionCheckbox.isChecked())) {
+      await redactionToggle.click();
+    }
+    if (!(await redactionCheckbox.isChecked())) {
+      throw new Error('Redaction toggle did not enable redactions');
+    }
+  }
+
+  async openRedactions(): Promise<void> {
+    await this.toolbar.clickAction('Redact');
+    await this.redactions.toolbar.waitFor({ state: 'visible' });
   }
 }
