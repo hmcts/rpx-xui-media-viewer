@@ -9,7 +9,7 @@ const guardedEnvironment = [
   'S2S_URL',
 ] as const;
 
-test('fails visibly when the AAT legacy migration environment is incomplete', { tag: ['@e2e-support', '@feature-aat-document-prerequisites'] }, async () => {
+test('reports a clear external-service diagnostic when AAT configuration is incomplete', { tag: ['@external-service-contracts', '@feature-aat-document-prerequisites'] }, async () => {
   const originalEnvironment = Object.fromEntries(guardedEnvironment.map((name) => [name, process.env[name]]));
   try {
     for (const name of guardedEnvironment) {

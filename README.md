@@ -116,10 +116,133 @@ For browser-level proof that the standalone viewer is using AAT-backed services,
 yarn test:local:aat
 ```
 
-This executes the functional Playwright lane against the local standalone Media Viewer.
-It creates the same AAT-backed CCD cases and DM Store documents as the migrated legacy
-scenarios, while keeping the browser at `http://localhost:3000/`. The lightweight
+This executes the Functional Playwright contracts against the local standalone Media
+Viewer and AAT-backed proxy configuration while keeping the browser at
+`http://localhost:3000/`. It does not create CCD cases or DM Store documents; use
+the opt-in external-service contracts for those live service probes. The lightweight
 route and health check remains available as `yarn smoke:local:aat`.
+
+### Test a local `em-icp-api` change
+
+The standalone app reaches ICP through its local API. Keep the other services on AAT,
+but override only `ICP_API_URL` in the ignored `.env` file:
+
+```
+ICP_API_URL=http://localhost:8080
+```
+
+Create an isolated worktree for the ICP branch under test. The example below uses
+PR #1546 and leaves the normal ICP checkout untouched:
+
+```
+cd ../em-icp-api
+git fetch origin pull/1546/head
+git worktree add --detach /private/tmp/em-icp-pr1546-validation FETCH_HEAD
+cd /private/tmp/em-icp-pr1546-validation
+yarn install --immutable
+docker compose -f docker-compose.yml up -d redis
+```
+
+Its `config/local-dev.yaml` is ignored by `em-icp-api`; create it and configure the
+AAT IdAM URL, local Redis and AAT Web PubSub client URL:
+
+```yaml
+idam:
+  url: https://idam-api.aat.platform.hmcts.net
+redis:
+  host: localhost
+  port: 6379
+  useTLS: "false"
+icp:
+  wsUrl: wss://em-icp-webpubsub.aat.platform.hmcts.net/client/hubs/localhub
+```
+
+Check that the active Azure identity can read the approved secret without printing its
+value:
+
+```
+az keyvault secret show \
+  --vault-name em-icp-aat \
+  --name em-icp-web-pubsub-primary-connection-string \
+  --query id -o tsv
+```
+
+Immediately before starting ICP, load the connection string into `NODE_CONFIG` only for
+that process. This command does not echo or write the secret to disk:
+
+```
+local_webpubsub_secret="$(az keyvault secret show \
+  --vault-name em-icp-aat \
+  --name em-icp-web-pubsub-primary-connection-string \
+  --query value -o tsv)"
+export NODE_CONFIG="$(LOCAL_WEBPUBSUB_SECRET="$local_webpubsub_secret" node -e 'console.log(JSON.stringify({secrets: {"em-icp": {"em-icp-web-pubsub-primary-connection-string": process.env.LOCAL_WEBPUBSUB_SECRET}}}))')"
+unset local_webpubsub_secret
+```
+
+For Web PubSub callback testing, make the following local-only edits in the ICP
+checkout before starting it. The API currently hard-codes the deployed `Hub`/`hub`
+names in three places, whereas the tunnel uses `localhub`; do not commit these edits
+with the change being tested:
+
+```
+app.ts: new WebPubSubServiceClient(primaryConnectionstring, "localhub")
+app.ts: new WebPubSubEventHandler("localhub", ...)
+api/routes/sessions.ts: new WebPubSubServiceClient(primaryConnectionstring, "localhub")
+```
+
+Then start ICP and check its health:
+
+```
+yarn start:local
+curl -fsS http://localhost:8080/health
+yarn test:unit
+```
+
+Then tunnel the AAT Web PubSub hub to the local ICP process in another terminal. Use
+the AAT Web PubSub endpoint and keep the upstream HTTP URL local:
+
+```
+npx --yes --package @azure/web-pubsub-tunnel-tool awps-tunnel run \
+  --hub localhub \
+  --endpoint https://em-icp-webpubsub-aat.webpubsub.azure.com \
+  --upstream http://localhost:8080 \
+  -s 1c4f0704-a29e-403d-b719-b90c34ef14c9 \
+  -g em-icp-aat
+```
+
+The tunnel needs an authenticated Azure identity that can read the AAT hub settings.
+If it reports `403` after resolving the subscription and resource group, obtain the
+required AAT Web PubSub access policy or RBAC permission; that is an Azure access
+blocker, not a local ICP or Media Viewer failure.
+
+Then start Media Viewer from its repository. Populate the ignored AAT `.env` if it
+does not already contain the approved AAT settings, then set the ICP override:
+
+```
+cd ../rpx-xui-media-viewer
+yarn env:populate:aat
+# In .env set:
+# ICP_API_URL=http://localhost:8080
+yarn start:aat
+```
+
+Open `http://localhost:3000/#/media-viewer`, then run the browser regression lane:
+
+```
+PLAYWRIGHT_REPORTERS=list yarn test:local:aat
+```
+
+This setup tests local ICP code with AAT authentication and Web PubSub; it does not
+recreate the complete retired `em-showcase` Docker stack. The validation run recorded
+19 passing ICP unit tests and 71 passing Media Viewer tests.
+
+Current ICP source warning: `api/routes/sessions.ts` logs the primary Web PubSub
+connection string. Do not make an authenticated `/icp/sessions/...` request with a
+real secret until that log statement is removed; this is a source-security blocker,
+not a Media Viewer setup failure.
+
+Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktree with
+`docker compose -f docker-compose.yml down`.
 
 ### 5. Run Playwright tests
 Media Viewer is starting its Playwright migration with the same runner and
@@ -132,15 +255,15 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 71 fixture-backed browser contracts across 13 feature files. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
-| Live integration | `playwright.config.ts`, project `integration` | `yarn test:playwright:integration` | Five bounded AAT service contracts, including CCD/DM Store document setup and live annotation create/retrieve/update/delete. Four CCD browser-route contracts are discoverable and ticketed against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
-the application is ready, functional proves user-facing viewer behaviour, and
-support proves the reusable automation contracts, and Integration proves the
-live AAT service boundaries without making the standalone browser suite depend
-on shared CCD state. Every Playwright Odhín report includes a capability
+the application is ready, functional proves user-facing viewer behaviour and
+its deterministic Viewer/service request-response contracts, and support proves
+the reusable automation contracts. External service diagnostics
+are opt-in and never gate a standalone Media Viewer change. Every Playwright Odhín report includes a capability
 inventory that states whether each contract is selected by default or is a
 discoverable, ticketed product-defect contract.
 
@@ -280,21 +403,16 @@ case or DM Store document. Run the fixture-backed Functional lane locally with:
 yarn test:playwright:functional
 ```
 
-For live service-boundary proof, load the approved local AAT settings, start
-the AAT proxy, then run the serial Integration lane:
+The default local suite is standalone: it needs neither AAT credentials nor
+shared CCD, DM Store or annotation-service state. External service diagnostics
+are deliberately opt-in and must not be used as normal migration assurance. The
+external command runs 6 contracts by default; `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true`
+runs the full 10-contract inventory, including the four ticketed CCD browser defects.
+Known product-defect contracts are not skipped: they remain discoverable and
+run only when explicitly selected:
 
 ```
-yarn check:aat-config
-yarn start:aat
-PLAYWRIGHT_SKIP_INSTALL=true yarn test:playwright:integration
-```
-
-Integration creates a unique CCD case and documents for its own lifecycle; it
-does not share them with Functional tests. Known product-defect contracts are
-not skipped: they remain discoverable and run only when explicitly selected:
-
-```
-PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn playwright test --grep @defect-EXUI-5124
+PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn test:playwright:functional -- --grep @defect-EXUI-5124
 ```
 
 ### Useful overrides
