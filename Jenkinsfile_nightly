@@ -204,7 +204,6 @@ withNightlyPipeline(type, product, component) {
 
   disableLegacyDeployment()
   enableSlackNotifications(channel)
-  enableFullFunctionalTest(60)
 
   afterSuccess('checkout') {
     env.PUPPETEER_CACHE_DIR = "${env.WORKSPACE}/.cache/puppeteer"
