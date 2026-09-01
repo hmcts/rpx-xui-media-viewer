@@ -101,6 +101,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       assert.match(source(pipeline), /test:accessibility:playwright/);
       assert.match(source(pipeline), /xui-playwright-accessibility\.html/);
       assert.match(source(pipeline), /A11Y_STRICT=false/);
+      assert.match(source(pipeline), /skipMarkingBuildUnstable:\s*skipMarkingBuildUnstable/);
       assert.match(source(pipeline), /test:playwright:crossbrowser/);
       assert.match(source(pipeline), /Playwright Install Browsers/);
     }

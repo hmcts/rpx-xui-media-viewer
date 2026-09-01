@@ -62,9 +62,10 @@ def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
   env.TEST_TYPE = targetEnvironment
 }
 
-def publishPlaywrightJUnit = { String testResults ->
+def publishPlaywrightJUnit = { String testResults, boolean skipMarkingBuildUnstable = false ->
   steps.junit(
     allowEmptyResults: false,
+    skipMarkingBuildUnstable: skipMarkingBuildUnstable,
     testResults: testResults
   )
 }
@@ -76,7 +77,7 @@ def hasPlaywrightJUnit = { String outputRoot ->
   ) == 0
 }
 
-def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true ->
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true, boolean skipMarkingBuildUnstable = false ->
   steps.sh(
     "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}' --test-output-dir '${outputRoot}/test-results'"
   )
@@ -93,7 +94,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     artifacts: "${outputRoot}/**"
   )
   if (hasPlaywrightJUnit(outputRoot)) {
-    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
   } else if (requireJUnit) {
     steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
   } else {
@@ -156,7 +157,7 @@ def runPlaywrightAccessibilityTests = { String outputRoot, String reportName, St
       yarnBuilder.yarn('test:accessibility:playwright')
     } finally {
       try {
-        publishPlaywrightReport(outputRoot, reportName, playwrightAccessibilityOdhinReportFile, false)
+        publishPlaywrightReport(outputRoot, reportName, playwrightAccessibilityOdhinReportFile, false, true)
       } catch (Exception reportException) {
         if (reportException instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException) {
           throw reportException
