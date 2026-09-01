@@ -257,6 +257,7 @@ Current Playwright lanes:
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
 | Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
+| Cross-browser smoke | `playwright.config.ts`, projects `smoke-firefox` and `smoke-webkit` | `yarn test:crossbrowser` | Runs the same readiness contract in Firefox and WebKit and publishes separate JUnit/Odhín output under `functional-output/tests/playwright-crossbrowser`. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
@@ -274,10 +275,10 @@ route mocks. Tests must not depend on execution order or share mutable
 documents; mutation-heavy AAT journeys must provision a document per test or
 reset it before reuse.
 
-Install Chromium once before local runs when the browser cache is empty:
+Install the Playwright browsers once before local runs when the browser cache is empty:
 
 ```
-yarn test:setup:playwright-install-chromium
+yarn test:setup:playwright-install-browsers
 ```
 
 Run the smoke project against a running standalone demo app. Start the app in
@@ -291,6 +292,10 @@ Then run the smoke in another terminal:
 
 ```
 yarn test:playwright:smoke
+# unified Playwright accessibility pack (Axe, WAVE-like, screen-reader-like)
+yarn test:a11y
+# Firefox and WebKit smoke gate
+yarn test:crossbrowser
 ```
 
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
@@ -305,6 +310,8 @@ The lane wrapper commands write Playwright evidence under `functional-output/tes
 | Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 | Migrated functional | `functional-output/tests/playwright-functional/odhin-report/xui-playwright-functional.html` | `functional-output/tests/playwright-functional/playwright-functional-junit.xml` | `functional-output/tests/playwright-functional/test-results` |
+| Accessibility | `functional-output/tests/playwright-accessibility/odhin-report/xui-playwright-accessibility.html` | `functional-output/tests/playwright-accessibility/playwright-accessibility-junit.xml` | `functional-output/tests/playwright-accessibility/test-results` |
+| Cross-browser smoke | `functional-output/tests/playwright-crossbrowser/odhin-report/xui-playwright-crossbrowser.html` | `functional-output/tests/playwright-crossbrowser/playwright-crossbrowser-junit.xml` | `functional-output/tests/playwright-crossbrowser/test-results` |
 
 Those are the default lane-specific paths. CNP keeps preview and AAT viewer
 support evidence separate under `functional-output/tests/playwright-support/preview`

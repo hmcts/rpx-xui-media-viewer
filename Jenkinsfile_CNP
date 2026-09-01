@@ -8,6 +8,13 @@ properties([
   ],
   pipelineTriggers([
     [$class: 'GitHubPushTrigger']
+  ]),
+  parameters([
+    booleanParam(
+      name: 'RUN_PLAYWRIGHT_ACCESSIBILITY',
+      defaultValue: false,
+      description: 'Manual-only: run the non-blocking unified Playwright accessibility pack.'
+    )
   ])
 ])
 
@@ -27,11 +34,19 @@ def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-sup
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
 def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
+def playwrightPreviewAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/preview'
+def playwrightAatAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/aat'
+def playwrightPreviewCrossbrowserOutputRoot = 'functional-output/tests/playwright-crossbrowser/preview'
+def playwrightAatCrossbrowserOutputRoot = 'functional-output/tests/playwright-crossbrowser/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
+def playwrightAccessibilityOdhinReportFile = 'xui-playwright-accessibility.html'
+def playwrightCrossbrowserOdhinReportFile = 'xui-playwright-crossbrowser.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
+def playwrightAccessibilityOdhinTitle = 'RPX XUI Media Viewer Accessibility'
+def playwrightCrossbrowserOdhinTitle = 'RPX XUI Media Viewer Playwright Cross-browser Smoke'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -124,6 +139,53 @@ def runPlaywrightFunctionalTests = { String outputRoot, String reportName, Strin
   }
 }
 
+def runPlaywrightAccessibilityTests = { String outputRoot, String reportName, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-accessibility-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightAccessibilityOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightAccessibilityOdhinTitle}",
+    "PLAYWRIGHT_REPORT_PROJECT=RPX XUI Media Viewer - Accessibility",
+    "TEST_TYPE=${targetEnvironment}",
+    'A11Y_STRICT=false',
+    'PLAYWRIGHT_SKIP_INSTALL=true'
+  ]) {
+    try {
+      yarnBuilder.yarn('test:accessibility:playwright')
+    } finally {
+      try {
+        publishPlaywrightReport(outputRoot, reportName, playwrightAccessibilityOdhinReportFile, false)
+      } catch (Exception reportException) {
+        if (reportException instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException) {
+          throw reportException
+        }
+        echo "[playwright-accessibility] Report publication failed but is non-blocking: ${reportException.getClass().getName()}: ${reportException.getMessage()}"
+      }
+    }
+  }
+}
+
+def runPlaywrightCrossbrowserTests = { String outputRoot, String reportName, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-crossbrowser-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightCrossbrowserOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightCrossbrowserOdhinTitle}",
+    "TEST_TYPE=${targetEnvironment}",
+    'PLAYWRIGHT_SKIP_INSTALL=true'
+  ]) {
+    try {
+      yarnBuilder.yarn('test:playwright:crossbrowser')
+    } finally {
+      publishPlaywrightReport(outputRoot, reportName, playwrightCrossbrowserOdhinReportFile)
+    }
+  }
+}
+
 env.DOCASSEMBLY_URL = "http://dg-docassembly-aat.service.core-compute-aat.internal"
 env.DM_STORE_APP_URL = "http://dm-store-aat.service.core-compute-aat.internal"
 env.HRS_API_URL = "http://em-hrs-api-aat.service.core-compute-aat.internal"
@@ -197,9 +259,9 @@ withPipeline(type, product, component) {
         yarnBuilder.yarn('puppeteer:install')
         env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
       }
-      stage('Playwright Install Chromium') {
+      stage('Playwright Install Browsers') {
         withEnv(playwrightBrowsersEnv()) {
-          yarnBuilder.yarn('test:setup:playwright-install-chromium')
+          yarnBuilder.yarn('test:setup:playwright-install-browsers')
           env.PLAYWRIGHT_SKIP_INSTALL = 'true'
         }
       }
@@ -231,8 +293,20 @@ withPipeline(type, product, component) {
           stage('Playwright Viewer Support Test - preview') {
             runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
           }
+        },
+        crossbrowser: {
+          stage('Playwright Cross-browser Smoke Test - preview') {
+            runPlaywrightCrossbrowserTests(playwrightPreviewCrossbrowserOutputRoot, 'PREVIEW Playwright Cross-browser Smoke Test', 'preview')
+          }
         }
       )
+      if (params.RUN_PLAYWRIGHT_ACCESSIBILITY) {
+        stage('Playwright Accessibility Test - preview') {
+          runPlaywrightAccessibilityTests(playwrightPreviewAccessibilityOutputRoot, 'PREVIEW Playwright Accessibility Test', 'preview')
+        }
+      } else {
+        echo '[playwright-accessibility] CNP stage omitted by default; set RUN_PLAYWRIGHT_ACCESSIBILITY=true on a manual build to run it.'
+      }
     }
   }
 
@@ -257,8 +331,20 @@ withPipeline(type, product, component) {
           stage('Playwright Viewer Support Test - AAT') {
             runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
           }
+        },
+        crossbrowser: {
+          stage('Playwright Cross-browser Smoke Test - AAT') {
+            runPlaywrightCrossbrowserTests(playwrightAatCrossbrowserOutputRoot, 'AAT Playwright Cross-browser Smoke Test', 'aat')
+          }
         }
       )
+      if (params.RUN_PLAYWRIGHT_ACCESSIBILITY) {
+        stage('Playwright Accessibility Test - AAT') {
+          runPlaywrightAccessibilityTests(playwrightAatAccessibilityOutputRoot, 'AAT Playwright Accessibility Test', 'aat')
+        }
+      } else {
+        echo '[playwright-accessibility] CNP stage omitted by default; set RUN_PLAYWRIGHT_ACCESSIBILITY=true on a manual build to run it.'
+      }
     }
   }
 

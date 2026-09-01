@@ -90,7 +90,21 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
     assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
-    assert.doesNotMatch(packageScripts['test:crossbrowser'], /codeceptjs|test-functional-with-preflight/, 'cross-browser coverage must not execute a retired runner');
+    assert.equal(packageScripts['test:crossbrowser'], 'yarn test:playwright:crossbrowser');
+    assert.equal(packageScripts['test:a11y'], 'yarn test:accessibility:playwright');
+    assert.match(packageScripts['test:accessibility:playwright'], /run-playwright-accessibility\.cjs/);
+    assert.match(source('scripts/run-playwright-accessibility.cjs'), /A11Y_ENGINES:.*'all'/s);
+    assert.match(source('scripts/run-playwright-accessibility.cjs'), /RPX XUI Media Viewer - Accessibility/);
+    assert.match(source('playwright_tests/accessibility/mediaViewer.a11y.spec.ts'), /@accessibility @a11y @wave-a11y/);
+    assert.match(source('playwright_tests/accessibility/mediaViewer.a11y.spec.ts'), /'axe', 'wave-like', 'screen-reader'/);
+    for (const pipeline of ['Jenkinsfile_CNP', 'Jenkinsfile_nightly']) {
+      assert.match(source(pipeline), /test:accessibility:playwright/);
+      assert.match(source(pipeline), /xui-playwright-accessibility\.html/);
+      assert.match(source(pipeline), /A11Y_STRICT=false/);
+      assert.match(source(pipeline), /test:playwright:crossbrowser/);
+      assert.match(source(pipeline), /Playwright Install Browsers/);
+    }
+    assert.match(packageScripts['test:playwright:crossbrowser'], /--project=smoke-firefox --project=smoke-webkit/);
     assert.equal(packageScripts['test:e2e:local:aat'], undefined, 'the retired local E2E command must not be selectable');
     assert.equal(packageScripts['e2e:fullfunctional'], undefined, 'the retired full-functional E2E alias must not be selectable');
     assert.doesNotMatch(source('scripts/test-local-aat.sh'), /test:playwright:e2e/, 'the local AAT launcher must select an existing Playwright project');
