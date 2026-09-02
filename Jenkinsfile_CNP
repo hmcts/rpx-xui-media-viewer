@@ -248,9 +248,6 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   env.EXECUTE_E2E=false
   env.TEST_URL = 'https://xui-media-viewer-staging.service.core-compute-aat.internal/'
-  onPR{
-  env.EXECUTE_E2E=true
-  }
   before('akschartsinstall') {
     onPR {
       env.PLAYWRIGHT_REPORT_BRANCH = env.PLAYWRIGHT_REPORT_BRANCH ?:
@@ -304,17 +301,17 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('smoketest:preview') {
-    stage('Playwright Viewer Tests - preview') {
+    stage('Playwright Tests - preview') {
       parallel(
         failFast: false,
         functional: {
-          stage('Playwright Viewer Functional Test - preview') {
-            runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
+          stage('Playwright Functional Test - preview') {
+            runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Functional Test', 'preview')
           }
         },
         support: {
-          stage('Playwright Viewer Support Test - preview') {
-            runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
+          stage('Playwright Support Test - preview') {
+            runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Support Test', 'preview')
           }
         },
         crossbrowser: {
@@ -342,17 +339,17 @@ withPipeline(type, product, component) {
   }
 
   afterSuccess('smoketest:aat') {
-    stage('Playwright Viewer Tests - AAT') {
+    stage('Playwright Tests - AAT') {
       parallel(
         failFast: false,
         functional: {
-          stage('Playwright Viewer Functional Test - AAT') {
-            runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
+          stage('Playwright Functional Test - AAT') {
+            runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Functional Test', 'aat')
           }
         },
         support: {
-          stage('Playwright Viewer Support Test - AAT') {
-            runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
+          stage('Playwright Support Test - AAT') {
+            runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Support Test', 'aat')
           }
         },
         crossbrowser: {

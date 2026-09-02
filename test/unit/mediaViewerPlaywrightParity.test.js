@@ -134,6 +134,9 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'e2e'/, 'the flaky live E2E project must not be selectable');
     assert.equal(packageScripts['test:playwright:e2e'], undefined, 'the retired E2E command must not be selectable');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightE2ETests|Playwright Viewer E2E Test/, 'Jenkins must not schedule the retired E2E lane');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /env\.EXECUTE_E2E\s*=\s*true/, 'CNP must not re-enable the retired shared E2E hook');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /Playwright Viewer/, 'Jenkins stage and report names must use Playwright terminology');
+    assert.doesNotMatch(source('Jenkinsfile_nightly'), /Playwright Viewer/, 'Jenkins stage and report names must use Playwright terminology');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /enableFullFunctionalTest|fullFunctionalTest/, 'CNP must not schedule the retired shared full-functional hook');
     assert.doesNotMatch(source('Jenkinsfile_nightly'), /enableFullFunctionalTest|fullFunctionalTest/, 'nightly must not schedule the retired shared full-functional hook');
     assert.equal(packageScripts['test:playwright:integration'], undefined, 'a duplicate Integration command must not be selectable');

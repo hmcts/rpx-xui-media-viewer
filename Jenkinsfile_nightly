@@ -327,7 +327,7 @@ withNightlyPipeline(type, product, component) {
         }
       }
     }
-    stage('Playwright Viewer Support Test') {
+    stage('Playwright Support Test') {
       steps.sh("rm -rf -- '${playwrightSupportOutputRoot}'")
       withEnv(playwrightBrowsersEnv() + [
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSupportOutputRoot}/test-results",
@@ -342,12 +342,12 @@ withNightlyPipeline(type, product, component) {
         try {
           yarnBuilder.yarn('test:playwright:support')
         } finally {
-          publishPlaywrightReport(playwrightSupportOutputRoot, 'Nightly Playwright Viewer Support Test', playwrightSupportOdhinReportFile)
+          publishPlaywrightReport(playwrightSupportOutputRoot, 'Nightly Playwright Support Test', playwrightSupportOdhinReportFile)
         }
       }
     }
-    stage('Playwright Viewer Functional Test') {
-      runPlaywrightFunctionalTests(playwrightFunctionalOutputRoot, 'Nightly Playwright Viewer Functional Test')
+    stage('Playwright Functional Test') {
+      runPlaywrightFunctionalTests(playwrightFunctionalOutputRoot, 'Nightly Playwright Functional Test')
     }
     if (params.RUN_PLAYWRIGHT_ACCESSIBILITY) {
       stage('Playwright Accessibility Test') {
