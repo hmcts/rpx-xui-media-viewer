@@ -12,6 +12,7 @@ const smokeSpecPattern = 'playwright_tests/smoke/smokeTest.spec.ts';
 const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
 const externalServiceContractSpecPattern = 'playwright_tests/external-service-contracts/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
+const accessibilitySpecPattern = 'playwright_tests/accessibility/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
 const defaultExternalServiceContractWorkerCount = 1;
@@ -200,6 +201,20 @@ export default defineConfig({
       },
     },
     {
+      name: 'smoke-firefox',
+      testMatch: [smokeSpecPattern],
+      use: {
+        ...devices['Desktop Firefox'],
+      },
+    },
+    {
+      name: 'smoke-webkit',
+      testMatch: [smokeSpecPattern],
+      use: {
+        ...devices['Desktop Safari'],
+      },
+    },
+    {
       name: 'functional',
       testMatch: [functionalSpecPattern],
       // Ticketed product defects stay discoverable without being reported as
@@ -229,6 +244,13 @@ export default defineConfig({
     {
       name: 'support',
       testMatch: [supportSpecPattern],
+      use: {
+        ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'accessibility',
+      testMatch: [accessibilitySpecPattern],
       use: {
         ...devices['Desktop Chrome'],
       },

@@ -90,7 +90,29 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
     assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
-    assert.doesNotMatch(packageScripts['test:crossbrowser'], /codeceptjs|test-functional-with-preflight/, 'cross-browser coverage must not execute a retired runner');
+    assert.equal(packageScripts['test:crossbrowser'], 'yarn test:playwright:crossbrowser');
+    assert.equal(packageScripts['test:a11y'], 'yarn test:accessibility:playwright');
+    assert.match(packageScripts['test:accessibility:playwright'], /run-playwright-accessibility\.cjs/);
+    assert.match(source('scripts/run-playwright-accessibility.cjs'), /A11Y_ENGINES:.*'all'/s);
+    assert.match(source('scripts/run-playwright-accessibility.cjs'), /RPX XUI Media Viewer - Accessibility/);
+    assert.match(source('playwright_tests/accessibility/mediaViewer.a11y.spec.ts'), /@accessibility @a11y @wave-a11y/);
+    assert.match(source('playwright_tests/accessibility/mediaViewer.a11y.spec.ts'), /'axe', 'wave-like', 'screen-reader'/);
+    for (const pipeline of ['Jenkinsfile_CNP', 'Jenkinsfile_nightly']) {
+      assert.match(source(pipeline), /test:accessibility:playwright/);
+      assert.match(source(pipeline), /xui-playwright-accessibility\.html/);
+      assert.match(source(pipeline), /A11Y_STRICT=false/);
+      assert.match(source(pipeline), /junitArguments\.skipMarkingBuildUnstable = true/);
+      assert.match(source(pipeline), /Accessibility failed but is non-blocking/);
+      assert.match(source(pipeline), /test:playwright:crossbrowser/);
+      assert.match(source(pipeline), /Playwright Install Browsers/);
+    }
+    for (const parameter of ['E2E_PW_INCLUDE_TAGS', 'E2E_PW_EXCLUDED_TAGS_OVERRIDE', 'INTEGRATION_PW_INCLUDE_TAGS', 'INTEGRATION_PW_EXCLUDED_TAGS_OVERRIDE', 'API_PW_INCLUDE_TAGS', 'API_PW_EXCLUDED_TAGS_OVERRIDE', 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES', 'INTEGRATION_PW_PROFILE_RUNS', 'INTEGRATION_PW_WORKERS', 'INTEGRATION_PW_SHARD']) {
+      assert.match(source('Jenkinsfile_CNP'), new RegExp(`name:\\s*['"]?${parameter}['"]?`));
+    }
+    for (const parameter of ['INTEGRATION_PW_PROFILE_RUNS', 'INTEGRATION_PW_WORKERS', 'INTEGRATION_PW_SHARD', 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES', 'RUN_PLAYWRIGHT_ACCESSIBILITY']) {
+      assert.match(source('Jenkinsfile_nightly'), new RegExp(`name:\\s*['"]?${parameter}['"]?`));
+    }
+    assert.match(packageScripts['test:playwright:crossbrowser'], /--project=smoke-firefox --project=smoke-webkit/);
     assert.equal(packageScripts['test:e2e:local:aat'], undefined, 'the retired local E2E command must not be selectable');
     assert.equal(packageScripts['e2e:fullfunctional'], undefined, 'the retired full-functional E2E alias must not be selectable');
     assert.doesNotMatch(source('scripts/test-local-aat.sh'), /test:playwright:e2e/, 'the local AAT launcher must select an existing Playwright project');
@@ -112,6 +134,17 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'e2e'/, 'the flaky live E2E project must not be selectable');
     assert.equal(packageScripts['test:playwright:e2e'], undefined, 'the retired E2E command must not be selectable');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightE2ETests|Playwright Viewer E2E Test/, 'Jenkins must not schedule the retired E2E lane');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /env\.EXECUTE_E2E\s*=\s*true/, 'CNP must not re-enable the retired shared E2E hook');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightFunctionalTests|stage\(['"]Playwright Functional Test - (?:preview|AAT)/, 'CNP must use the shared Functional Test stages for Playwright functional coverage');
+    assert.doesNotMatch(source('Jenkinsfile_nightly'), /runPlaywrightFunctionalTests|stage\(['"]Playwright Functional Test/, 'nightly must use the shared Functional Test stage for Playwright functional coverage');
+    assert.match(source('Jenkinsfile_CNP'), /before\('functionalTest:preview'\)[\s\S]*?configurePlaywrightFunctional\(playwrightPreviewFunctionalOutputRoot, 'preview'\)/);
+    assert.match(source('Jenkinsfile_CNP'), /afterAlways\('functionalTest:preview'\)[\s\S]*?PREVIEW Playwright Functional Test/);
+    assert.match(source('Jenkinsfile_CNP'), /before\('functionalTest:aat'\)[\s\S]*?configurePlaywrightFunctional\(playwrightAatFunctionalOutputRoot, 'aat'\)/);
+    assert.match(source('Jenkinsfile_CNP'), /afterAlways\('functionalTest:aat'\)[\s\S]*?AAT Playwright Functional Test/);
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /Playwright Viewer/, 'Jenkins stage and report names must use Playwright terminology');
+    assert.doesNotMatch(source('Jenkinsfile_nightly'), /Playwright Viewer/, 'Jenkins stage and report names must use Playwright terminology');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /enableFullFunctionalTest|fullFunctionalTest/, 'CNP must not schedule the retired shared full-functional hook');
+    assert.doesNotMatch(source('Jenkinsfile_nightly'), /enableFullFunctionalTest|fullFunctionalTest/, 'nightly must not schedule the retired shared full-functional hook');
     assert.equal(packageScripts['test:playwright:integration'], undefined, 'a duplicate Integration command must not be selectable');
     assert.doesNotMatch(source('playwright.config.ts'), /name:\s*'integration'/, 'a duplicate Integration project must not be selectable');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightIntegrationTests|Playwright Viewer Integration Test/, 'Jenkins must not schedule duplicate Integration coverage');
