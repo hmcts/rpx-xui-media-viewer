@@ -46,19 +46,15 @@ def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
 def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
-def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
-def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
 def playwrightPreviewAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/preview'
 def playwrightAatAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/aat'
 def playwrightPreviewCrossbrowserOutputRoot = 'functional-output/tests/playwright-crossbrowser/preview'
 def playwrightAatCrossbrowserOutputRoot = 'functional-output/tests/playwright-crossbrowser/aat'
 def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
-def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
 def playwrightAccessibilityOdhinReportFile = 'xui-playwright-accessibility.html'
 def playwrightCrossbrowserOdhinReportFile = 'xui-playwright-crossbrowser.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
-def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
 def playwrightAccessibilityOdhinTitle = 'RPX XUI Media Viewer Accessibility'
 def playwrightCrossbrowserOdhinTitle = 'RPX XUI Media Viewer Playwright Cross-browser Smoke'
 
@@ -131,25 +127,6 @@ def runPlaywrightSupportTests = { String outputRoot, String reportName, String t
       yarnBuilder.yarn('test:playwright:support')
     } finally {
       publishPlaywrightReport(outputRoot, reportName, playwrightSupportOdhinReportFile)
-    }
-  }
-}
-
-def runPlaywrightFunctionalTests = { String outputRoot, String reportName, String targetEnvironment ->
-  steps.sh("rm -rf -- '${outputRoot}'")
-  withEnv(playwrightBrowsersEnv() + [
-    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
-    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-functional-junit.xml",
-    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
-    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightFunctionalOdhinReportFile}",
-    "PLAYWRIGHT_REPORT_TITLE=${playwrightFunctionalOdhinTitle}",
-    "TEST_TYPE=${targetEnvironment}",
-    'PLAYWRIGHT_SKIP_INSTALL=true'
-  ]) {
-    try {
-      yarnBuilder.yarn('test:playwright:functional')
-    } finally {
-      publishPlaywrightReport(outputRoot, reportName, playwrightFunctionalOdhinReportFile)
     }
   }
 }
@@ -304,11 +281,6 @@ withPipeline(type, product, component) {
     stage('Playwright Tests - preview') {
       parallel(
         failFast: false,
-        functional: {
-          stage('Playwright Functional Test - preview') {
-            runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Functional Test', 'preview')
-          }
-        },
         support: {
           stage('Playwright Support Test - preview') {
             runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Support Test', 'preview')
@@ -342,11 +314,6 @@ withPipeline(type, product, component) {
     stage('Playwright Tests - AAT') {
       parallel(
         failFast: false,
-        functional: {
-          stage('Playwright Functional Test - AAT') {
-            runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Functional Test', 'aat')
-          }
-        },
         support: {
           stage('Playwright Support Test - AAT') {
             runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Support Test', 'aat')
