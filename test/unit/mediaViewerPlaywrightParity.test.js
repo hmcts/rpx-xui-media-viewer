@@ -106,6 +106,12 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       assert.match(source(pipeline), /test:playwright:crossbrowser/);
       assert.match(source(pipeline), /Playwright Install Browsers/);
     }
+    for (const parameter of ['E2E_PW_INCLUDE_TAGS', 'E2E_PW_EXCLUDED_TAGS_OVERRIDE', 'INTEGRATION_PW_INCLUDE_TAGS', 'INTEGRATION_PW_EXCLUDED_TAGS_OVERRIDE', 'API_PW_INCLUDE_TAGS', 'API_PW_EXCLUDED_TAGS_OVERRIDE', 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES', 'INTEGRATION_PW_PROFILE_RUNS', 'INTEGRATION_PW_WORKERS', 'INTEGRATION_PW_SHARD']) {
+      assert.match(source('Jenkinsfile_CNP'), new RegExp(`name:\\s*['"]?${parameter}['"]?`));
+    }
+    for (const parameter of ['INTEGRATION_PW_PROFILE_RUNS', 'INTEGRATION_PW_WORKERS', 'INTEGRATION_PW_SHARD', 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES', 'RUN_PLAYWRIGHT_ACCESSIBILITY']) {
+      assert.match(source('Jenkinsfile_nightly'), new RegExp(`name:\\s*['"]?${parameter}['"]?`));
+    }
     assert.match(packageScripts['test:playwright:crossbrowser'], /--project=smoke-firefox --project=smoke-webkit/);
     assert.equal(packageScripts['test:e2e:local:aat'], undefined, 'the retired local E2E command must not be selectable');
     assert.equal(packageScripts['e2e:fullfunctional'], undefined, 'the retired full-functional E2E alias must not be selectable');

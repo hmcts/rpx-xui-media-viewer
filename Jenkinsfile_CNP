@@ -10,6 +10,20 @@ properties([
     [$class: 'GitHubPushTrigger']
   ]),
   parameters([
+    string(name: 'E2E_PW_INCLUDE_TAGS', defaultValue: '', description: 'Optional comma/space separated Playwright E2E tags to include, for example @feature-comments @feature-redaction.'),
+    string(name: 'E2E_PW_EXCLUDED_TAGS_OVERRIDE', defaultValue: '', description: 'Optional comma/space separated Playwright E2E tags to exclude; use @none to clear defaults.'),
+    string(name: 'INTEGRATION_PW_INCLUDE_TAGS', defaultValue: '', description: 'Optional comma/space separated Playwright integration tags to include.'),
+    string(name: 'INTEGRATION_PW_EXCLUDED_TAGS_OVERRIDE', defaultValue: '', description: 'Optional comma/space separated Playwright integration tags to exclude; use @none to clear defaults.'),
+    string(name: 'API_PW_INCLUDE_TAGS', defaultValue: '', description: 'Optional comma/space separated Playwright API tags to include.'),
+    string(name: 'API_PW_EXCLUDED_TAGS_OVERRIDE', defaultValue: '', description: 'Optional comma/space separated Playwright API tags to exclude; use @none to clear defaults.'),
+    booleanParam(
+      name: 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES',
+      defaultValue: false,
+      description: 'Bypass Key Vault-backed Playwright global exclusions for a verification run.'
+    ),
+    text(name: 'INTEGRATION_PW_PROFILE_RUNS', defaultValue: '''workers=7''', description: 'Integration load-profile matrix. One run per line or semicolon.'),
+    string(name: 'INTEGRATION_PW_WORKERS', defaultValue: '', description: 'Optional integration worker-count override.'),
+    string(name: 'INTEGRATION_PW_SHARD', defaultValue: '', description: 'Manual diagnostic-only integration shard override, for example 1/2.'),
     booleanParam(
       name: 'RUN_PLAYWRIGHT_ACCESSIBILITY',
       defaultValue: false,

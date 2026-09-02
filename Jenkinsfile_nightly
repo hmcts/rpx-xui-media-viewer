@@ -10,6 +10,11 @@ properties([
   ],
   pipelineTriggers(scheduledNightlyTriggers),
   parameters([
+    text(name: 'INTEGRATION_PW_PROFILE_RUNS', defaultValue: '''workers=7''', description: 'Integration load-profile matrix. One run per line or semicolon.'),
+    string(name: 'INTEGRATION_PW_WORKERS', defaultValue: '', description: 'Optional integration worker-count override.'),
+    string(name: 'INTEGRATION_PW_SHARD', defaultValue: '', description: 'Manual diagnostic-only integration shard override, for example 1/2.'),
+    booleanParam(name: 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES', defaultValue: false, description: 'Bypass Key Vault-backed Playwright global exclusions for a verification run.'),
+    booleanParam(name: 'RUN_PLAYWRIGHT_ACCESSIBILITY', defaultValue: true, description: 'Run the non-blocking unified Playwright accessibility pack.'),
     string(name: 'ENVIRONMENT', defaultValue: 'aat', description: 'Environment to test'),
     string(name: 'IDAM_API_URL', defaultValue: 'https://idam-api.aat.platform.hmcts.net', description: 'The Url of IDAM'),
     string(name: 'S2S_PROVIDER_URL', defaultValue: 'http://rpe-service-auth-provider-aat.service.core-compute-aat.internal', description: 'The Url of S2S provider'),
@@ -344,8 +349,12 @@ withNightlyPipeline(type, product, component) {
     stage('Playwright Viewer Functional Test') {
       runPlaywrightFunctionalTests(playwrightFunctionalOutputRoot, 'Nightly Playwright Viewer Functional Test')
     }
-    stage('Playwright Accessibility Test') {
-      runPlaywrightAccessibilityTests(playwrightAccessibilityOutputRoot, 'Nightly Playwright Accessibility Test')
+    if (params.RUN_PLAYWRIGHT_ACCESSIBILITY) {
+      stage('Playwright Accessibility Test') {
+        runPlaywrightAccessibilityTests(playwrightAccessibilityOutputRoot, 'Nightly Playwright Accessibility Test')
+      }
+    } else {
+      echo '[playwright-accessibility] Nightly accessibility stage omitted; set RUN_PLAYWRIGHT_ACCESSIBILITY=true to run it.'
     }
     stage('Playwright Cross-browser Smoke Test') {
       runPlaywrightCrossbrowserTests(playwrightCrossbrowserOutputRoot, 'Nightly Playwright Cross-browser Smoke Test')
