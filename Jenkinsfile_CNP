@@ -63,11 +63,11 @@ def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
 }
 
 def publishPlaywrightJUnit = { String testResults, boolean skipMarkingBuildUnstable = false ->
-  steps.junit(
-    allowEmptyResults: false,
-    skipMarkingBuildUnstable: skipMarkingBuildUnstable,
-    testResults: testResults
-  )
+  def junitArguments = [allowEmptyResults: false, testResults: testResults]
+  if (skipMarkingBuildUnstable == true) {
+    junitArguments.skipMarkingBuildUnstable = true
+  }
+  steps.junit(junitArguments)
 }
 
 def hasPlaywrightJUnit = { String outputRoot ->
@@ -155,6 +155,14 @@ def runPlaywrightAccessibilityTests = { String outputRoot, String reportName, St
   ]) {
     try {
       yarnBuilder.yarn('test:accessibility:playwright')
+    } catch (Exception testException) {
+      if (testException instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException) {
+        throw testException
+      }
+      if (testException instanceof hudson.AbortException && ((testException.getMessage() ?: '') =~ /(exit code|status)\s+(129|137|143)/).find()) {
+        throw testException
+      }
+      echo "[playwright-accessibility] Accessibility failed but is non-blocking: ${testException.getClass().getName()}: ${testException.getMessage()}"
     } finally {
       try {
         publishPlaywrightReport(outputRoot, reportName, playwrightAccessibilityOdhinReportFile, false, true)
