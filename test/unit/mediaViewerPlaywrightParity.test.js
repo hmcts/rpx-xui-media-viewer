@@ -135,8 +135,12 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.equal(packageScripts['test:playwright:e2e'], undefined, 'the retired E2E command must not be selectable');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightE2ETests|Playwright Viewer E2E Test/, 'Jenkins must not schedule the retired E2E lane');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /env\.EXECUTE_E2E\s*=\s*true/, 'CNP must not re-enable the retired shared E2E hook');
-    assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightFunctionalTests|Playwright Functional Test - (?:preview|AAT)/, 'CNP must use the shared Functional Test stages for Playwright functional coverage');
+    assert.doesNotMatch(source('Jenkinsfile_CNP'), /runPlaywrightFunctionalTests|stage\(['"]Playwright Functional Test - (?:preview|AAT)/, 'CNP must use the shared Functional Test stages for Playwright functional coverage');
     assert.doesNotMatch(source('Jenkinsfile_nightly'), /runPlaywrightFunctionalTests|stage\(['"]Playwright Functional Test/, 'nightly must use the shared Functional Test stage for Playwright functional coverage');
+    assert.match(source('Jenkinsfile_CNP'), /before\('functionalTest:preview'\)[\s\S]*?configurePlaywrightFunctional\(playwrightPreviewFunctionalOutputRoot, 'preview'\)/);
+    assert.match(source('Jenkinsfile_CNP'), /afterAlways\('functionalTest:preview'\)[\s\S]*?PREVIEW Playwright Functional Test/);
+    assert.match(source('Jenkinsfile_CNP'), /before\('functionalTest:aat'\)[\s\S]*?configurePlaywrightFunctional\(playwrightAatFunctionalOutputRoot, 'aat'\)/);
+    assert.match(source('Jenkinsfile_CNP'), /afterAlways\('functionalTest:aat'\)[\s\S]*?AAT Playwright Functional Test/);
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /Playwright Viewer/, 'Jenkins stage and report names must use Playwright terminology');
     assert.doesNotMatch(source('Jenkinsfile_nightly'), /Playwright Viewer/, 'Jenkins stage and report names must use Playwright terminology');
     assert.doesNotMatch(source('Jenkinsfile_CNP'), /enableFullFunctionalTest|fullFunctionalTest/, 'CNP must not schedule the retired shared full-functional hook');

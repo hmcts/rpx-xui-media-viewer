@@ -44,6 +44,9 @@ def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightPreviewSmokeOutputRoot = 'functional-output/tests/playwright-smoke/preview'
 def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
+def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
+def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
+def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
 def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
 def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightPreviewAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/preview'
@@ -54,6 +57,7 @@ def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 def playwrightAccessibilityOdhinReportFile = 'xui-playwright-accessibility.html'
 def playwrightCrossbrowserOdhinReportFile = 'xui-playwright-crossbrowser.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
+def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
 def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 def playwrightAccessibilityOdhinTitle = 'RPX XUI Media Viewer Accessibility'
 def playwrightCrossbrowserOdhinTitle = 'RPX XUI Media Viewer Playwright Cross-browser Smoke'
@@ -69,6 +73,16 @@ def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
   env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
   env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightSmokeOdhinReportFile
   env.PLAYWRIGHT_REPORT_TITLE = playwrightSmokeOdhinTitle
+  env.TEST_TYPE = targetEnvironment
+}
+
+def configurePlaywrightFunctional = { String outputRoot, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
+  env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-functional-junit.xml"
+  env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
+  env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightFunctionalOdhinReportFile
+  env.PLAYWRIGHT_REPORT_TITLE = playwrightFunctionalOdhinTitle
   env.TEST_TYPE = targetEnvironment
 }
 
@@ -277,6 +291,14 @@ withPipeline(type, product, component) {
     publishPlaywrightReport(playwrightPreviewSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
+  before('functionalTest:preview') {
+    configurePlaywrightFunctional(playwrightPreviewFunctionalOutputRoot, 'preview')
+  }
+
+  afterAlways('functionalTest:preview') {
+    publishPlaywrightReport(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Functional Test', playwrightFunctionalOdhinReportFile)
+  }
+
   afterSuccess('smoketest:preview') {
     stage('Playwright Tests - preview') {
       parallel(
@@ -308,6 +330,14 @@ withPipeline(type, product, component) {
 
   afterAlways('smoketest:aat') {
     publishPlaywrightReport(playwrightAatSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
+  }
+
+  before('functionalTest:aat') {
+    configurePlaywrightFunctional(playwrightAatFunctionalOutputRoot, 'aat')
+  }
+
+  afterAlways('functionalTest:aat') {
+    publishPlaywrightReport(playwrightAatFunctionalOutputRoot, 'AAT Playwright Functional Test', playwrightFunctionalOdhinReportFile)
   }
 
   afterSuccess('smoketest:aat') {
