@@ -642,6 +642,7 @@ function buildCapabilityCoverageBlock(inventory, featureStats) {
           <td>${capability.playwrightTests} (${runTests} this run)</td>
           <td>${capability.activeLegacyScenarios ?? capability.legacyScenarios} / ${capability.legacyScenarios}</td>
           <td>${escapeHtml(runStatus)}</td>
+          <td>${escapeHtml(capability.execution ?? 'Included in the default selection')}</td>
           <td>${escapeHtml(capability.covered)}</td>
           <td>${escapeHtml(capability.gap)}</td>
         </tr>`;
@@ -652,11 +653,11 @@ function buildCapabilityCoverageBlock(inventory, featureStats) {
 <div class="mt-3 mb-3 odhin-thin-border dashboard-block" id="odhin-capability-coverage">
   <div class="info-box-header">${escapeHtml(inventory.title)}</div>
   <div class="p-3">
-    <p class="mb-3">Repository capability inventory: ${capabilities.length} areas — ${coveredCount} covered, ${partialCount} partial, ${legacyOnlyCount} legacy-only, ${notCoveredCount} not covered.</p>
+    <p class="mb-3">Repository capability inventory: ${capabilities.length} areas — ${coveredCount} migration-covered, ${partialCount} partial, ${legacyOnlyCount} legacy-only, ${notCoveredCount} not covered.</p>
     <div class="odhin-capability-coverage-table">
       <table class="table table-sm mb-0">
         <thead><tr>
-          <th>Capability</th><th>Status</th><th>Playwright tests</th><th>Active / historical Codecept scenarios</th><th>This run</th><th>Assurance covered</th><th>Remaining gap</th>
+          <th>Capability</th><th>Migration status</th><th>Playwright tests</th><th>Active / historical Codecept scenarios</th><th>This run</th><th>Default execution</th><th>Assurance covered</th><th>Remaining gap</th>
         </tr></thead>
         <tbody>${rows}</tbody>
       </table>

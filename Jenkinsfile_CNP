@@ -8,6 +8,27 @@ properties([
   ],
   pipelineTriggers([
     [$class: 'GitHubPushTrigger']
+  ]),
+  parameters([
+    string(name: 'E2E_PW_INCLUDE_TAGS', defaultValue: '', description: 'Optional comma/space separated Playwright E2E tags to include, for example @feature-comments @feature-redaction.'),
+    string(name: 'E2E_PW_EXCLUDED_TAGS_OVERRIDE', defaultValue: '', description: 'Optional comma/space separated Playwright E2E tags to exclude; use @none to clear defaults.'),
+    string(name: 'INTEGRATION_PW_INCLUDE_TAGS', defaultValue: '', description: 'Optional comma/space separated Playwright integration tags to include.'),
+    string(name: 'INTEGRATION_PW_EXCLUDED_TAGS_OVERRIDE', defaultValue: '', description: 'Optional comma/space separated Playwright integration tags to exclude; use @none to clear defaults.'),
+    string(name: 'API_PW_INCLUDE_TAGS', defaultValue: '', description: 'Optional comma/space separated Playwright API tags to include.'),
+    string(name: 'API_PW_EXCLUDED_TAGS_OVERRIDE', defaultValue: '', description: 'Optional comma/space separated Playwright API tags to exclude; use @none to clear defaults.'),
+    booleanParam(
+      name: 'PLAYWRIGHT_IGNORE_GLOBAL_EXCLUDES',
+      defaultValue: false,
+      description: 'Bypass Key Vault-backed Playwright global exclusions for a verification run.'
+    ),
+    text(name: 'INTEGRATION_PW_PROFILE_RUNS', defaultValue: '''workers=7''', description: 'Integration load-profile matrix. One run per line or semicolon.'),
+    string(name: 'INTEGRATION_PW_WORKERS', defaultValue: '', description: 'Optional integration worker-count override.'),
+    string(name: 'INTEGRATION_PW_SHARD', defaultValue: '', description: 'Manual diagnostic-only integration shard override, for example 1/2.'),
+    booleanParam(
+      name: 'RUN_PLAYWRIGHT_ACCESSIBILITY',
+      defaultValue: false,
+      description: 'Manual-only: run the non-blocking unified Playwright accessibility pack.'
+    )
   ])
 ])
 
@@ -23,15 +44,23 @@ def yarnBuilder = new uk.gov.hmcts.contino.YarnBuilder(this)
 def playwrightPreviewSmokeOutputRoot = 'functional-output/tests/playwright-smoke/preview'
 def playwrightAatSmokeOutputRoot = 'functional-output/tests/playwright-smoke/aat'
 def playwrightSmokeOdhinReportFile = 'xui-playwright-smoke.html'
-def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
-def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
 def playwrightPreviewFunctionalOutputRoot = 'functional-output/tests/playwright-functional/preview'
 def playwrightAatFunctionalOutputRoot = 'functional-output/tests/playwright-functional/aat'
-def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
 def playwrightFunctionalOdhinReportFile = 'xui-playwright-functional.html'
+def playwrightPreviewSupportOutputRoot = 'functional-output/tests/playwright-support/preview'
+def playwrightAatSupportOutputRoot = 'functional-output/tests/playwright-support/aat'
+def playwrightPreviewAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/preview'
+def playwrightAatAccessibilityOutputRoot = 'functional-output/tests/playwright-accessibility/aat'
+def playwrightPreviewCrossbrowserOutputRoot = 'functional-output/tests/playwright-crossbrowser/preview'
+def playwrightAatCrossbrowserOutputRoot = 'functional-output/tests/playwright-crossbrowser/aat'
+def playwrightSupportOdhinReportFile = 'xui-playwright-support.html'
+def playwrightAccessibilityOdhinReportFile = 'xui-playwright-accessibility.html'
+def playwrightCrossbrowserOdhinReportFile = 'xui-playwright-crossbrowser.html'
 def playwrightSmokeOdhinTitle = 'RPX XUI Media Viewer Playwright Smoke'
-def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
 def playwrightFunctionalOdhinTitle = 'RPX XUI Media Viewer Playwright Functional'
+def playwrightSupportOdhinTitle = 'RPX XUI Media Viewer Playwright Support'
+def playwrightAccessibilityOdhinTitle = 'RPX XUI Media Viewer Accessibility'
+def playwrightCrossbrowserOdhinTitle = 'RPX XUI Media Viewer Playwright Cross-browser Smoke'
 
 def playwrightBrowsersEnv = {
   ["PLAYWRIGHT_BROWSERS_PATH=${env.WORKSPACE}/.cache/ms-playwright"]
@@ -47,11 +76,22 @@ def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
   env.TEST_TYPE = targetEnvironment
 }
 
-def publishPlaywrightJUnit = { String testResults ->
-  steps.junit(
-    allowEmptyResults: false,
-    testResults: testResults
-  )
+def configurePlaywrightFunctional = { String outputRoot, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
+  env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-functional-junit.xml"
+  env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
+  env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightFunctionalOdhinReportFile
+  env.PLAYWRIGHT_REPORT_TITLE = playwrightFunctionalOdhinTitle
+  env.TEST_TYPE = targetEnvironment
+}
+
+def publishPlaywrightJUnit = { String testResults, boolean skipMarkingBuildUnstable = false ->
+  def junitArguments = [allowEmptyResults: false, testResults: testResults]
+  if (skipMarkingBuildUnstable == true) {
+    junitArguments.skipMarkingBuildUnstable = true
+  }
+  steps.junit(junitArguments)
 }
 
 def hasPlaywrightJUnit = { String outputRoot ->
@@ -61,7 +101,7 @@ def hasPlaywrightJUnit = { String outputRoot ->
   ) == 0
 }
 
-def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true ->
+def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true, boolean skipMarkingBuildUnstable = false ->
   steps.sh(
     "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}' --test-output-dir '${outputRoot}/test-results'"
   )
@@ -78,7 +118,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     artifacts: "${outputRoot}/**"
   )
   if (hasPlaywrightJUnit(outputRoot)) {
-    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml")
+    publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
   } else if (requireJUnit) {
     steps.error("No Playwright JUnit XML found for ${reportName} under ${outputRoot}")
   } else {
@@ -105,21 +145,57 @@ def runPlaywrightSupportTests = { String outputRoot, String reportName, String t
   }
 }
 
-def runPlaywrightFunctionalTests = { String outputRoot, String reportName, String targetEnvironment ->
+def runPlaywrightAccessibilityTests = { String outputRoot, String reportName, String targetEnvironment ->
   steps.sh("rm -rf -- '${outputRoot}'")
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
-    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-functional-junit.xml",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-accessibility-junit.xml",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
-    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightFunctionalOdhinReportFile}",
-    "PLAYWRIGHT_REPORT_TITLE=${playwrightFunctionalOdhinTitle}",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightAccessibilityOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightAccessibilityOdhinTitle}",
+    "PLAYWRIGHT_REPORT_PROJECT=RPX XUI Media Viewer - Accessibility",
+    "TEST_TYPE=${targetEnvironment}",
+    'A11Y_STRICT=false',
+    'PLAYWRIGHT_SKIP_INSTALL=true'
+  ]) {
+    try {
+      yarnBuilder.yarn('test:accessibility:playwright')
+    } catch (Exception testException) {
+      if (testException instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException) {
+        throw testException
+      }
+      if (testException instanceof hudson.AbortException && ((testException.getMessage() ?: '') =~ /(exit code|status)\s+(129|137|143)/).find()) {
+        throw testException
+      }
+      echo "[playwright-accessibility] Accessibility failed but is non-blocking: ${testException.getClass().getName()}: ${testException.getMessage()}"
+    } finally {
+      try {
+        publishPlaywrightReport(outputRoot, reportName, playwrightAccessibilityOdhinReportFile, false, true)
+      } catch (Exception reportException) {
+        if (reportException instanceof org.jenkinsci.plugins.workflow.steps.FlowInterruptedException) {
+          throw reportException
+        }
+        echo "[playwright-accessibility] Report publication failed but is non-blocking: ${reportException.getClass().getName()}: ${reportException.getMessage()}"
+      }
+    }
+  }
+}
+
+def runPlaywrightCrossbrowserTests = { String outputRoot, String reportName, String targetEnvironment ->
+  steps.sh("rm -rf -- '${outputRoot}'")
+  withEnv(playwrightBrowsersEnv() + [
+    "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
+    "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-crossbrowser-junit.xml",
+    "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
+    "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightCrossbrowserOdhinReportFile}",
+    "PLAYWRIGHT_REPORT_TITLE=${playwrightCrossbrowserOdhinTitle}",
     "TEST_TYPE=${targetEnvironment}",
     'PLAYWRIGHT_SKIP_INSTALL=true'
   ]) {
     try {
-      yarnBuilder.yarn('test:playwright:functional')
+      yarnBuilder.yarn('test:playwright:crossbrowser')
     } finally {
-      publishPlaywrightReport(outputRoot, reportName, playwrightFunctionalOdhinReportFile)
+      publishPlaywrightReport(outputRoot, reportName, playwrightCrossbrowserOdhinReportFile)
     }
   }
 }
@@ -142,11 +218,7 @@ def vaultOverrides = [
 def secrets = [
         'rpx-${env}': [
           secret('microservicekey-em-gw', 'S2S_KEY'),
-          secret('show-oauth2-token', 'IDAM_SECRET'),
-          secret('ccd-user-email', 'CCD_CASEWORKER_E2E_EMAIL'),
-          secret('ccd-user-password', 'CCD_CASEWORKER_E2E_PASSWORD'),
-          secret('microservicekey-ccd-gw', 'MICROSERVICE_CCD_GW'),
-          secret('idam-client-secret', 'IDAM_CLIENT_SECRET')
+          secret('show-oauth2-token', 'IDAM_SECRET')
         ]
 ]
 
@@ -167,9 +239,6 @@ withPipeline(type, product, component) {
   loadVaultSecrets(secrets)
   env.EXECUTE_E2E=false
   env.TEST_URL = 'https://xui-media-viewer-staging.service.core-compute-aat.internal/'
-  onPR{
-  env.EXECUTE_E2E=true
-  }
   before('akschartsinstall') {
     onPR {
       env.PLAYWRIGHT_REPORT_BRANCH = env.PLAYWRIGHT_REPORT_BRANCH ?:
@@ -201,9 +270,9 @@ withPipeline(type, product, component) {
         yarnBuilder.yarn('puppeteer:install')
         env.PUPPETEER_INSTALL_ALREADY_VERIFIED = 'true'
       }
-      stage('Playwright Install Chromium') {
+      stage('Playwright Install Browsers') {
         withEnv(playwrightBrowsersEnv()) {
-          yarnBuilder.yarn('test:setup:playwright-install-chromium')
+          yarnBuilder.yarn('test:setup:playwright-install-browsers')
           env.PLAYWRIGHT_SKIP_INSTALL = 'true'
         }
       }
@@ -222,24 +291,37 @@ withPipeline(type, product, component) {
     publishPlaywrightReport(playwrightPreviewSmokeOutputRoot, 'PREVIEW Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
-  afterSuccess('smoketest:preview') {
-    stage('Playwright Viewer Functional Test - preview') {
-      runPlaywrightFunctionalTests(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Viewer Functional Test', 'preview')
-    }
-    stage('Playwright Viewer Support Test - preview') {
-      runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Viewer Support Test', 'preview')
-    }
+  before('functionalTest:preview') {
+    configurePlaywrightFunctional(playwrightPreviewFunctionalOutputRoot, 'preview')
   }
 
   afterAlways('functionalTest:preview') {
-      publishHTML([
-              allowMissing         : true,
-              alwaysLinkToLastBuild: true,
-              keepAll              : true,
-              reportDir            : "functional-output/",
-              reportFiles          : 'mv-e2e-result.html',
-              reportName           : 'PREVIEW Functional Test'
-      ])
+    publishPlaywrightReport(playwrightPreviewFunctionalOutputRoot, 'PREVIEW Playwright Functional Test', playwrightFunctionalOdhinReportFile)
+  }
+
+  afterSuccess('smoketest:preview') {
+    stage('Playwright Tests - preview') {
+      parallel(
+        failFast: false,
+        support: {
+          stage('Playwright Support Test - preview') {
+            runPlaywrightSupportTests(playwrightPreviewSupportOutputRoot, 'PREVIEW Playwright Support Test', 'preview')
+          }
+        },
+        crossbrowser: {
+          stage('Playwright Cross-browser Smoke Test - preview') {
+            runPlaywrightCrossbrowserTests(playwrightPreviewCrossbrowserOutputRoot, 'PREVIEW Playwright Cross-browser Smoke Test', 'preview')
+          }
+        }
+      )
+      if (params.RUN_PLAYWRIGHT_ACCESSIBILITY) {
+        stage('Playwright Accessibility Test - preview') {
+          runPlaywrightAccessibilityTests(playwrightPreviewAccessibilityOutputRoot, 'PREVIEW Playwright Accessibility Test', 'preview')
+        }
+      } else {
+        echo '[playwright-accessibility] CNP stage omitted by default; set RUN_PLAYWRIGHT_ACCESSIBILITY=true on a manual build to run it.'
+      }
+    }
   }
 
   before('smoketest:aat') {
@@ -250,24 +332,38 @@ withPipeline(type, product, component) {
     publishPlaywrightReport(playwrightAatSmokeOutputRoot, 'AAT Playwright Smoke Test', playwrightSmokeOdhinReportFile, false)
   }
 
-  afterSuccess('smoketest:aat') {
-    stage('Playwright Viewer Functional Test - AAT') {
-      runPlaywrightFunctionalTests(playwrightAatFunctionalOutputRoot, 'AAT Playwright Viewer Functional Test', 'aat')
-    }
-    stage('Playwright Viewer Support Test - AAT') {
-      runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Viewer Support Test', 'aat')
-    }
+  before('functionalTest:aat') {
+    configurePlaywrightFunctional(playwrightAatFunctionalOutputRoot, 'aat')
   }
 
   afterAlways('functionalTest:aat') {
-      publishHTML([
-              allowMissing         : true,
-              alwaysLinkToLastBuild: true,
-              keepAll              : true,
-              reportDir            : "functional-output/",
-              reportFiles          : 'mv-e2e-result.html',
-              reportName           : 'AAT Functional Test'
-      ])
+    publishPlaywrightReport(playwrightAatFunctionalOutputRoot, 'AAT Playwright Functional Test', playwrightFunctionalOdhinReportFile)
   }
+
+  afterSuccess('smoketest:aat') {
+    stage('Playwright Tests - AAT') {
+      parallel(
+        failFast: false,
+        support: {
+          stage('Playwright Support Test - AAT') {
+            runPlaywrightSupportTests(playwrightAatSupportOutputRoot, 'AAT Playwright Support Test', 'aat')
+          }
+        },
+        crossbrowser: {
+          stage('Playwright Cross-browser Smoke Test - AAT') {
+            runPlaywrightCrossbrowserTests(playwrightAatCrossbrowserOutputRoot, 'AAT Playwright Cross-browser Smoke Test', 'aat')
+          }
+        }
+      )
+      if (params.RUN_PLAYWRIGHT_ACCESSIBILITY) {
+        stage('Playwright Accessibility Test - AAT') {
+          runPlaywrightAccessibilityTests(playwrightAatAccessibilityOutputRoot, 'AAT Playwright Accessibility Test', 'aat')
+        }
+      } else {
+        echo '[playwright-accessibility] CNP stage omitted by default; set RUN_PLAYWRIGHT_ACCESSIBILITY=true on a manual build to run it.'
+      }
+    }
+  }
+
 }
 }

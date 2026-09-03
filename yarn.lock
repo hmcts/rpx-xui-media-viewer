@@ -841,6 +841,17 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@axe-core/playwright@npm:^4.9.1":
+  version: 4.13.0
+  resolution: "@axe-core/playwright@npm:4.13.0"
+  dependencies:
+    axe-core: "npm:~4.13.0"
+  peerDependencies:
+    playwright-core: ">= 1.0.0"
+  checksum: 10/2400e309d6f6d96b3f3f12b00a80e32cb0213726fcfc3c457b36d17f7136a3361f02a7523286024d7e8ceba9045a5f9c18edd8bc352f76b549faedce298fada2
+  languageName: node
+  linkType: hard
+
 "@azure-rest/core-client@npm:^2.3.3":
   version: 2.5.1
   resolution: "@azure-rest/core-client@npm:2.5.1"
@@ -1032,6 +1043,13 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@azure/msal-common@npm:16.12.0":
+  version: 16.12.0
+  resolution: "@azure/msal-common@npm:16.12.0"
+  checksum: 10/08e231e9352a60d5bfe690e5260d5a721848de5d7e9797c0c41cf25a156ba9f72df067930034d7804e087dc277cbc66debd7a7db1689155be5cd8ad9ed82d8b2
+  languageName: node
+  linkType: hard
+
 "@azure/msal-common@npm:16.4.0":
   version: 16.4.0
   resolution: "@azure/msal-common@npm:16.4.0"
@@ -1040,13 +1058,12 @@ __metadata:
   linkType: hard
 
 "@azure/msal-node@npm:^5.1.0":
-  version: 5.1.1
-  resolution: "@azure/msal-node@npm:5.1.1"
+  version: 5.5.0
+  resolution: "@azure/msal-node@npm:5.5.0"
   dependencies:
-    "@azure/msal-common": "npm:16.4.0"
+    "@azure/msal-common": "npm:16.12.0"
     jsonwebtoken: "npm:^9.0.0"
-    uuid: "npm:^8.3.0"
-  checksum: 10/01f3b870de2b23094c8ae1102b265018fbe800f493f8dd3024a6afa5e5c931640c3919fb0ab453c3cfe556d7ee4548e21825a3d1f1c2c551dadb0348456ed2f8
+  checksum: 10/79a0e7442803f0ed79c70825a0bec70e541917e51cc303d58e9eae8867af0122fe66b2b27cef5f1ff2df62d7ebc55366e8e261820a5ed8e42aa870ba47a8951f
   languageName: node
   linkType: hard
 
@@ -3385,6 +3402,7 @@ __metadata:
     "@angular/platform-server": "npm:20.3.26"
     "@angular/router": "npm:20.3.26"
     "@angular/ssr": "npm:20.3.32"
+    "@axe-core/playwright": "npm:^4.9.1"
     "@hmcts/nodejs-healthcheck": "npm:^1.8.6"
     "@hmcts/nodejs-logging": "npm:4.0.4"
     "@hmcts/properties-volume": "npm:1.4.1"
@@ -3400,11 +3418,13 @@ __metadata:
     "@types/jasminewd2": "npm:^2.0.8"
     "@types/lodash": "npm:4.17.10"
     "@types/mocha": "npm:^8.2.1"
-    "@types/node": "npm:^18.19.33"
+    "@types/node": "npm:^24.0.0"
     "@typescript-eslint/eslint-plugin": "npm:7.16.0"
     "@typescript-eslint/parser": "npm:7.16.0"
     "@typescript-eslint/types": "npm:7.16.0"
     "@typescript-eslint/utils": "npm:7.16.0"
+    axe-core: "npm:^4.9.1"
+    axe-html-reporter: "npm:^2.2.3"
     axios: "npm:^1.18.1"
     body-parser: "npm:^2.2.2"
     chai: "npm:^4.3.0"
@@ -3449,6 +3469,7 @@ __metadata:
     otp: "npm:^2.0.1"
     pa11y-ci: "npm:^2.4.0"
     pdfjs-dist: "npm:^4.10.38"
+    playwright-core: "npm:1.61.1"
     protractor: "npm:^7.0.0"
     protractor-cucumber-framework: "npm:^6.1.1"
     protractor-multiple-cucumber-html-reporter-plugin: "npm:1.8.1"
@@ -3464,7 +3485,7 @@ __metadata:
     tslib: "npm:^2.0.0"
     typescript: "npm:5.8.2"
     typescript-string-operations: "npm:^1.3.1"
-    uuid: "npm:^11.0.3"
+    uuid: "npm:^11.1.1"
     webdriver-manager: "npm:^12.1.7"
     webdriverio: "npm:7.36.0"
     yarn-audit-fix: "npm:^10.0.7"
@@ -7326,7 +7347,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:^18.0.0, @types/node@npm:^18.19.33":
+"@types/node@npm:^18.0.0":
   version: 18.19.130
   resolution: "@types/node@npm:18.19.130"
   dependencies:
@@ -7341,6 +7362,15 @@ __metadata:
   dependencies:
     undici-types: "npm:~6.21.0"
   checksum: 10/7e0d561d0d980109a0b64c6f797584a69d706421f18c0b24850206a15a4286443e676032abfa438590f25e4dfc3561ffc8d7f5c0c90edf08b705f6f9c35febba
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:^24.0.0":
+  version: 24.13.3
+  resolution: "@types/node@npm:24.13.3"
+  dependencies:
+    undici-types: "npm:~7.18.0"
+  checksum: 10/cfa6ed1e16c4624d1e83b09aeb72a2f50a7e17d837bf5a1259a52e346f33a693afd289402d3b6118ce3abea7aff35f2a4f13a0284b96bc5807a50f0e22e1ec77
   languageName: node
   linkType: hard
 
@@ -8834,6 +8864,24 @@ __metadata:
   version: 3.5.6
   resolution: "axe-core@npm:3.5.6"
   checksum: 10/3e776d843737edbb189e909694518e925ff1830c89ad7a043044ca4f2136d43417dc1f3006d2b164488316d12bf6fbcf0d989f05e874d8eeab58b8e2393ba4bc
+  languageName: node
+  linkType: hard
+
+"axe-core@npm:^4.9.1, axe-core@npm:~4.13.0":
+  version: 4.13.0
+  resolution: "axe-core@npm:4.13.0"
+  checksum: 10/b9319bedc705fde00e4abd981d8724202cc20102e4ae6d8edfde33cb5265e0fb8f67f32adcb4ad33fbd4a2c8d7ad7ef5af1d933d9ad859bed90e3eae0ee8c52f
+  languageName: node
+  linkType: hard
+
+"axe-html-reporter@npm:^2.2.3":
+  version: 2.2.11
+  resolution: "axe-html-reporter@npm:2.2.11"
+  dependencies:
+    mustache: "npm:^4.0.1"
+  peerDependencies:
+    axe-core: ">=3"
+  checksum: 10/489a904c62fe5c74db9490773a624e8573906b54a9c8264b831ee50b648f623ba292a011598d257bd6b8dc35eede21998fc25c799bd99eb9ca8ecf2d05ef92a1
   languageName: node
   linkType: hard
 
@@ -17918,7 +17966,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"minimist@npm:^1.2.3":
+"minimist@npm:^1.2.8":
   version: 1.2.8
   resolution: "minimist@npm:1.2.8"
   checksum: 10/908491b6cc15a6c440ba5b22780a0ba89b9810e1aea684e253e43c4e3b8d56ec1dcdd7ea96dde119c29df59c936cde16062159eae4225c691e19c70b432b6e6f
@@ -18338,6 +18386,15 @@ __metadata:
     open: "npm:^7.0.2"
     uuid: "npm:^3.4.0"
   checksum: 10/7c636f8752a3884704d85d0929156203582e2e9a62beb58148b261722f80e702788c6c0f0582196a86964601fdbd3a15a3f2dc8a2e31220c5b9f1c78c72c036b
+  languageName: node
+  linkType: hard
+
+"mustache@npm:^4.0.1":
+  version: 4.2.0
+  resolution: "mustache@npm:4.2.0"
+  bin:
+    mustache: bin/mustache
+  checksum: 10/6e668bd5803255ab0779c3983b9412b5c4f4f90e822230e0e8f414f5449ed7a137eed29430e835aa689886f663385cfe05f808eb34b16e1f3a95525889b05cd3
   languageName: node
   linkType: hard
 
@@ -24237,12 +24294,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^11.0.3":
-  version: 11.1.0
-  resolution: "uuid@npm:11.1.0"
+"uuid@npm:^11.1.1":
+  version: 11.1.1
+  resolution: "uuid@npm:11.1.1"
   bin:
     uuid: dist/esm/bin/uuid
-  checksum: 10/d2da43b49b154d154574891ced66d0c83fc70caaad87e043400cf644423b067542d6f3eb641b7c819224a7cd3b4c2f21906acbedd6ec9c6a05887aa9115a9cf5
+  checksum: 10/16411d3dc12a08d6691616c09a75e66a7f900ba1beef6628a76fe0602f82fae2ee537b564d0b7bc95c24f58d059ca9b58c75a1e806118efb50e17822ff00ddd2
   languageName: node
   linkType: hard
 
@@ -24255,7 +24312,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:^8.0.0, uuid@npm:^8.3.0, uuid@npm:^8.3.2":
+"uuid@npm:^8.0.0, uuid@npm:^8.3.2":
   version: 8.3.2
   resolution: "uuid@npm:8.3.2"
   bin:

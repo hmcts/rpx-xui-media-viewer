@@ -116,10 +116,133 @@ For browser-level proof that the standalone viewer is using AAT-backed services,
 yarn test:local:aat
 ```
 
-This opens `http://localhost:3000/#/media-viewer`, loads
-`/documents/<MV_SMOKE_PDF_DOCUMENT_ID>/binary`, and waits for the rendered PDF viewer
-and first page. If `MV_SMOKE_PDF_DOCUMENT_ID` is blank, the smoke uses the demo app's
-default AAT PDF document id.
+This executes the Functional Playwright contracts against the local standalone Media
+Viewer and AAT-backed proxy configuration while keeping the browser at
+`http://localhost:3000/`. It does not create CCD cases or DM Store documents; use
+the opt-in external-service contracts for those live service probes. The lightweight
+route and health check remains available as `yarn smoke:local:aat`.
+
+### Test a local `em-icp-api` change
+
+The standalone app reaches ICP through its local API. Keep the other services on AAT,
+but override only `ICP_API_URL` in the ignored `.env` file:
+
+```
+ICP_API_URL=http://localhost:8080
+```
+
+Create an isolated worktree for the ICP branch under test. The example below uses
+PR #1546 and leaves the normal ICP checkout untouched:
+
+```
+cd ../em-icp-api
+git fetch origin pull/1546/head
+git worktree add --detach /private/tmp/em-icp-pr1546-validation FETCH_HEAD
+cd /private/tmp/em-icp-pr1546-validation
+yarn install --immutable
+docker compose -f docker-compose.yml up -d redis
+```
+
+Its `config/local-dev.yaml` is ignored by `em-icp-api`; create it and configure the
+AAT IdAM URL, local Redis and AAT Web PubSub client URL:
+
+```yaml
+idam:
+  url: https://idam-api.aat.platform.hmcts.net
+redis:
+  host: localhost
+  port: 6379
+  useTLS: "false"
+icp:
+  wsUrl: wss://em-icp-webpubsub.aat.platform.hmcts.net/client/hubs/localhub
+```
+
+Check that the active Azure identity can read the approved secret without printing its
+value:
+
+```
+az keyvault secret show \
+  --vault-name em-icp-aat \
+  --name em-icp-web-pubsub-primary-connection-string \
+  --query id -o tsv
+```
+
+Immediately before starting ICP, load the connection string into `NODE_CONFIG` only for
+that process. This command does not echo or write the secret to disk:
+
+```
+local_webpubsub_secret="$(az keyvault secret show \
+  --vault-name em-icp-aat \
+  --name em-icp-web-pubsub-primary-connection-string \
+  --query value -o tsv)"
+export NODE_CONFIG="$(LOCAL_WEBPUBSUB_SECRET="$local_webpubsub_secret" node -e 'console.log(JSON.stringify({secrets: {"em-icp": {"em-icp-web-pubsub-primary-connection-string": process.env.LOCAL_WEBPUBSUB_SECRET}}}))')"
+unset local_webpubsub_secret
+```
+
+For Web PubSub callback testing, make the following local-only edits in the ICP
+checkout before starting it. The API currently hard-codes the deployed `Hub`/`hub`
+names in three places, whereas the tunnel uses `localhub`; do not commit these edits
+with the change being tested:
+
+```
+app.ts: new WebPubSubServiceClient(primaryConnectionstring, "localhub")
+app.ts: new WebPubSubEventHandler("localhub", ...)
+api/routes/sessions.ts: new WebPubSubServiceClient(primaryConnectionstring, "localhub")
+```
+
+Then start ICP and check its health:
+
+```
+yarn start:local
+curl -fsS http://localhost:8080/health
+yarn test:unit
+```
+
+Then tunnel the AAT Web PubSub hub to the local ICP process in another terminal. Use
+the AAT Web PubSub endpoint and keep the upstream HTTP URL local:
+
+```
+npx --yes --package @azure/web-pubsub-tunnel-tool awps-tunnel run \
+  --hub localhub \
+  --endpoint https://em-icp-webpubsub-aat.webpubsub.azure.com \
+  --upstream http://localhost:8080 \
+  -s 1c4f0704-a29e-403d-b719-b90c34ef14c9 \
+  -g em-icp-aat
+```
+
+The tunnel needs an authenticated Azure identity that can read the AAT hub settings.
+If it reports `403` after resolving the subscription and resource group, obtain the
+required AAT Web PubSub access policy or RBAC permission; that is an Azure access
+blocker, not a local ICP or Media Viewer failure.
+
+Then start Media Viewer from its repository. Populate the ignored AAT `.env` if it
+does not already contain the approved AAT settings, then set the ICP override:
+
+```
+cd ../rpx-xui-media-viewer
+yarn env:populate:aat
+# In .env set:
+# ICP_API_URL=http://localhost:8080
+yarn start:aat
+```
+
+Open `http://localhost:3000/#/media-viewer`, then run the browser regression lane:
+
+```
+PLAYWRIGHT_REPORTERS=list yarn test:local:aat
+```
+
+This setup tests local ICP code with AAT authentication and Web PubSub; it does not
+recreate the complete retired `em-showcase` Docker stack. The validation run recorded
+19 passing ICP unit tests and 71 passing Media Viewer tests.
+
+Current ICP source warning: `api/routes/sessions.ts` logs the primary Web PubSub
+connection string. Do not make an authenticated `/icp/sessions/...` request with a
+real secret until that log statement is removed; this is a source-security blocker,
+not a Media Viewer setup failure.
+
+Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktree with
+`docker compose -f docker-compose.yml down`.
 
 ### 5. Run Playwright tests
 Media Viewer is starting its Playwright migration with the same runner and
@@ -132,17 +255,18 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 56 behaviour tests across 12 explicit feature files; one bookmarks reorder test is intentionally skipped pending [EXUI-5097](https://tools.hmcts.net/jira/browse/EXUI-5097). See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
+| Cross-browser smoke | `playwright.config.ts`, projects `smoke-firefox` and `smoke-webkit` | `yarn test:crossbrowser` | Runs the same readiness contract in Firefox and WebKit and publishes separate JUnit/Odhín output under `functional-output/tests/playwright-crossbrowser`. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
 
 The current migration slice is deliberately separated from smoke: smoke proves
-the application is ready, functional proves user-facing viewer behaviour, and
-support proves the reusable automation contracts. There is no API or mocked
-integration project in this slice because the migrated contracts are browser
-rendering and interaction behaviour owned by the standalone viewer. Every
-Playwright Odhín report also includes a capability inventory showing covered,
-partially covered and legacy-only Media Viewer areas, with the remaining
-assurance gap for each capability.
+the application is ready, functional proves user-facing viewer behaviour and
+its deterministic Viewer/service request-response contracts, and support proves
+the reusable automation contracts. External service diagnostics
+are opt-in and never gate a standalone Media Viewer change. Every Playwright Odhín report includes a capability
+inventory that states whether each contract is selected by default or is a
+discoverable, ticketed product-defect contract.
 
 The Playwright config runs tests fully in parallel with seven workers by
 default. Set `FUNCTIONAL_TESTS_WORKERS` to a positive integer (up to 64) for an
@@ -151,10 +275,10 @@ route mocks. Tests must not depend on execution order or share mutable
 documents; mutation-heavy AAT journeys must provision a document per test or
 reset it before reuse.
 
-Install Chromium once before local runs when the browser cache is empty:
+Install the Playwright browsers once before local runs when the browser cache is empty:
 
 ```
-yarn test:setup:playwright-install-chromium
+yarn test:setup:playwright-install-browsers
 ```
 
 Run the smoke project against a running standalone demo app. Start the app in
@@ -168,6 +292,10 @@ Then run the smoke in another terminal:
 
 ```
 yarn test:playwright:smoke
+# unified Playwright accessibility pack (Axe, WAVE-like, screen-reader-like)
+yarn test:a11y
+# Firefox and WebKit smoke gate
+yarn test:crossbrowser
 ```
 
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
@@ -182,6 +310,8 @@ The lane wrapper commands write Playwright evidence under `functional-output/tes
 | Viewer support | `functional-output/tests/playwright-support/odhin-report/xui-playwright-support.html` | `functional-output/tests/playwright-support/playwright-support-junit.xml` | `functional-output/tests/playwright-support/test-results` |
 | Smoke | `functional-output/tests/playwright-smoke/odhin-report/xui-playwright-smoke.html` | `functional-output/tests/playwright-smoke/playwright-smoke-junit.xml` | `functional-output/tests/playwright-smoke/test-results` |
 | Migrated functional | `functional-output/tests/playwright-functional/odhin-report/xui-playwright-functional.html` | `functional-output/tests/playwright-functional/playwright-functional-junit.xml` | `functional-output/tests/playwright-functional/test-results` |
+| Accessibility | `functional-output/tests/playwright-accessibility/odhin-report/xui-playwright-accessibility.html` | `functional-output/tests/playwright-accessibility/playwright-accessibility-junit.xml` | `functional-output/tests/playwright-accessibility/test-results` |
+| Cross-browser smoke | `functional-output/tests/playwright-crossbrowser/odhin-report/xui-playwright-crossbrowser.html` | `functional-output/tests/playwright-crossbrowser/playwright-crossbrowser-junit.xml` | `functional-output/tests/playwright-crossbrowser/test-results` |
 
 Those are the default lane-specific paths. CNP keeps preview and AAT viewer
 support evidence separate under `functional-output/tests/playwright-support/preview`
@@ -261,8 +391,10 @@ Migration boundaries:
 - Put new native Playwright specs under `playwright_tests/`.
 - Keep screen interactions and reusable locators in page objects under
   `playwright_tests/pages/`; keep assertions visible in specs.
-- Keep legacy Protractor and CodeceptJS coverage until replacement coverage and
-  Jenkins evidence are agreed.
+- Historical CodeceptJS scenarios are retained as source traceability only;
+  their executable pipeline routing is retired once the mapped Playwright
+  contract is selected by default or is represented by a discoverable,
+  ticketed product-defect contract.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
   logic.
@@ -270,66 +402,25 @@ Migration boundaries:
   an error page, blank page, wrong route or service-down page as a valid ready
   signal.
 
-### 6. Create isolated AAT test documents
-For mutation-heavy functional tests, do not share one document across parallel tests.
-Create fresh AAT DM Store documents through the local API proxy while `yarn start:aat`
-is running:
+### 6. Run local Playwright lanes
+`yarn test:local:aat` is the standalone smoke lane; it does not create a CCD
+case or DM Store document. Run the fixture-backed Functional lane locally with:
 
 ```
-yarn local-aat:documents -- --pdf-count 7 --image-count 1 --output .local-aat-documents.env
+yarn test:playwright:functional
 ```
 
-This writes:
-- `MV_SMOKE_PDF_DOCUMENT_ID`
-- `MV_SMOKE_IMAGE_DOCUMENT_ID`
-- `MV_FUNCTIONAL_PDF_DOCUMENT_IDS`
-- `MV_FUNCTIONAL_IMAGE_DOCUMENT_IDS`
-
-The upload path mirrors em-showcase: multipart `files`, `classification=PUBLIC`,
-and civil/probate metadata are posted to `/documents`.
-
-### 7. Run isolated local functional tests
-With `yarn start:aat` still running, execute the functional groups with separate
-documents and separate reports:
+The default local suite is standalone: it needs neither AAT credentials nor
+shared CCD, DM Store or annotation-service state. External service diagnostics
+are deliberately opt-in and must not be used as normal migration assurance. The
+external command runs 6 contracts by default; `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true`
+runs the full 10-contract inventory, including the four ticketed CCD browser defects.
+Known product-defect contracts are not skipped: they remain discoverable and
+run only when explicitly selected:
 
 ```
-yarn test:functional:local:isolated
+PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn test:playwright:functional -- --grep @defect-EXUI-5124
 ```
-
-By default this creates fresh documents, runs up to three feature files at a time,
-and writes reports under `functional-output/local-isolated/`. Override with:
-- `MV_LOCAL_PARALLEL_MAX_JOBS=1` to run the same isolated groups serially
-- `MV_CREATE_LOCAL_AAT_DOCS=false` to reuse IDs from `.local-aat-documents.env`
-- `E2E_PARALLEL_OUTPUT_ROOT=<path>` to change report location
-
-Each feature writes its own report directory, including:
-- `mv-e2e-result.html`
-- `mv-e2e-result.json`
-- `result.xml`
-
-The validated local AAT sequence is:
-
-```
-yarn check:aat-config
-yarn start:aat
-yarn smoke:local:aat
-yarn test:local:aat
-yarn test:functional:local:isolated
-```
-
-Expected `test:functional:local:isolated` feature groups:
-- `redact`
-- `imageViewerAnnotationsAndComments`
-
-For the strongest isolation proof, make each scenario upload and use its own document:
-
-```
-yarn test:functional:local:self-contained
-```
-
-This is slower because it creates a fresh AAT DM Store document for each scenario, but
-it is the best local check when diagnosing interference between bookmarks,
-annotations, comments, and redactions.
 
 ### Useful overrides
 Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.

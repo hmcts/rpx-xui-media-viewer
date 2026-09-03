@@ -1,4 +1,4 @@
-import { annotationsTest, expect, mediaAssets } from '../fixtures/mediaViewerTest';
+import { annotationsTest, commentsTest as deletionTest, expect, imageAnnotationsTest, mediaAssets } from '../fixtures/mediaViewerTest';
 
 const annotationRequest = (url: string) => url.endsWith('/em-anno/annotations');
 
@@ -210,4 +210,68 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.annotations.rectangles).toHaveCount(savedAnnotationSet.annotations.length);
   });
 
+  deletionTest('deletes every existing PDF highlight through the annotation API', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(2);
+
+    for (const remaining of [1, 0]) {
+      const deleteRequest = page.waitForRequest((request) =>
+        request.method() === 'DELETE' && new URL(request.url()).pathname.startsWith('/em-anno/annotations/')
+      );
+      await mediaViewer.annotations.renderedRectangles.first().click();
+      await mediaViewer.annotations.deleteSelected();
+      await deleteRequest;
+      await expect(mediaViewer.annotations.rectangles).toHaveCount(remaining);
+    }
+  });
+
+});
+
+const imageAnnotationDefectTag = '@defect-EXUI-5124';
+const existingImageComment = 'Existing image annotation comment';
+
+imageAnnotationsTest.describe('Image annotations and comments', () => {
+  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toBeVisible();
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    await mediaViewer.annotations.renderedRectangles.last().click();
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.addToSelectedAnnotation('Created image annotation comment');
+    await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
+  });
+
+  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toBeVisible();
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    const rectangle = mediaViewer.annotations.renderedRectangles.last();
+    await expect(rectangle).toBeVisible();
+    const bounds = await rectangle.boundingBox();
+    expect(bounds?.width).toBeGreaterThan(0);
+    expect(bounds?.height).toBeGreaterThan(0);
+  });
+
+  imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
+    const updatedComment = 'Updated image annotation comment';
+    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toBeVisible();
+    await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
+    await mediaViewer.annotations.renderedRectangles.first().click();
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.edit(existingImageComment, updatedComment);
+    await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
+  });
+
+  imageAnnotationsTest('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toBeVisible();
+    await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
+    await mediaViewer.annotations.renderedRectangles.first().click();
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.remove(existingImageComment);
+    await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
+  });
 });
