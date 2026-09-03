@@ -3469,7 +3469,7 @@ __metadata:
     otp: "npm:^2.0.1"
     pa11y-ci: "npm:^2.4.0"
     pdfjs-dist: "npm:^4.10.38"
-    playwright-core: "npm:1.61.1"
+    playwright-core: "npm:1.62.1"
     protractor: "npm:^7.0.0"
     protractor-cucumber-framework: "npm:^6.1.1"
     protractor-multiple-cucumber-html-reporter-plugin: "npm:1.8.1"

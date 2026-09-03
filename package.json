@@ -213,7 +213,7 @@
     "node-html-parser": "^6.1.5",
     "odhin-reports-playwright": "patch:odhin-reports-playwright@npm%3A1.1.8#./.yarn/patches/odhin-reports-playwright-npm-1.1.8-a445ed88b7.patch",
     "pa11y-ci": "^2.4.0",
-    "playwright-core": "1.61.1",
+    "playwright-core": "1.62.1",
     "protractor": "^7.0.0",
     "protractor-cucumber-framework": "^6.1.1",
     "protractor-multiple-cucumber-html-reporter-plugin": "1.8.1",
