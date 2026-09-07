@@ -114,8 +114,8 @@ export class CommentsPanel {
     const editor = this.panel.locator('textarea[name="content"]');
     await editor.waitFor();
     await editor.fill(content);
-    await editor.locator('~ .commentBtns > button').first().click();
-    await editor.waitFor({ state: 'hidden' });
+    await this.panel.getByRole('button', { name: 'Save', exact: true }).click();
+    await this.panel.locator('textarea[name="content"]').waitFor({ state: 'hidden' });
   }
 
   async remove(content: string): Promise<void> {
