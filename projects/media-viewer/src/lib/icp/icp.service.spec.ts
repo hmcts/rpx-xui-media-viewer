@@ -11,7 +11,6 @@ import { IcpParticipant, IcpSession } from './icp.interfaces';
 import * as fromIcpActions from '../store/actions/icp.actions';
 import { of, Subscription } from 'rxjs';
 import { IcpEventService } from '../toolbar/icp-event.service';
-import { SetDocumentId } from '../store/actions/document.actions';
 
 describe('Icp Service', () => {
 
@@ -75,18 +74,6 @@ describe('Icp Service', () => {
 
       expect(service.caseId).toEqual('caseId');
     }))
-  );
-
-  it('should leave an active ICP session when the document changes',
-    inject([Store], (store) => {
-      spyOn(service, 'leavePresentation');
-      service.sessionSubscription = new Subscription();
-
-      store.dispatch(new SetDocumentId('document-a'));
-      store.dispatch(new SetDocumentId('document-b'));
-
-      expect(service.leavePresentation).toHaveBeenCalledTimes(1);
-    })
   );
 
   it('should subscribe to the sessionLaunch event',

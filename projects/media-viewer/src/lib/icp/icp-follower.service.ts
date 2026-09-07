@@ -4,8 +4,8 @@ import { select, Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
-import { take } from 'rxjs/operators';
-import { IcpState, IcpSession, IcpScreenUpdate } from './icp.interfaces';
+import { distinctUntilChanged, take } from 'rxjs/operators';
+import { IcpState, IcpSession } from './icp.interfaces';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
 
 @Injectable({ providedIn: 'root' })
@@ -13,7 +13,6 @@ export class IcpFollowerService {
 
   session: IcpSession;
   private previousRotation: number|null = null;
-  private previousDocument: string|null = null;
   $subscription: Subscription;
 
   constructor(private readonly toolbarEvents: ToolbarEventService,
@@ -42,74 +41,29 @@ export class IcpFollowerService {
       this.$subscription.unsubscribe();
       this.$subscription = undefined;
     }
-    this.previousRotation = null;
-    this.previousDocument = null;
   }
 
-  followScreenUpdate(screenUpdate: Partial<IcpScreenUpdate> | null | undefined): void {
-    const pdfPosition = screenUpdate?.pdfPosition;
-    if (!pdfPosition ||
-      !Number.isInteger(pdfPosition.pageNumber) ||
-      pdfPosition.pageNumber < 1 ||
-      !Number.isFinite(pdfPosition.left) ||
-      !Number.isFinite(pdfPosition.top) ||
-      (pdfPosition.scale !== undefined &&
-        (!Number.isFinite(pdfPosition.scale) || pdfPosition.scale <= 0)) ||
-      (pdfPosition.rotation !== undefined &&
-        !([0, 90, 180, 270] as number[]).includes(pdfPosition.rotation))) {
-      return;
+  followScreenUpdate({ pdfPosition }) {
+    if (pdfPosition) {
+      this.viewerEvents.goToDestinationICP([
+        pdfPosition.pageNumber - 1,
+        { 'name': 'XYZ' },
+        pdfPosition.left,
+        pdfPosition.top
+      ]);
     }
-
     this.store.pipe(
-      select(fromDocSelectors.getDocumentId),
-      take(1))
-      .subscribe(documentId => {
-        const currentDocument = documentId ?? null;
-        if (!screenUpdate.document || !currentDocument || screenUpdate.document !== currentDocument) {
+      select(fromDocSelectors.getPdfPosition), 
+      take(1), 
+      distinctUntilChanged(undefined, a => a.rotation))
+      .subscribe(position => {
+        if (this.previousRotation === pdfPosition.rotation) {
           return;
         }
-        const documentChanged = this.previousDocument !== null && this.previousDocument !== currentDocument;
-        if (this.previousDocument !== currentDocument) {
-          this.previousDocument = currentDocument;
-          this.previousRotation = documentChanged ? 0 : null;
+        const rotationDelta = (pdfPosition.rotation - position.rotation) % 360;
+        if (rotationDelta && rotationDelta !== 0) {
+          this.toolbarEvents.rotate(rotationDelta);
         }
-        this.applyScreenUpdate(pdfPosition);
       });
-  }
-
-  private applyScreenUpdate(pdfPosition: IcpScreenUpdate['pdfPosition']): void {
-    this.viewerEvents.goToDestinationICP([
-      pdfPosition.pageNumber - 1,
-      { 'name': 'XYZ' },
-      pdfPosition.left,
-      pdfPosition.top
-    ]);
-    if (typeof pdfPosition.scale === 'number') {
-      this.toolbarEvents.zoom(pdfPosition.scale);
-    }
-    if (typeof pdfPosition.rotation !== 'number') {
-      return;
-    }
-
-    const applyRotation = (baseline: number) => {
-      if (this.previousRotation === pdfPosition.rotation) {
-        return;
-      }
-      const rotationDelta = (pdfPosition.rotation - baseline) % 360;
-      if (rotationDelta) {
-        this.toolbarEvents.rotate(rotationDelta);
-      }
-      this.previousRotation = pdfPosition.rotation;
-    };
-
-    if (this.previousRotation !== null) {
-      applyRotation(this.previousRotation);
-      return;
-    }
-
-    this.store.pipe(
-      select(fromDocSelectors.getPdfPosition),
-      take(1))
-      .subscribe(position => applyRotation(position?.rotation ?? 0));
   }
 }

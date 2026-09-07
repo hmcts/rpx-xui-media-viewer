@@ -10,7 +10,7 @@ import { select, Store } from '@ngrx/store';
 import * as fromIcpActions from '../store/actions/icp.actions';
 import * as fromIcpSelectors from '../store/selectors/icp.selectors';
 import * as fromDocument from '../store/selectors/document.selectors';
-import { distinctUntilChanged, filter, take } from 'rxjs/operators';
+import { filter, take } from 'rxjs/operators';
 import { IcpEventService } from '../toolbar/icp-event.service';
 
 @Injectable({ providedIn: 'root' })
@@ -35,17 +35,7 @@ export class IcpService implements OnDestroy {
     this.subscription = this.store.pipe(select(fromIcpSelectors.getCaseId), filter(value => !!value)).subscribe(caseId => {
       this.caseId = caseId;
     });
-    this.subscription.add(this.store.pipe(
-      select(fromDocument.getDocumentId),
-      distinctUntilChanged()
-    ).subscribe(docId => {
-      const previousDocument = this.documentId;
-      this.documentId = docId;
-      if (previousDocument && docId && previousDocument !== docId &&
-        this.sessionSubscription && !this.sessionSubscription.closed) {
-        this.leavePresentation();
-      }
-    }));
+    this.subscription.add(this.store.pipe(select(fromDocument.getDocumentId)).subscribe(docId => this.documentId = docId));
     this.subscription.add(this.icpEventService.sessionLaunch.subscribe(() => {
 
       if (this.caseId && this.documentId) { this.launchSession(); }
@@ -89,16 +79,14 @@ export class IcpService implements OnDestroy {
   unsubscribeSession() {
     this.presenterSubscriptions.update(false);
     this.followerSubscriptions.update(false);
-    this.sessionSubscription?.unsubscribe();
+    this.sessionSubscription.unsubscribe();
   }
 
   leavePresentation() {
     if (this.isPresenter) {
       this.stopPresenting();
     }
-    if (this.client?.id) {
-      this.removeParticipant(this.client.id);
-    }
+    this.removeParticipant(this.client.id);
     this.socketService.leaveSession();
     this.store.dispatch(new fromIcpActions.LeaveIcpSocketSession());
     this.unsubscribeSession();
