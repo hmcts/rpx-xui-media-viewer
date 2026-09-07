@@ -234,7 +234,7 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image, { x: 400, y: 200 });
     const savedAnnotation = (await saveRequest).postDataJSON();
     expect(savedAnnotation).toMatchObject({
       annotationSetId: 'pw-image-annotations-annotation-set',
@@ -245,12 +245,17 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
     expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    const newRectangle = page.locator(`.rectangle[style*="left: ${savedAnnotation.rectangles[0].x}px"][style*="top: ${savedAnnotation.rectangles[0].y}px"]`);
+    await expect(newRectangle).toBeVisible();
+    await newRectangle.click();
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.annotations.contextToolbar.getByRole('button', { name: 'Comment' })).toBeVisible();
+    await mediaViewer.comments.addToSelectedAnnotation('Created image annotation comment');
+    await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
     await mediaViewer.reloadDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
-    await mediaViewer.annotations.renderedRectangles.last().click();
     await mediaViewer.sidePanels.openComments();
-    await mediaViewer.comments.addToSelectedAnnotation('Created image annotation comment');
     await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
   });
 

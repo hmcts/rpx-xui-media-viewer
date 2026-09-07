@@ -114,8 +114,40 @@ export class CommentsPanel {
     const editor = this.panel.locator('textarea[name="content"]');
     await editor.waitFor();
     await editor.fill(content);
-    await this.panel.getByRole('button', { name: 'Save', exact: true }).click();
-    await this.panel.locator('textarea[name="content"]').waitFor({ state: 'hidden' });
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      const saveResponse = this.page.waitForResponse((response) => {
+        const request = response.request();
+        return new URL(response.url()).pathname.endsWith('/em-anno/annotations') && request.method() === 'POST';
+      }, { timeout: 2_000 });
+      let responseObserved = false;
+      try {
+        await this.panel.getByRole('button', { name: 'Save', exact: true }).click({ timeout: 2_000 });
+        const response = await saveResponse;
+        responseObserved = true;
+        if (!response.ok()) {
+          throw new Error(`Comment save failed: ${response.status()} ${response.url()}`);
+        }
+        await this.panel.locator('textarea[name="content"]').waitFor({ state: 'hidden', timeout: 2_000 });
+        return;
+      } catch (error) {
+        const editorWasReplaced = error instanceof errors.TimeoutError ||
+          (error instanceof Error && error.message.includes('element was detached'));
+        const responseStatus = await saveResponse.then(response => response.status()).catch(() => undefined);
+        if (responseStatus !== undefined) {
+          if (responseObserved) {
+            throw error;
+          }
+          if (responseStatus < 200 || responseStatus >= 300) {
+            throw new Error(`Comment save failed: ${responseStatus}`);
+          }
+          await this.panel.locator('textarea[name="content"]').waitFor({ state: 'hidden', timeout: 2_000 });
+          return;
+        }
+        if (attempt === 1 || !editorWasReplaced) {
+          throw error;
+        }
+      }
+    }
   }
 
   async remove(content: string): Promise<void> {

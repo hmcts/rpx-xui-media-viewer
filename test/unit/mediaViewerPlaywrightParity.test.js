@@ -6,6 +6,7 @@ const { resolve } = require('node:path');
 const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = require('../migration-history/mediaViewerCodeceptScenarios.json');
+const coverageInventory = require('../../playwright_tests/functional/mediaViewerCoverage.json');
 
 const intentionalManyToOneCoverage = [
   [
@@ -23,13 +24,21 @@ function source(relativePath) {
 }
 
 describe('Media Viewer Codecept-to-Playwright parity', () => {
-  it('maps every historical Codecept scenario to a named Playwright contract', () => {
+  it('retains provenance for every mapped Codecept scenario and names its replacement', () => {
     const legacyScenarioNames = new Set();
 
     for (const [, legacyScenario] of replacementContracts) legacyScenarioNames.add(legacyScenario);
 
-    assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
-    assert.equal(replacementContracts.length, 23, 'every historical Codecept contract must have a Playwright replacement');
+    const manifest = coverageInventory.legacyEvidence.codeceptManifest;
+    assert.equal(manifest.sourceRevision, '5362ae913917a86fd482b29f8cfa72a858ac1f25');
+    assert.equal(manifest.scenarioCount, 23, 'the frozen Codecept manifest must retain all 23 mapped contracts');
+    assert.equal(legacyScenarioNames.size, manifest.scenarioCount, 'the manifest must not contain duplicate historical scenarios');
+    assert.equal(replacementContracts.length, manifest.scenarioCount, 'every mapped Codecept contract needs one manifest row');
+    assert.equal(coverageInventory.executionCounts.historicalCapabilityBaseline, 57, 'the aggregate baseline must remain separate from the Codecept manifest');
+    assert.equal(coverageInventory.executionCounts.functionalDefault, 84);
+    assert.equal(coverageInventory.executionCounts.smokeDefault, 1);
+    assert.equal(coverageInventory.executionCounts.externalServiceDiagnostic, 4);
+    assert.equal(coverageInventory.executionCounts.inventoryPlaywrightTests, 89);
 
     const legacyScenariosByPlaywrightContract = new Map();
     for (const [, legacyScenario, , playwrightContract] of replacementContracts) {
