@@ -254,7 +254,7 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 84 fixture-backed browser contracts across 13 feature files, including conversion failure handling, image-annotation draw/create persistence, and failed PDF/image rendered-state diagnostics. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
 | Cross-browser smoke | `playwright.config.ts`, projects `smoke-firefox` and `smoke-webkit` | `yarn test:crossbrowser` | Runs the same readiness contract in Firefox and WebKit and publishes separate JUnit/Odhín output under `functional-output/tests/playwright-crossbrowser`. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
@@ -413,12 +413,8 @@ shared CCD, DM Store or annotation-service state. External service diagnostics
 are deliberately opt-in and must not be used as normal migration assurance. The
 external command runs 6 contracts by default; `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true`
 runs the full 10-contract inventory, including the four ticketed CCD browser defects.
-Known product-defect contracts are not skipped: they remain discoverable and
-run only when explicitly selected:
-
-```
-PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true yarn test:playwright:functional -- --grep @defect-EXUI-5124
-```
+Known external-service defect contracts remain discoverable and run only when
+the external-service diagnostic project is explicitly selected.
 
 ### Useful overrides
 Most developers should use the defaults from `.env.example`. Override only when you are deliberately testing a different endpoint or registered client setting.

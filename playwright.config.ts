@@ -16,7 +16,7 @@ const accessibilitySpecPattern = 'playwright_tests/accessibility/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
 const defaultExternalServiceContractWorkerCount = 1;
-const knownExternalDefectTags = /@defect-EXUI-(5122|5123|5124)/;
+const knownExternalDefectTags = /@defect-EXUI-(5122|5123)/;
 const includeKnownDefectTests = process.env.PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS === 'true';
 const runExternalServiceContracts = process.env.PLAYWRIGHT_RUN_EXTERNAL_SERVICE_CONTRACTS === 'true';
 

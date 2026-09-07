@@ -22,9 +22,9 @@ legacy-only areas and the next assurance gaps, is stored in
 | Print and download | `printDownload.spec.ts` | 2 | Direct and overflow toolbar actions plus exact print URL and PDF.js download URL/filename hand-off contracts |
 | Redaction | `redactions.spec.ts` | 12 | Playwright covers all 12 historical redaction scenarios through real draw-box and text-selection gestures, combined markers, full-page and multi-page redaction, download then text-redaction sequencing, single-marker and clear-all deletion, preview state, search/redact-all persistence, redaction request payload, downloaded PDF filename and post-download reset. It exceeds legacy coverage with multi-page save aggregation, multi-page clear/reload and multi-page selective-delete/reload contracts, all against deterministic redaction-service responses. |
 | Multimedia playback | `multimedia.spec.ts` | 4 | MP4 readiness, real MP3 play/pause/rewind state transitions, disabled-player download fallback and unsupported-media diagnostics |
-| In-court presentation (ICP) | — | 0 | Not claimed in Playwright. Add leader/follower page, zoom and rotation synchronisation after a separate product fix; live session-service/Web PubSub coverage remains separately tracked. |
-| **Functional total** | 13 feature files | **76 discovered / 76 default** | Behaviour-level Functional coverage. |
-| **Playwright migration total** | Functional plus smoke | **77 discovered / 77 default** | Adds one standalone PDF-readiness contract. External service diagnostics are intentionally excluded from normal migration assurance. Support checks are reported separately. |
+| In-court presentation (ICP) | — | 0 | Deterministic unit/protocol contracts cover session-token handling, socket envelopes and follower zoom/rotation state (EXUI-4962/EXUI-5108). No browser leader/follower journey or live Web PubSub session is claimed. |
+| **Functional total** | 13 feature files | **84 discovered / 84 default** | Behaviour-level Functional coverage. |
+| **Playwright migration total** | Functional plus smoke | **85 discovered / 85 default** | Adds one standalone PDF-readiness contract. External service diagnostics are intentionally excluded from normal migration assurance. Support checks are reported separately. |
 
 Run the whole migrated functional suite:
 
