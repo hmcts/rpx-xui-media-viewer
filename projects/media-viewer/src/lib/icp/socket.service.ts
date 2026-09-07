@@ -1,33 +1,35 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, from, Observable, of, Subject, Subscription } from 'rxjs';
 import { IcpEvents } from './icp.events';
-import { IcpParticipant, IcpSession } from './icp.interfaces';
+import { IcpParticipant, IcpScreenUpdate, IcpSession } from './icp.interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class SocketService implements OnDestroy {
 
   private socket: WebSocket;
-  subscription: Subscription;
+  subscription: Subscription | undefined;
   connected$ = new BehaviorSubject<boolean>(false);
   sessionJoined$ = new Subject<void>();
   presenterUpdated$ = new Subject<void>();
   clientDisconnected$ = new Subject<void>();
   participantUpdated$ = new Subject<void>();
   newParticipantJoined$ = new Subject<void>();
-  screenUpdated$ = new Subject<void>();
+  screenUpdated$ = new Subject<IcpScreenUpdate>();
 
   constructor() { }
 
   ngOnDestroy() {
-    this.subscription.unsubscribe();
+    this.cleanupSocket();
   }
 
   connect(url: string, session: IcpSession) {
+    this.cleanupSocket();
     const socketUrl = new URL(url);
     socketUrl.searchParams.append('sessionId', `${session.sessionId}`);
     socketUrl.searchParams.append('caseId', `${session.caseId}`);
     socketUrl.searchParams.append('documentId', `${session.documentId}`);
     this.subscription = this.getSocketClient(socketUrl.toString()).subscribe((socket: WebSocket) => {
+      this.socket = socket;
 
       socket.onopen = (event: Event) => {
         this.connected$.next(true);
@@ -61,7 +63,17 @@ export class SocketService implements OnDestroy {
 
   leave(session) {
     this.emit(IcpEvents.SESSION_LEAVE, session);
-    this.subscription.unsubscribe();
+    this.cleanupSocket();
+  }
+
+  private cleanupSocket(): void {
+    this.subscription?.unsubscribe();
+    this.subscription = undefined;
+    if (this.socket && (this.socket.readyState === WebSocket.CONNECTING || this.socket.readyState === WebSocket.OPEN)) {
+      this.socket.close();
+    }
+    this.socket = undefined;
+    this.connected$.next(false);
   }
 
   emit(event: string, data: any) {

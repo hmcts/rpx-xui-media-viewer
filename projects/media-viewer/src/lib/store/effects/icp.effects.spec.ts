@@ -44,10 +44,10 @@ describe('Icp Effects', () => {
 
   describe('loadIcpSession$', () => {
     it('should return a JoinSocketSession', () => {
-      const payload = { session: session, username: 'name' };
+      const payload = { session: session, username: 'name', token: 'access-token' };
       const action = new icpActions.LoadIcpSession({ caseId: session.caseId, documentId: session.documentId });
       icpApi.loadSession.and.returnValue(of(payload));
-      const completion = new icpActions.JoinIcpSocketSession({ session: session, username: 'name' });
+      const completion = new icpActions.JoinIcpSocketSession(payload);
       actions$ = hot('-a', { a: action });
       const expected = cold('-b', { b: completion });
       expect(effects.loadIcpSession$).toBeObservable(expected);
@@ -65,7 +65,7 @@ describe('Icp Effects', () => {
 
   describe('joinIcpSocketSession$', () => {
     it('should join the socket session and publish participants', () => {
-      const action = new icpActions.JoinIcpSocketSession({ session, username: 'name' });
+      const action = new icpActions.JoinIcpSocketSession({ session, username: 'name', token: 'access-token' });
       const participants = {
         client: { id: 'clientId', username: 'name' },
         presenter: { id: 'presenterId', username: 'presenter' }
@@ -76,7 +76,7 @@ describe('Icp Effects', () => {
       const expected = cold('-b', { b: completion });
 
       expect(effects.joinIcpSocketSession$).toBeObservable(expected);
-      expect(icpSocket.joinSession).toHaveBeenCalledWith('name', session, undefined);
+      expect(icpSocket.joinSession).toHaveBeenCalledWith('name', session, 'access-token');
     });
   });
 });

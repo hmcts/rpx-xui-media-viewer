@@ -27,7 +27,7 @@ export class LoadIcpSessionFailure implements Action {
 
 export class JoinIcpSocketSession implements Action {
   readonly type = JOIN_ICP_SOCKET_SESSION;
-  constructor(public payload: { username: string, session: IcpSession }) { }
+  constructor(public payload: { username: string, session: IcpSession, token: string }) { }
 }
 
 export class IcpSocketSessionJoined implements Action {

@@ -8,6 +8,7 @@ describe('SocketService', () => {
 
   const mockSocketClient: any = {
     readyState: WebSocket.OPEN,
+    close: () => { },
     onclose: () => { },
     onerror: () => { },
     onmessage: () => { },
@@ -47,26 +48,54 @@ describe('SocketService', () => {
     socketService.connected().subscribe(connectedSpy);
 
     mockSocketClient.onopen(new Event('open'));
+    const screenUpdate = { pageNumber: 2 } as any;
     mockSocketClient.onmessage(new MessageEvent('message', {
       data: JSON.stringify({
-        data: { eventName: IcpEvents.SCREEN_UPDATED, data: { pageNumber: 2 } }
+        data: { eventName: IcpEvents.SCREEN_UPDATED, data: screenUpdate }
       })
     }));
 
     expect(connectedSpy).toHaveBeenCalledWith(false);
     expect(connectedSpy).toHaveBeenCalledWith(true);
-    expect(messageHandlerSpy).toHaveBeenCalledWith(IcpEvents.SCREEN_UPDATED, { pageNumber: 2 });
-    expect(screenUpdatedSpy).toHaveBeenCalled();
+    expect(messageHandlerSpy).toHaveBeenCalledWith(IcpEvents.SCREEN_UPDATED, screenUpdate);
+    expect(screenUpdatedSpy).toHaveBeenCalledWith(screenUpdate);
   });
 
   it('should leave', () => {
-    socketService.subscription = { unsubscribe: () => { } } as any;
-    spyOn(socketService.subscription, 'unsubscribe');
+    const subscription = { unsubscribe: jasmine.createSpy('unsubscribe') } as any;
+    socketService.subscription = subscription;
     spyOn(socketService, 'emit');
     socketService.leave({});
 
     expect(socketService.emit).toHaveBeenCalledWith('IcpClientLeaveSession', {});
-    expect(socketService.subscription.unsubscribe).toHaveBeenCalled();
+    expect(subscription.unsubscribe).toHaveBeenCalled();
+  });
+
+  it('should close the previous socket when reconnecting', () => {
+    const previousSocket = { ...mockSocketClient, close: jasmine.createSpy('previousClose') };
+    const nextSocket = { ...mockSocketClient, close: jasmine.createSpy('nextClose') };
+    socketService['socket'] = previousSocket;
+    const previousSubscription = { unsubscribe: jasmine.createSpy('unsubscribe') } as any;
+    socketService.subscription = previousSubscription;
+    (socketService.getSocketClient as jasmine.Spy).and.returnValue(of(nextSocket));
+
+    socketService.connect('http://testurl.com', {
+      sessionId: 'new-session', documentId: 'new-document', caseId: 'new-case',
+      dateOfHearing: undefined, connectionUrl: 'new-connection-url'
+    });
+
+    expect(previousSocket.close).toHaveBeenCalled();
+    expect(previousSubscription.unsubscribe).toHaveBeenCalled();
+  });
+
+  it('should close the socket and reset connected state when leaving', () => {
+    socketService.connected$.next(true);
+    mockSocketClient.close.calls.reset();
+    socketService.leave({});
+
+    expect(mockSocketClient.close).toHaveBeenCalled();
+    expect(socketService.connected$.value).toBeFalse();
+    expect(socketService.subscription).toBeUndefined();
   });
 
   it('should emit', () => {
@@ -82,10 +111,10 @@ describe('SocketService', () => {
   });
 
   it('should unsubscribe', () => {
-    socketService.subscription = { unsubscribe: () => { } } as any;
-    spyOn(socketService.subscription, 'unsubscribe');
+    const subscription = { unsubscribe: jasmine.createSpy('unsubscribe') } as any;
+    socketService.subscription = subscription;
     socketService.ngOnDestroy();
-    expect(socketService.subscription.unsubscribe).toHaveBeenCalled();
+    expect(subscription.unsubscribe).toHaveBeenCalled();
   });
 
   it('message event handler should call session joined', () => {
@@ -120,8 +149,9 @@ describe('SocketService', () => {
 
   it('message event handler should call screen updated', () => {
     const nextSpy = spyOn(socketService.screenUpdated$, 'next');
-    socketService.messageEventHandller('IcpScreenUpdated', { test: 'hello' });
-    expect(nextSpy).toHaveBeenCalled();
+    const screenUpdate = { test: 'hello' } as any;
+    socketService.messageEventHandller('IcpScreenUpdated', screenUpdate);
+    expect(nextSpy).toHaveBeenCalledWith(screenUpdate);
   });
 
   it('listen should call session joined', () => {

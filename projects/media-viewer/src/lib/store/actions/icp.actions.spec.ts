@@ -41,6 +41,7 @@ describe('Icp actions', () => {
       it('should create an action', () => {
         const payload = {
           username: 'name',
+          token: 'session-token',
           session: {
             sessionId: 'sessionId',
             documentId: 'documentId',
