@@ -50,7 +50,7 @@ export class IcpPresenterService {
   }
 
   onPositionUpdate(pdfPosition: PdfPosition) {
-    const screen: IcpScreenUpdate = { pdfPosition, document: undefined };
+    const screen: IcpScreenUpdate = { pdfPosition, document: this.socketService.session.documentId };
     this.socketService.updateScreen(screen);
   }
 

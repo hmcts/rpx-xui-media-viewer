@@ -39,6 +39,7 @@ describe('Icp Presenter Service', () => {
   };
 
   beforeEach(() => {
+    mockUpdateService.session = session;
     TestBed.configureTestingModule({
       imports: [
         StoreModule.forFeature('media-viewer', reducers),
@@ -97,12 +98,14 @@ describe('Icp Presenter Service', () => {
     expect(presenterService.$subscription).toEqual(undefined);
   });
 
-  it('should call service to update screen position', () => {
-    spyOn(updateService, 'updateScreen');
+  it('should send the active document with the screen position', () => {
+    const updateScreen = spyOn(updateService, 'updateScreen');
+    presenterService.subscribe();
+    updateScreen.calls.reset();
 
     presenterService.onPositionUpdate(pdfPosition);
 
-    expect(updateService.updateScreen).toHaveBeenCalledWith({ pdfPosition, document: undefined });
+    expect(updateScreen).toHaveBeenCalledWith({ pdfPosition, document: session.documentId });
   });
 
   it('should call service to update presenter', () => {

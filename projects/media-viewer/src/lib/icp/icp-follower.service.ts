@@ -63,7 +63,7 @@ export class IcpFollowerService {
       take(1))
       .subscribe(documentId => {
         const currentDocument = documentId ?? null;
-        if (screenUpdate.document && currentDocument && screenUpdate.document !== currentDocument) {
+        if (!screenUpdate.document || !currentDocument || screenUpdate.document !== currentDocument) {
           return;
         }
         if (this.previousDocument !== currentDocument) {

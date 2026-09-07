@@ -69,9 +69,10 @@ describe('Icp Follower Service', () => {
       spyOn(viewerEvents, 'goToDestinationICP');
       spyOn(toolbarEvents, 'rotate');
 
+      store.dispatch(new SetDocumentId('document-id'));
       store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0 }));
 
-      followerService.followScreenUpdate({ pdfPosition });
+      followerService.followScreenUpdate({ pdfPosition, document: 'document-id' });
 
       expect(viewerEvents.goToDestinationICP).toHaveBeenCalled();
       expect(toolbarEvents.rotate).toHaveBeenCalledOnceWith(270);
@@ -79,11 +80,12 @@ describe('Icp Follower Service', () => {
   );
 
   it('should use zero as the initial remote baseline when local position is unavailable',
-    inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
+    inject([Store, ViewerEventService, ToolbarEventService], (store, viewerEvents, toolbarEvents) => {
       spyOn(viewerEvents, 'goToDestinationICP');
       const rotate = spyOn(toolbarEvents, 'rotate');
 
-      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 } });
+      store.dispatch(new SetDocumentId('document-id'));
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 }, document: 'document-id' });
 
       expect(rotate).toHaveBeenCalledOnceWith(90);
     })
@@ -95,11 +97,12 @@ describe('Icp Follower Service', () => {
       spyOn(toolbarEvents, 'rotate');
       spyOn(toolbarEvents, 'zoom');
 
+      store.dispatch(new SetDocumentId('document-id'));
       store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0, scale: 1 }));
       const remotePosition = { ...pdfPosition, rotation: 90, scale: 1.5 };
 
-      followerService.followScreenUpdate({ pdfPosition: remotePosition });
-      followerService.followScreenUpdate({ pdfPosition: remotePosition });
+      followerService.followScreenUpdate({ pdfPosition: remotePosition, document: 'document-id' });
+      followerService.followScreenUpdate({ pdfPosition: remotePosition, document: 'document-id' });
 
       expect(viewerEvents.goToDestinationICP).toHaveBeenCalledTimes(2);
       expect(toolbarEvents.zoom).toHaveBeenCalledWith(1.5);
@@ -112,10 +115,11 @@ describe('Icp Follower Service', () => {
       spyOn(viewerEvents, 'goToDestinationICP');
       spyOn(toolbarEvents, 'rotate');
 
+      store.dispatch(new SetDocumentId('document-id'));
       store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0 }));
 
-      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 } });
-      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 180 } });
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 }, document: 'document-id' });
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 180 }, document: 'document-id' });
 
       expect(toolbarEvents.rotate.calls.allArgs()).toEqual([[90], [90]]);
     }))
@@ -125,32 +129,50 @@ describe('Icp Follower Service', () => {
     inject([Store, ViewerEventService, ToolbarEventService], fakeAsync((store, viewerEvents, toolbarEvents) => {
       spyOn(viewerEvents, 'goToDestinationICP');
       const rotate = spyOn(toolbarEvents, 'rotate');
+      const zoom = spyOn(toolbarEvents, 'zoom');
 
       store.dispatch(new SetDocumentId('document-a'));
       store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0 }));
       followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 }, document: 'document-a' });
       rotate.calls.reset();
+      zoom.calls.reset();
+      viewerEvents.goToDestinationICP.calls.reset();
 
       store.dispatch(new SetDocumentId('document-b'));
       followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 180 }, document: 'document-a' });
+      expect(viewerEvents.goToDestinationICP).not.toHaveBeenCalled();
       expect(rotate).not.toHaveBeenCalled();
+      expect(zoom).not.toHaveBeenCalled();
 
       followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 }, document: 'document-b' });
       expect(rotate).toHaveBeenCalledOnceWith(90);
     }))
   );
 
-  it('should ignore an empty screen update', () => {
-    expect(() => followerService.followScreenUpdate({} as any)).not.toThrow();
+  it('should ignore empty, null and undefined screen updates', () => {
+    for (const screenUpdate of [{}, null, undefined]) {
+      expect(() => followerService.followScreenUpdate(screenUpdate as any)).not.toThrow();
+    }
   });
 
-  it('should ignore a null screen update', () => {
-    expect(() => followerService.followScreenUpdate(null as any)).not.toThrow();
-  });
+  it('should reject screen updates without a matching document context',
+    inject([Store, ViewerEventService, ToolbarEventService], (store, viewerEvents, toolbarEvents) => {
+      const goToDestination = spyOn(viewerEvents, 'goToDestinationICP');
+      const zoom = spyOn(toolbarEvents, 'zoom');
+      const rotate = spyOn(toolbarEvents, 'rotate');
 
-  it('should ignore an undefined screen update', () => {
-    expect(() => followerService.followScreenUpdate(undefined)).not.toThrow();
-  });
+      store.dispatch(new SetDocumentId('document-id'));
+      followerService.followScreenUpdate({ pdfPosition, document: undefined });
+      followerService.followScreenUpdate({ pdfPosition, document: 'other-document' });
+
+      store.dispatch(new SetDocumentId(undefined));
+      followerService.followScreenUpdate({ pdfPosition, document: 'document-id' });
+
+      expect(goToDestination).not.toHaveBeenCalled();
+      expect(zoom).not.toHaveBeenCalled();
+      expect(rotate).not.toHaveBeenCalled();
+    })
+  );
 
   it('should ignore malformed nested positions without applying viewer changes',
     inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
@@ -181,13 +203,16 @@ describe('Icp Follower Service', () => {
   );
 
   it('should preserve navigation when optional scale and rotation are omitted',
-    inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
+    inject([Store, ViewerEventService, ToolbarEventService], (store, viewerEvents, toolbarEvents) => {
       const goToDestination = spyOn(viewerEvents, 'goToDestinationICP');
       const zoom = spyOn(toolbarEvents, 'zoom');
       const rotate = spyOn(toolbarEvents, 'rotate');
 
+      store.dispatch(new SetDocumentId('document-id'));
+
       followerService.followScreenUpdate({
-        pdfPosition: { pageNumber: 1, left: 10, top: 20 }
+        pdfPosition: { pageNumber: 1, left: 10, top: 20 },
+        document: 'document-id'
       } as any);
 
       expect(goToDestination).toHaveBeenCalledOnceWith([
