@@ -9,14 +9,14 @@ test.describe('Rotation', () => {
     await text.dblclick();
     await mediaViewer.annotations.createButton.click();
 
-    const overlaps = (first: { x: number; y: number; width: number; height: number }, second: { x: number; y: number; width: number; height: number }) =>
-      first.x < second.x + second.width && first.x + first.width > second.x &&
-      first.y < second.y + second.height && first.y + first.height > second.y;
+    const containsCentre = (annotation: { x: number; y: number; width: number; height: number }, text: { x: number; y: number; width: number; height: number }) =>
+      annotation.x <= text.x + text.width / 2 && annotation.x + annotation.width >= text.x + text.width / 2 &&
+      annotation.y <= text.y + text.height / 2 && annotation.y + annotation.height >= text.y + text.height / 2;
     const initialAnnotation = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
     const initialText = await text.boundingBox();
     expect(initialAnnotation).not.toBeNull();
     expect(initialText).not.toBeNull();
-    expect(overlaps(initialAnnotation!, initialText!)).toBe(true);
+    expect(containsCentre(initialAnnotation!, initialText!)).toBe(true);
 
     const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
     await mediaViewer.rotation.clockwise();
@@ -24,7 +24,7 @@ test.describe('Rotation', () => {
     await expect.poll(async () => {
       const rotatedAnnotation = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
       const rotatedText = await text.boundingBox();
-      return rotatedAnnotation !== null && rotatedText !== null && overlaps(rotatedAnnotation, rotatedText);
+      return rotatedAnnotation !== null && rotatedText !== null && containsCentre(rotatedAnnotation, rotatedText);
     }).toBe(true);
   });
 

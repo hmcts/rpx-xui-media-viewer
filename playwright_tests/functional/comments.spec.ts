@@ -58,8 +58,10 @@ commentsTest.describe('Comments panel', () => {
     await mediaViewer.sidePanels.openComments();
 
     const deleteRequest = page.waitForRequest((request) => request.url().endsWith('/em-anno/annotations') && request.method() === 'POST');
+    const deleteResponse = page.waitForResponse((response) => response.url().endsWith('/em-anno/annotations') && response.request().method() === 'POST');
     await mediaViewer.comments.remove('Existing viewer comment');
     const request = await deleteRequest;
+    expect((await deleteResponse).status()).toBe(200);
 
     await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
     await expect(mediaViewer.comments.comment('Unrelated viewer comment')).toBeVisible();

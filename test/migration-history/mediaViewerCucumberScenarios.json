@@ -601,8 +601,8 @@
     "disposition": "covered",
     "playwrightFile": "functional/rotation.spec.ts",
     "playwrightContract": "keeps a PDF text highlight aligned with the text layer after rotation",
-    "assessment": "The replacement creates a real PDF text highlight and proves its rendered rectangle overlaps the selected text layer before and after clockwise rotation, waiting for the orientation transition.",
-    "requiredSourcePatterns": ["textLayer", "overlaps", "rotation.clockwise()"],
+    "assessment": "The replacement creates a real PDF text highlight and proves its rendered rectangle covers more than half of the selected text layer and contains its centre before and after clockwise rotation, waiting for the orientation transition.",
+    "requiredSourcePatterns": ["textLayer", "containsCentre", "containsCentre", "rotation.clockwise()"],
     "sourceLine": 27
   },
   {

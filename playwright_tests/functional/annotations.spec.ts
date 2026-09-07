@@ -193,8 +193,13 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.comments.comment(comment)).toBeVisible();
 
     const deleteRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    const deleteResponse = page.waitForResponse(response => annotationRequest(response.url()) && response.request().method() === 'POST');
     await mediaViewer.comments.remove(comment);
-    expect((await deleteRequest).postDataJSON().comments).toEqual([]);
+    const requestBody = (await deleteRequest).postDataJSON();
+    const response = await deleteResponse;
+    expect(await response.json()).toMatchObject({ id: requestBody.id, comments: [] });
+    expect(response.status()).toBe(200);
+    expect(requestBody.comments).toEqual([]);
     await expect(mediaViewer.comments.comment(comment)).toHaveCount(0);
     await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
 
