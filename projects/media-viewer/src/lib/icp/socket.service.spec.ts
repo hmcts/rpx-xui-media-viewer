@@ -98,6 +98,14 @@ describe('SocketService', () => {
     expect(socketService.subscription).toBeUndefined();
   });
 
+  it('should reset connected state when the socket closes unexpectedly', () => {
+    socketService.connected$.next(true);
+
+    mockSocketClient.onclose(new CloseEvent('close'));
+
+    expect(socketService.connected$.value).toBeFalse();
+  });
+
   it('should emit', () => {
     socketService['socket'] = mockSocketClient;
     socketService.emit('event', {});

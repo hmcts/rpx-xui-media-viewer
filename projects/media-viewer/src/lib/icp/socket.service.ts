@@ -49,6 +49,9 @@ export class SocketService implements OnDestroy {
 
       socket.onclose = (event: CloseEvent) => {
         console.log('onclose');
+        if (this.socket === socket) {
+          this.connected$.next(false);
+        }
       };
     });
   }
