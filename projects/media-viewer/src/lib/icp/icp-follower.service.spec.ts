@@ -5,7 +5,7 @@ import { IcpUpdateService } from './icp-update.service';
 import { IcpFollowerService } from './icp-follower.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
 import { ToolbarEventService } from '../toolbar/toolbar-event.service';
-import { PdfPositionUpdate } from '../store/actions/document.actions';
+import { PdfPositionUpdate, SetDocumentId } from '../store/actions/document.actions';
 
 describe('Icp Follower Service', () => {
 
@@ -64,7 +64,7 @@ describe('Icp Follower Service', () => {
     expect(followerService.$subscription).toEqual(undefined);
   });
 
-  it('should follow screen updates',
+  it('should use the local rotation as the initial remote baseline',
     inject([Store, ViewerEventService, ToolbarEventService], fakeAsync((store, viewerEvents, toolbarEvents) => {
       spyOn(viewerEvents, 'goToDestinationICP');
       spyOn(toolbarEvents, 'rotate');
@@ -74,8 +74,19 @@ describe('Icp Follower Service', () => {
       followerService.followScreenUpdate({ pdfPosition });
 
       expect(viewerEvents.goToDestinationICP).toHaveBeenCalled();
-      expect(toolbarEvents.rotate).toHaveBeenCalled();
+      expect(toolbarEvents.rotate).toHaveBeenCalledOnceWith(270);
     }))
+  );
+
+  it('should use zero as the initial remote baseline when local position is unavailable',
+    inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
+      spyOn(viewerEvents, 'goToDestinationICP');
+      const rotate = spyOn(toolbarEvents, 'rotate');
+
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 } });
+
+      expect(rotate).toHaveBeenCalledOnceWith(90);
+    })
   );
 
   it('should apply remote zoom and avoid repeating the same rotation',
@@ -106,15 +117,38 @@ describe('Icp Follower Service', () => {
       followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 } });
       followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 180 } });
 
-      expect(toolbarEvents.rotate).toHaveBeenCalledWith(90);
-      expect(toolbarEvents.rotate).toHaveBeenCalledWith(90);
-      expect(toolbarEvents.rotate).toHaveBeenCalledTimes(2);
+      expect(toolbarEvents.rotate.calls.allArgs()).toEqual([[90], [90]]);
     }))
   );
 
-  it('should ignore empty, null and undefined screen updates', () => {
+  it('should reject stale document updates and reset rotation state for a new document',
+    inject([Store, ViewerEventService, ToolbarEventService], fakeAsync((store, viewerEvents, toolbarEvents) => {
+      spyOn(viewerEvents, 'goToDestinationICP');
+      const rotate = spyOn(toolbarEvents, 'rotate');
+
+      store.dispatch(new SetDocumentId('document-a'));
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0 }));
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 }, document: 'document-a' });
+      rotate.calls.reset();
+
+      store.dispatch(new SetDocumentId('document-b'));
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 180 }, document: 'document-a' });
+      expect(rotate).not.toHaveBeenCalled();
+
+      followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 90 }, document: 'document-b' });
+      expect(rotate).toHaveBeenCalledOnceWith(90);
+    }))
+  );
+
+  it('should ignore an empty screen update', () => {
     expect(() => followerService.followScreenUpdate({} as any)).not.toThrow();
+  });
+
+  it('should ignore a null screen update', () => {
     expect(() => followerService.followScreenUpdate(null as any)).not.toThrow();
+  });
+
+  it('should ignore an undefined screen update', () => {
     expect(() => followerService.followScreenUpdate(undefined)).not.toThrow();
   });
 

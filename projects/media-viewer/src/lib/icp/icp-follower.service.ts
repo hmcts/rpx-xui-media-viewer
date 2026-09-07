@@ -5,7 +5,7 @@ import { Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
 import { take } from 'rxjs/operators';
-import { IcpState, IcpSession } from './icp.interfaces';
+import { IcpState, IcpSession, IcpScreenUpdate } from './icp.interfaces';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
 
 @Injectable({ providedIn: 'root' })
@@ -13,6 +13,7 @@ export class IcpFollowerService {
 
   session: IcpSession;
   private previousRotation: number|null = null;
+  private previousDocument: string|null = null;
   $subscription: Subscription;
 
   constructor(private readonly toolbarEvents: ToolbarEventService,
@@ -42,9 +43,10 @@ export class IcpFollowerService {
       this.$subscription = undefined;
     }
     this.previousRotation = null;
+    this.previousDocument = null;
   }
 
-  followScreenUpdate(screenUpdate) {
+  followScreenUpdate(screenUpdate: Partial<IcpScreenUpdate> | null | undefined): void {
     const pdfPosition = screenUpdate?.pdfPosition;
     if (!pdfPosition ||
       !Number.isInteger(pdfPosition.pageNumber) ||
@@ -56,6 +58,23 @@ export class IcpFollowerService {
       return;
     }
 
+    this.store.pipe(
+      select(fromDocSelectors.getDocumentId),
+      take(1))
+      .subscribe(documentId => {
+        const currentDocument = documentId ?? null;
+        if (screenUpdate.document && currentDocument && screenUpdate.document !== currentDocument) {
+          return;
+        }
+        if (this.previousDocument !== currentDocument) {
+          this.previousDocument = currentDocument;
+          this.previousRotation = null;
+        }
+        this.applyScreenUpdate(pdfPosition);
+      });
+  }
+
+  private applyScreenUpdate(pdfPosition: IcpScreenUpdate['pdfPosition']): void {
     this.viewerEvents.goToDestinationICP([
       pdfPosition.pageNumber - 1,
       { 'name': 'XYZ' },
@@ -69,18 +88,25 @@ export class IcpFollowerService {
       return;
     }
 
+    const applyRotation = (baseline: number) => {
+      if (this.previousRotation === pdfPosition.rotation) {
+        return;
+      }
+      const rotationDelta = (pdfPosition.rotation - baseline) % 360;
+      if (rotationDelta) {
+        this.toolbarEvents.rotate(rotationDelta);
+      }
+      this.previousRotation = pdfPosition.rotation;
+    };
+
+    if (this.previousRotation !== null) {
+      applyRotation(this.previousRotation);
+      return;
+    }
+
     this.store.pipe(
       select(fromDocSelectors.getPdfPosition),
       take(1))
-      .subscribe(position => {
-        if (this.previousRotation === pdfPosition.rotation) {
-          return;
-        }
-        const rotationDelta = (pdfPosition.rotation - (this.previousRotation ?? position?.rotation ?? 0)) % 360;
-        if (rotationDelta) {
-          this.toolbarEvents.rotate(rotationDelta);
-        }
-        this.previousRotation = pdfPosition.rotation;
-      });
+      .subscribe(position => applyRotation(position?.rotation ?? 0));
   }
 }
