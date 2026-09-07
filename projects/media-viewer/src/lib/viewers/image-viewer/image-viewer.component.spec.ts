@@ -182,6 +182,20 @@ describe('ImageViewerComponent', () => {
     expect(store.dispatch).toHaveBeenCalledWith(new fromDocument.AddPages(payload));
   }));
 
+  it('should use the intrinsic image size when layout dimensions are not ready', inject([Store], (store) => {
+    spyOn(store, 'dispatch');
+    const img = { offsetHeight: 0, offsetWidth: 0, naturalHeight: 100, naturalWidth: 50, offsetLeft: 20, offsetTop: 30 };
+    const payload = [{
+      div: { scrollHeight: 100, scrollWidth: 50, offsetLeft: 20 },
+      pageNumber: 1,
+      scale: 1,
+      rotation: 0,
+      id: 1
+    }] as any;
+    component.initAnnoPage(img);
+    expect(store.dispatch).toHaveBeenCalledWith(new fromDocument.AddPages(payload));
+  }));
+
   it('should dispatch AddPages event with relevant payload for 90 deg rotation',
     inject([Store], (store) => {
       spyOn(store, 'dispatch');

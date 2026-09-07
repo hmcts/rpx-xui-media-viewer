@@ -103,6 +103,20 @@ describe('DocumentReducer', () => {
     expect(state.pages['1'].styles).toEqual({ left: 0, height: 923, width: 1997 });
   });
 
+  it('should use scroll dimensions when client dimensions are zero', () => {
+    const action = new fromActions.AddPages([{
+      div: { clientHeight: 0, clientWidth: 0, scrollHeight: 923, scrollWidth: 1997, offsetLeft: 0 },
+      scale: 1,
+      rotation: 0,
+      id: '1',
+      viewportScale: 1
+    }] as any);
+
+    const state = fromDocument.docReducer(fromDocument.initialDocumentState, action);
+
+    expect(state.pages['1'].styles).toEqual({ left: 0, height: 923, width: 1997 });
+  });
+
   it('should convert document', function () {
     const url = 'new url';
 

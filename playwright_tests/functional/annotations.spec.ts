@@ -245,7 +245,24 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
     expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    const annotationSetResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname.endsWith('/em-anno/annotation-sets/filter') &&
+        url.searchParams.get('documentId') === mediaAssets.image.url &&
+        response.request().method() === 'GET';
+    });
     await mediaViewer.reloadDocument(mediaAssets.image);
+    const rehydratedAnnotationSet = await (await annotationSetResponse).json();
+    const rehydratedAnnotation = rehydratedAnnotationSet.annotations.find((annotation: { id: string }) => annotation.id === savedAnnotation.id);
+    expect(rehydratedAnnotation).toMatchObject({
+      id: savedAnnotation.id,
+      rectangles: [expect.objectContaining({
+        x: savedAnnotation.rectangles[0].x,
+        y: savedAnnotation.rectangles[0].y,
+        width: savedAnnotation.rectangles[0].width,
+        height: savedAnnotation.rectangles[0].height,
+      })],
+    });
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
     await mediaViewer.annotations.renderedRectangles.last().click();
@@ -263,7 +280,20 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
     expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    const annotationSetResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname.endsWith('/em-anno/annotation-sets/filter') &&
+        url.searchParams.get('documentId') === mediaAssets.image.url &&
+        response.request().method() === 'GET';
+    });
     await mediaViewer.reloadDocument(mediaAssets.image);
+    const rehydratedAnnotationSet = await (await annotationSetResponse).json();
+    expect(rehydratedAnnotationSet.annotations).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: savedAnnotation.id,
+        rectangles: [expect.objectContaining(savedAnnotation.rectangles[0])],
+      }),
+    ]));
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
     const rectangle = mediaViewer.annotations.renderedRectangles.last();

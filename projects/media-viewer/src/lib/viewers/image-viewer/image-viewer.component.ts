@@ -173,12 +173,14 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   onLoad(img: any) {
     this.mediaLoadStatus.emit(ResponseType.SUCCESS);
-    this.initAnnoPage(img);
+    requestAnimationFrame(() => this.initAnnoPage(img));
   }
 
   initAnnoPage(img: any) {
-    this.imageHeight = this.rotation % 180 !== 0 ? img.offsetWidth : img.offsetHeight;
-    this.imageWidth = this.rotation % 180 !== 0 ? img.offsetHeight : img.offsetWidth;
+    const imageHeight = img.offsetHeight || img.naturalHeight;
+    const imageWidth = img.offsetWidth || img.naturalWidth;
+    this.imageHeight = this.rotation % 180 !== 0 ? imageWidth : imageHeight;
+    this.imageWidth = this.rotation % 180 !== 0 ? imageHeight : imageWidth;
     this.imageLeft = this.rotation % 180 !== 0 ? img.offsetTop : img.offsetLeft;
     this.imageTop = this.rotation % 180 !== 0 ? img.offsetLeft : img.offsetTop;
     const payload: any = [{
@@ -192,7 +194,6 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
       rotation: this.rotation,
       id: 1
     }];
-
     this.store.dispatch(new fromDocument.AddPages(payload));
   }
 
