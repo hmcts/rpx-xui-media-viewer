@@ -40,9 +40,19 @@ describe('Document Effects', () => {
 
     it('should return a ConvertFailure', () => {
       const action = new documentActions.Convert('document-url');
-      docConvertApi.convert.and.returnValue(throwError('error converting document'));
+      docConvertApi.convert.and.returnValue(throwError(new Error('error converting document')));
 
       const completion = new documentActions.ConvertFailure('error converting document');
+      actions$ = hot('-a', { a: action });
+      const expected = cold('-b', { b: completion });
+      expect(effects.convert$).toBeObservable(expected);
+    });
+
+    it('should use a stable fallback for an unrecognised conversion error', () => {
+      const action = new documentActions.Convert('document-url');
+      docConvertApi.convert.and.returnValue(throwError({ status: 500 }));
+
+      const completion = new documentActions.ConvertFailure('Document conversion failed');
       actions$ = hot('-a', { a: action });
       const expected = cold('-b', { b: completion });
       expect(effects.convert$).toBeObservable(expected);
