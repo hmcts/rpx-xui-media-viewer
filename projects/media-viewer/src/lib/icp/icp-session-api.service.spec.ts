@@ -52,17 +52,4 @@ describe('IcpSessionApiService', () => {
     expect(req.request.withCredentials).toBeTrue();
     req.flush({ session, username }, { headers: new HttpHeaders({ 'X-Access-Token': 'session-token' }) });
   }));
-
-  it('fails when the session response does not contain an access token', () => {
-    let receivedError: Error;
-    api.loadSession({ caseId, documentId }).subscribe({
-      next: () => fail('Expected a missing access token to fail'),
-      error: error => receivedError = error,
-    });
-
-    const req = httpMock.expectOne(`/my-context-path/${caseId}/${documentId}`);
-    req.flush({ session, username });
-
-    expect(receivedError.message).toBe('ICP session response did not contain an access token');
-  });
 });

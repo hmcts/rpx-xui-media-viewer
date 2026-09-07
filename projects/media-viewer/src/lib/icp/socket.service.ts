@@ -1,35 +1,33 @@
 import { Injectable, OnDestroy } from '@angular/core';
 import { BehaviorSubject, from, Observable, of, Subject, Subscription } from 'rxjs';
 import { IcpEvents } from './icp.events';
-import { IcpParticipant, IcpScreenUpdate, IcpSession } from './icp.interfaces';
+import { IcpParticipant, IcpSession } from './icp.interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class SocketService implements OnDestroy {
 
   private socket: WebSocket;
-  subscription: Subscription | undefined;
+  subscription: Subscription;
   connected$ = new BehaviorSubject<boolean>(false);
   sessionJoined$ = new Subject<void>();
   presenterUpdated$ = new Subject<void>();
   clientDisconnected$ = new Subject<void>();
   participantUpdated$ = new Subject<void>();
   newParticipantJoined$ = new Subject<void>();
-  screenUpdated$ = new Subject<IcpScreenUpdate>();
+  screenUpdated$ = new Subject<void>();
 
   constructor() { }
 
   ngOnDestroy() {
-    this.cleanupSocket();
+    this.subscription.unsubscribe();
   }
 
   connect(url: string, session: IcpSession) {
-    this.cleanupSocket();
     const socketUrl = new URL(url);
     socketUrl.searchParams.append('sessionId', `${session.sessionId}`);
     socketUrl.searchParams.append('caseId', `${session.caseId}`);
     socketUrl.searchParams.append('documentId', `${session.documentId}`);
     this.subscription = this.getSocketClient(socketUrl.toString()).subscribe((socket: WebSocket) => {
-      this.socket = socket;
 
       socket.onopen = (event: Event) => {
         this.connected$.next(true);
@@ -49,9 +47,6 @@ export class SocketService implements OnDestroy {
 
       socket.onclose = (event: CloseEvent) => {
         console.log('onclose');
-        if (this.socket === socket) {
-          this.cleanupSocket();
-        }
       };
     });
   }
@@ -66,17 +61,7 @@ export class SocketService implements OnDestroy {
 
   leave(session) {
     this.emit(IcpEvents.SESSION_LEAVE, session);
-    this.cleanupSocket();
-  }
-
-  private cleanupSocket(): void {
-    this.subscription?.unsubscribe();
-    this.subscription = undefined;
-    if (this.socket && (this.socket.readyState === WebSocket.CONNECTING || this.socket.readyState === WebSocket.OPEN)) {
-      this.socket.close();
-    }
-    this.socket = undefined;
-    this.connected$.next(false);
+    this.subscription.unsubscribe();
   }
 
   emit(event: string, data: any) {

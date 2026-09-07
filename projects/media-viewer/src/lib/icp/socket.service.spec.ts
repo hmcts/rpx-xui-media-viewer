@@ -8,7 +8,6 @@ describe('SocketService', () => {
 
   const mockSocketClient: any = {
     readyState: WebSocket.OPEN,
-    close: () => { },
     onclose: () => { },
     onerror: () => { },
     onmessage: () => { },
@@ -35,100 +34,20 @@ describe('SocketService', () => {
     expect(socketService.emit).toHaveBeenCalledWith('IcpClientJoinSession', {});
   });
 
-  it('should connect with session identifiers', () => {
+  it('should connect with the session identifiers', () => {
     expect(socketService.getSocketClient).toHaveBeenCalledWith(
       'http://testurl.com/?sessionId=dummy-session-id&caseId=dummy-case-id&documentId=dummy-document-id'
     );
   });
 
-  it('should publish an open socket state and routed messages', () => {
-    const connectedSpy = jasmine.createSpy('connected');
-    const screenUpdatedSpy = spyOn(socketService.screenUpdated$, 'next');
-    const messageHandlerSpy = spyOn(socketService, 'messageEventHandller').and.callThrough();
-    socketService.connected().subscribe(connectedSpy);
-
-    mockSocketClient.onopen(new Event('open'));
-    const screenUpdate = { pageNumber: 2 } as any;
-    mockSocketClient.onmessage(new MessageEvent('message', {
-      data: JSON.stringify({
-        data: { eventName: IcpEvents.SCREEN_UPDATED, data: screenUpdate }
-      })
-    }));
-
-    expect(connectedSpy).toHaveBeenCalledWith(false);
-    expect(connectedSpy).toHaveBeenCalledWith(true);
-    expect(messageHandlerSpy).toHaveBeenCalledWith(IcpEvents.SCREEN_UPDATED, screenUpdate);
-    expect(screenUpdatedSpy).toHaveBeenCalledWith(screenUpdate);
-  });
-
   it('should leave', () => {
-    const subscription = { unsubscribe: jasmine.createSpy('unsubscribe') } as any;
-    socketService.subscription = subscription;
+    socketService.subscription = { unsubscribe: () => { } } as any;
+    spyOn(socketService.subscription, 'unsubscribe');
     spyOn(socketService, 'emit');
     socketService.leave({});
 
     expect(socketService.emit).toHaveBeenCalledWith('IcpClientLeaveSession', {});
-    expect(subscription.unsubscribe).toHaveBeenCalled();
-  });
-
-  it('should close the previous socket when reconnecting', () => {
-    const previousSocket = { ...mockSocketClient, close: jasmine.createSpy('previousClose') };
-    const nextSocket = { ...mockSocketClient, close: jasmine.createSpy('nextClose') };
-    socketService['socket'] = previousSocket;
-    const previousSubscription = { unsubscribe: jasmine.createSpy('unsubscribe') } as any;
-    socketService.subscription = previousSubscription;
-    (socketService.getSocketClient as jasmine.Spy).and.returnValue(of(nextSocket));
-
-    socketService.connect('http://testurl.com', {
-      sessionId: 'new-session', documentId: 'new-document', caseId: 'new-case',
-      dateOfHearing: undefined, connectionUrl: 'new-connection-url'
-    });
-
-    expect(previousSocket.close).toHaveBeenCalled();
-    expect(previousSubscription.unsubscribe).toHaveBeenCalled();
-  });
-
-  it('should ignore a stale close event from a previous socket', () => {
-    const previousSocket = mockSocketClient;
-    const nextSocket = {
-      ...mockSocketClient,
-      close: jasmine.createSpy('nextClose')
-    };
-    (socketService.getSocketClient as jasmine.Spy).and.returnValue(of(nextSocket));
-
-    socketService.connect('http://testurl.com', {
-      sessionId: 'new-session', documentId: 'new-document', caseId: 'new-case',
-      dateOfHearing: undefined, connectionUrl: 'new-connection-url'
-    });
-    nextSocket.onopen(new Event('open'));
-
-    previousSocket.onclose(new CloseEvent('close'));
-
-    expect(socketService['socket']).toBe(nextSocket);
-    expect(socketService.connected$.value).toBeTrue();
-    expect(nextSocket.close).not.toHaveBeenCalled();
-  });
-
-  it('should close the socket and reset connected state when leaving', () => {
-    socketService.connected$.next(true);
-    mockSocketClient.close.calls.reset();
-    socketService.leave({});
-
-    expect(mockSocketClient.close).toHaveBeenCalled();
-    expect(socketService.connected$.value).toBeFalse();
-    expect(socketService.subscription).toBeUndefined();
-  });
-
-  it('should reset connected state when the socket closes unexpectedly', () => {
-    socketService.connected$.next(true);
-    mockSocketClient.close.calls.reset();
-
-    mockSocketClient.onclose(new CloseEvent('close'));
-
-    expect(socketService.connected$.value).toBeFalse();
-    expect(socketService['socket']).toBeUndefined();
-    expect(socketService.subscription).toBeUndefined();
-    expect(mockSocketClient.close).toHaveBeenCalled();
+    expect(socketService.subscription.unsubscribe).toHaveBeenCalled();
   });
 
   it('should emit', () => {
@@ -144,10 +63,10 @@ describe('SocketService', () => {
   });
 
   it('should unsubscribe', () => {
-    const subscription = { unsubscribe: jasmine.createSpy('unsubscribe') } as any;
-    socketService.subscription = subscription;
+    socketService.subscription = { unsubscribe: () => { } } as any;
+    spyOn(socketService.subscription, 'unsubscribe');
     socketService.ngOnDestroy();
-    expect(subscription.unsubscribe).toHaveBeenCalled();
+    expect(socketService.subscription.unsubscribe).toHaveBeenCalled();
   });
 
   it('message event handler should call session joined', () => {

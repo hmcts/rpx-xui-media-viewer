@@ -37,22 +37,10 @@ describe('Icp actions', () => {
   });
 
   describe('Join Socket Session ', () => {
-    describe('Join Socket Session Failure', () => {
-      it('should create an action', () => {
-        const error = new Error('join failed');
-        const action = new fromIcp.JoinIcpSocketSessionFailure(error);
-        expect({ ...action }).toEqual({
-          type: fromIcp.JOIN_ICP_SOCKET_SESSION_FAIL,
-          payload: error
-        });
-      });
-    });
-
     describe('Join Socket Session', () => {
       it('should create an action', () => {
         const payload = {
           username: 'name',
-          token: 'session-token',
           session: {
             sessionId: 'sessionId',
             documentId: 'documentId',

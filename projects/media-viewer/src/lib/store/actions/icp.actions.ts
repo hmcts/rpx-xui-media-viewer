@@ -5,7 +5,6 @@ export const SET_CASE_ID = '[Icp] Set Case Id';
 export const LOAD_ICP_SESSION = '[Icp] Load Session';
 export const LOAD_ICP_SESSION_FAIL = '[Icp] Load Session Failure';
 export const JOIN_ICP_SOCKET_SESSION = '[Icp] Join Socket Session';
-export const JOIN_ICP_SOCKET_SESSION_FAIL = '[Icp] Join Socket Session Failure';
 export const ICP_SOCKET_SESSION_JOINED = '[Icp] Socket Session Joined';
 export const LEAVE_ICP_SOCKET_SESSION = '[Icp] Leave Socket Session';
 export const ICP_PRESENTER_UPDATED = '[Icp] Presenter Updated';
@@ -28,12 +27,7 @@ export class LoadIcpSessionFailure implements Action {
 
 export class JoinIcpSocketSession implements Action {
   readonly type = JOIN_ICP_SOCKET_SESSION;
-  constructor(public payload: { username: string, session: IcpSession, token: string }) { }
-}
-
-export class JoinIcpSocketSessionFailure implements Action {
-  readonly type = JOIN_ICP_SOCKET_SESSION_FAIL;
-  constructor(public payload: Error) { }
+  constructor(public payload: { username: string, session: IcpSession }) { }
 }
 
 export class IcpSocketSessionJoined implements Action {
@@ -61,7 +55,6 @@ export type IcpActions =
   | LoadIcpSession
   | LoadIcpSessionFailure
   | JoinIcpSocketSession
-  | JoinIcpSocketSessionFailure
   | IcpSocketSessionJoined
   | LeaveIcpSocketSession
   | IcpPresenterUpdated
