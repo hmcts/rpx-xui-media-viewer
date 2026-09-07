@@ -88,6 +88,27 @@ describe('SocketService', () => {
     expect(previousSubscription.unsubscribe).toHaveBeenCalled();
   });
 
+  it('should ignore a stale close event from a previous socket', () => {
+    const previousSocket = mockSocketClient;
+    const nextSocket = {
+      ...mockSocketClient,
+      close: jasmine.createSpy('nextClose')
+    };
+    (socketService.getSocketClient as jasmine.Spy).and.returnValue(of(nextSocket));
+
+    socketService.connect('http://testurl.com', {
+      sessionId: 'new-session', documentId: 'new-document', caseId: 'new-case',
+      dateOfHearing: undefined, connectionUrl: 'new-connection-url'
+    });
+    nextSocket.onopen(new Event('open'));
+
+    previousSocket.onclose(new CloseEvent('close'));
+
+    expect(socketService['socket']).toBe(nextSocket);
+    expect(socketService.connected$.value).toBeTrue();
+    expect(nextSocket.close).not.toHaveBeenCalled();
+  });
+
   it('should close the socket and reset connected state when leaving', () => {
     socketService.connected$.next(true);
     mockSocketClient.close.calls.reset();
