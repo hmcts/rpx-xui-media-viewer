@@ -73,10 +73,12 @@ describe('ConvertibleContentViewerComponent', () => {
 
   it('should emit viewerException', fakeAsync(() => {
     spyOn(component.viewerException, 'emit');
+    spyOn(component.mediaLoadStatus, 'emit');
     component.onLoadException(new ViewerException());
     tick();
 
     expect(component.viewerException.emit).toHaveBeenCalled();
+    expect(component.mediaLoadStatus.emit).toHaveBeenCalledWith(ResponseType.FAILURE);
   }));
 
   it('should emit documentTitle', fakeAsync(() => {
