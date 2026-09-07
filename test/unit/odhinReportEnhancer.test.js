@@ -60,9 +60,14 @@ test('capability inventory does not leave a Codecept scenario active after migra
 
 test('reserves Partial status for an active legacy migration gap', () => {
   const partialCapabilities = coverageInventory.capabilities.filter((capability) => capability.status === 'Partial');
+  const blockedCucumberMigration = coverageInventory.legacyInventory?.retirementStatus === 'blocked' &&
+    coverageInventory.legacyInventory.unresolvedDefinitions > 0;
   assert.ok(
-    partialCapabilities.every((capability) => (capability.activeLegacyScenarios ?? 0) > 0),
-    'A non-migration assurance gap belongs in Remaining gap; Partial is reserved for active legacy scenarios'
+    partialCapabilities.every((capability) =>
+      (capability.activeLegacyScenarios ?? 0) > 0 ||
+      (blockedCucumberMigration && capability.legacyCucumberFeature)
+    ),
+    'A non-migration assurance gap belongs in Remaining gap; Partial requires an active legacy or blocked historical migration gap'
   );
 });
 

@@ -1,5 +1,5 @@
 const assert = require('node:assert/strict');
-const { existsSync, readFileSync } = require('node:fs');
+const { existsSync, readdirSync, readFileSync } = require('node:fs');
 const { describe, it } = require('node:test');
 const { resolve } = require('node:path');
 
@@ -23,12 +23,22 @@ function source(relativePath) {
   return readFileSync(resolve(repositoryRoot, relativePath), 'utf8');
 }
 
+function executableCucumberScenarioCount() {
+  const featuresDirectory = resolve(repositoryRoot, 'e2e/src/features');
+  if (!existsSync(featuresDirectory)) return 0;
+
+  return readdirSync(featuresDirectory, { recursive: true })
+    .filter((file) => file.endsWith('.feature'))
+    .reduce((count, file) => count + (source(`e2e/src/features/${file}`).match(/^\s*Scenario(?: Outline)?:/gm) ?? []).length, 0);
+}
+
 describe('Media Viewer Codecept-to-Playwright parity', () => {
   it('accounts for every active historical Cucumber scenario independently', () => {
     const dispositions = new Set(['covered', 'covered-with-known-defect', 'unsupported', 'retired-by-owner', 'out-of-scope']);
-    assert.equal(cucumberInventory.length, 35, 'the frozen Cucumber inventory must retain all 35 historical scenarios');
-    assert.equal(new Set(cucumberInventory.map(({ legacyFile, scenario }) => `${legacyFile}:${scenario}`)).size, 35);
+    assert.equal(cucumberInventory.length, 52, 'the frozen Cucumber inventory must retain every historical scenario definition');
+    assert.equal(new Set(cucumberInventory.map(({ legacyFile, sourceLine }) => `${legacyFile}:${sourceLine}`)).size, 52);
     for (const scenario of cucumberInventory) {
+      assert.equal(Number.isInteger(scenario.sourceLine) && scenario.sourceLine > 0, true, `${scenario.legacyFile}:${scenario.scenario} needs source provenance`);
       assert.ok(dispositions.has(scenario.disposition), `${scenario.legacyFile}:${scenario.scenario} needs an explicit disposition`);
       assert.equal(typeof scenario.assessment, 'string', `${scenario.legacyFile}:${scenario.scenario} needs a semantic assessment`);
       const hasReplacement = scenario.playwrightFile !== null || scenario.playwrightContract !== null;
@@ -60,6 +70,23 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
 
     assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
     assert.equal(replacementContracts.length, 23, 'every historical Codecept contract must have a Playwright replacement');
+    const coverageInventory = JSON.parse(source('playwright_tests/functional/mediaViewerCoverage.json'));
+    const dispositionCounts = cucumberInventory.reduce((counts, scenario) => {
+      counts[scenario.disposition] = (counts[scenario.disposition] ?? 0) + 1;
+      return counts;
+    }, {});
+    assert.deepEqual(coverageInventory.legacyInventory, {
+      sourceFamily: 'Protractor Cucumber',
+      sourceDefinitions: cucumberInventory.length,
+      unresolvedDefinitions: cucumberInventory.filter(({ disposition }) =>
+        disposition === 'unsupported' || disposition === 'covered-with-known-defect'
+      ).length,
+      executableDefinitions: executableCucumberScenarioCount(),
+      retirementStatus: 'blocked',
+      dispositionCounts,
+      manifest: './test/migration-history/mediaViewerCucumberScenarios.json',
+      reconciliation: '16 unresolved historical definitions do not match 0 executable discovery; Cucumber retirement is non-final until executable legacy sources are preserved or explicit owner disposition is recorded'
+    });
 
     const legacyScenariosByPlaywrightContract = new Map();
     for (const [, legacyScenario, , playwrightContract] of replacementContracts) {
@@ -81,7 +108,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.equal(legacyScenariosByPlaywrightContract.size, 21, 'the migration inventory must retain 21 unique Playwright contracts plus two declared many-to-one mappings');
     assert.equal(existsSync(resolve(repositoryRoot, 'test/config.js')), false, 'the retired Codecept runner config must not remain');
     assert.equal(existsSync(resolve(repositoryRoot, 'test/end-to-end')), false, 'the retired Codecept runner tree must not remain');
-    assert.equal(existsSync(resolve(repositoryRoot, 'e2e')), false, 'the retired Protractor runner tree must not remain');
+    assert.equal(existsSync(resolve(repositoryRoot, 'e2e')), false, 'no executable Protractor source is retained; retirement remains blocked until unresolved history is dispositioned');
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
     assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
@@ -159,5 +186,25 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.doesNotMatch(imageAnnotationContracts, /page\.evaluate\(async/, 'image UI parity must not be replaced by direct browser-context API calls');
     assert.doesNotMatch(knownDefectContracts, /test\.(?:skip|fixme)\(/, 'known defects must be excluded by tag, never skipped');
     assert.match(source('playwright.config.ts'), /grepInvert:\s*includeKnownDefectTests \? undefined : knownExternalDefectTags/);
+  });
+
+  it('blocks Cucumber retirement when unresolved history is not executable', () => {
+    const coverageInventory = JSON.parse(source('playwright_tests/functional/mediaViewerCoverage.json'));
+    const unresolvedDefinitions = cucumberInventory.filter(({ disposition }) =>
+      disposition === 'unsupported' || disposition === 'covered-with-known-defect'
+    ).length;
+    const executableDefinitions = executableCucumberScenarioCount();
+    const { legacyInventory } = coverageInventory;
+
+    assert.equal(legacyInventory.sourceFamily, 'Protractor Cucumber');
+    assert.equal(legacyInventory.unresolvedDefinitions, unresolvedDefinitions);
+    assert.equal(legacyInventory.executableDefinitions, executableDefinitions);
+    assert.equal(legacyInventory.retirementStatus, 'blocked');
+    assert.match(legacyInventory.reconciliation, /unresolved historical definitions.*executable discovery/s);
+    if (legacyInventory.retirementStatus === 'retired') {
+      assert.equal(legacyInventory.unresolvedDefinitions, legacyInventory.executableDefinitions);
+    } else {
+      assert.notEqual(legacyInventory.unresolvedDefinitions, legacyInventory.executableDefinitions);
+    }
   });
 });

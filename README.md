@@ -246,7 +246,9 @@ Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktre
 
 ### 5. Run Playwright tests
 Media Viewer uses the Playwright runner and reporting shape used in MC and MO.
-The legacy Protractor, Cucumber and CodeceptJS runners have been retired; new
+The CodeceptJS runner is retired. Protractor/Cucumber retirement is blocked and
+non-final: 16 historical Cucumber definitions remain unsupported or
+known-defect, and no executable legacy source is retained on this branch. New
 browser coverage belongs under `playwright_tests/`.
 
 Current Playwright lanes:
@@ -391,8 +393,10 @@ Migration boundaries:
 - Keep screen interactions and reusable locators in page objects under
   `playwright_tests/pages/`; keep assertions visible in specs.
 - Historical CodeceptJS mappings are retained as data in
-  `test/migration-history/mediaViewerCodeceptScenarios.json`; no legacy runner
-  or executable legacy source remains in this repository.
+  `test/migration-history/mediaViewerCodeceptScenarios.json`. The separate
+  Cucumber inventory in `test/migration-history/mediaViewerCucumberScenarios.json`
+  records 16 unresolved definitions; its executable discovery is zero, so
+  Protractor/Cucumber retirement remains blocked and non-final.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
   logic.
@@ -614,5 +618,8 @@ The list of exceptions thrown by the Media Viewer are as follows:
 
 ## Legacy browser tests
 
-The former Protractor/Cucumber and CodeceptJS runners were retired as part of
-the Playwright migration. Use the Playwright commands above for browser tests.
+The CodeceptJS runner was retired as part of the Playwright migration.
+Protractor/Cucumber retirement is blocked and non-final because 16 historical
+definitions remain unsupported or known-defect while their executable source
+is absent on this branch. Use the Playwright commands above for supported
+browser tests; do not treat this branch as final legacy retirement.
