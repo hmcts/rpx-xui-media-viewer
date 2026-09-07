@@ -65,6 +65,8 @@ describe('UpdateService', () => {
       expect(socketService.join).toHaveBeenCalled();
       expect(socketService.listen).toHaveBeenCalled();
       expect(socketService.connected).toHaveBeenCalled();
+      expect(socketService.connect).toHaveBeenCalledWith('?access_token=token', session);
+      expect(socketService.join).toHaveBeenCalledWith({ ...session, username });
     }));
 
   it('should leave session',
@@ -113,7 +115,11 @@ describe('UpdateService', () => {
 
       updateService.session = session;
       updateService.updateScreen(screen);
-      expect(socketService.emit).toHaveBeenCalled();
+      expect(socketService.emit).toHaveBeenCalledWith('IcpUpdateScreen', {
+        body: screen,
+        caseId: session.caseId,
+        documentId: session.documentId
+      });
     }));
 
   it('listen for screen updates',
@@ -130,7 +136,11 @@ describe('UpdateService', () => {
 
       updateService.session = session;
       updateService.removeParticipant('participantId');
-      expect(socketService.emit).toHaveBeenCalled();
+      expect(socketService.emit).toHaveBeenCalledWith('IcpRemoveParticipantFromList', {
+        participantId: 'participantId',
+        caseId: session.caseId,
+        documentId: session.documentId
+      });
     }));
 
   it('listen for participant updates',

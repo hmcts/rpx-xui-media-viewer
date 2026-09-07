@@ -34,6 +34,31 @@ describe('SocketService', () => {
     expect(socketService.emit).toHaveBeenCalledWith('IcpClientJoinSession', {});
   });
 
+  it('should connect with session identifiers', () => {
+    expect(socketService.getSocketClient).toHaveBeenCalledWith(
+      'http://testurl.com/?sessionId=dummy-session-id&caseId=dummy-case-id&documentId=dummy-document-id'
+    );
+  });
+
+  it('should publish an open socket state and routed messages', () => {
+    const connectedSpy = jasmine.createSpy('connected');
+    const screenUpdatedSpy = spyOn(socketService.screenUpdated$, 'next');
+    const messageHandlerSpy = spyOn(socketService, 'messageEventHandller').and.callThrough();
+    socketService.connected().subscribe(connectedSpy);
+
+    mockSocketClient.onopen(new Event('open'));
+    mockSocketClient.onmessage(new MessageEvent('message', {
+      data: JSON.stringify({
+        data: { eventName: IcpEvents.SCREEN_UPDATED, data: { pageNumber: 2 } }
+      })
+    }));
+
+    expect(connectedSpy).toHaveBeenCalledWith(false);
+    expect(connectedSpy).toHaveBeenCalledWith(true);
+    expect(messageHandlerSpy).toHaveBeenCalledWith(IcpEvents.SCREEN_UPDATED, { pageNumber: 2 });
+    expect(screenUpdatedSpy).toHaveBeenCalled();
+  });
+
   it('should leave', () => {
     socketService.subscription = { unsubscribe: () => { } } as any;
     spyOn(socketService.subscription, 'unsubscribe');
@@ -136,4 +161,3 @@ describe('SocketService', () => {
   });
 
 });
-

@@ -1,4 +1,5 @@
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { HttpHeaders } from '@angular/common/http';
 import { IcpSessionApiService } from './icp-session-api.service';
 import { IcpSession } from './icp.interfaces';
 import { fakeAsync, inject, TestBed } from '@angular/core/testing';
@@ -43,10 +44,12 @@ describe('IcpSessionApiService', () => {
       .subscribe(response => {
         expect(response.username).toBe(username);
         expect(response.session).toBe(session);
+        expect(response.token).toBe('session-token');
       }, error => done(error));
 
     const req = httpMock.expectOne(`/my-context-path/${caseId}/${documentId}`);
     expect(req.request.method).toBe('GET');
-    req.flush({ session, username });
+    expect(req.request.withCredentials).toBeTrue();
+    req.flush({ session, username }, { headers: new HttpHeaders({ 'X-Access-Token': 'session-token' }) });
   }));
 });
