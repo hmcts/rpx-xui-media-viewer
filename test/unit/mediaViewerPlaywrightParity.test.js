@@ -85,7 +85,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       retirementStatus: 'blocked',
       dispositionCounts,
       manifest: './test/migration-history/mediaViewerCucumberScenarios.json',
-      reconciliation: '16 unresolved historical definitions do not match 0 executable discovery; Cucumber retirement is non-final until executable legacy sources are preserved or explicit owner disposition is recorded'
+      reconciliation: '1 unresolved historical definition does not match 0 executable discovery; Cucumber retirement remains blocked pending EXUI-5124 evidence, while the one DM Store-dependent definition remains explicitly out of scope for this self-contained suite'
     });
 
     const legacyScenariosByPlaywrightContract = new Map();
@@ -200,7 +200,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.equal(legacyInventory.unresolvedDefinitions, unresolvedDefinitions);
     assert.equal(legacyInventory.executableDefinitions, executableDefinitions);
     assert.equal(legacyInventory.retirementStatus, 'blocked');
-    assert.match(legacyInventory.reconciliation, /unresolved historical definitions.*executable discovery/s);
+    assert.match(legacyInventory.reconciliation, /unresolved historical definitions?.*executable discovery/s);
     if (legacyInventory.retirementStatus === 'retired') {
       assert.equal(legacyInventory.unresolvedDefinitions, legacyInventory.executableDefinitions);
     } else {
