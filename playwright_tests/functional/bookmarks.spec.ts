@@ -137,7 +137,7 @@ test.describe('Bookmarks', () => {
     await expect(mediaViewer.bookmarks.name(0)).toHaveText('Later page');
   });
 
-  test('persists reorder through the drag-and-drop API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+  test('preserves an untouched bookmark during reorder and reload', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([
       bookmark('bookmark-1', 'First bookmark', 0),
       bookmark('bookmark-2', 'Second bookmark', 1),
