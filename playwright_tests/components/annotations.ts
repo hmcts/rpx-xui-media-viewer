@@ -44,7 +44,10 @@ export class Annotations {
       await this.page.locator('#mvHighlightBtn').click();
     }
     await this.drawBoxButton.click();
-    const drawingSurface = this.page.locator('.pageContainer__page--draw').first();
+    const pageNumber = await page.getAttribute('data-page-number');
+    const drawingSurface = this.page.locator('.pageContainer__page--draw').nth(
+      pageNumber ? Number(pageNumber) - 1 : 0
+    );
     await drawingSurface.waitFor({ state: 'visible' });
     await this.drawRectangle(drawingSurface, start);
   }

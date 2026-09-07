@@ -51,6 +51,8 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   private subscriptions: Subscription[] = [];
   private viewerException: ViewerException;
   private response: Subscription;
+  private imageLoadGeneration = 0;
+  private pendingAnimationFrame: number | undefined;
 
   showCommentsPanel: boolean;
   enableGrabNDrag = false;
@@ -96,6 +98,10 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
+    if (this.pendingAnimationFrame !== undefined) {
+      cancelAnimationFrame(this.pendingAnimationFrame);
+      this.pendingAnimationFrame = undefined;
+    }
     this.subscriptions.filter(subscription => !subscription.closed)
       .forEach(subscription => subscription.unsubscribe());
     if (this.response) {
@@ -105,6 +111,11 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.url) {
+      this.imageLoadGeneration++;
+      if (this.pendingAnimationFrame !== undefined) {
+        cancelAnimationFrame(this.pendingAnimationFrame);
+        this.pendingAnimationFrame = undefined;
+      }
       this.errorMessage = null;
       this.toolbarEvents.reset();
     }
@@ -173,7 +184,13 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   onLoad(img: any) {
     this.mediaLoadStatus.emit(ResponseType.SUCCESS);
-    requestAnimationFrame(() => this.initAnnoPage(img));
+    const generation = this.imageLoadGeneration;
+    this.pendingAnimationFrame = requestAnimationFrame(() => {
+      this.pendingAnimationFrame = undefined;
+      if (generation === this.imageLoadGeneration) {
+        this.initAnnoPage(img);
+      }
+    });
   }
 
   initAnnoPage(img: any) {

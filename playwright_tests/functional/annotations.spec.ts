@@ -73,6 +73,19 @@ annotationsTest.describe('PDF annotations', () => {
     expect(rehydratedBounds?.height).toBeGreaterThan(0);
   });
 
+  annotationsTest('draws a PDF highlight on the requested page', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.navigation.goToPage(2);
+    const secondPage = mediaViewer.loadState.pdfPage(2);
+    await expect(secondPage).toHaveAttribute('data-loaded', 'true');
+
+    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(secondPage);
+    const savedAnnotation = (await saveRequest).postDataJSON();
+
+    expect(savedAnnotation.page).toBe(2);
+  });
+
   annotationsTest('keeps independently drawn highlight geometry distinct after reload', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
     const firstPage = mediaViewer.loadState.pdfPage(1);
@@ -298,9 +311,20 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
     const rectangle = mediaViewer.annotations.renderedRectangles.last();
     await expect(rectangle).toBeVisible();
-    const bounds = await rectangle.boundingBox();
-    expect(bounds?.width).toBeGreaterThan(0);
-    expect(bounds?.height).toBeGreaterThan(0);
+    const renderedGeometry = await rectangle.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        left: parseFloat(style.left),
+        top: parseFloat(style.top),
+        width: parseFloat(style.width),
+        height: parseFloat(style.height),
+      };
+    });
+    const expectedGeometry = savedAnnotation.rectangles[0];
+    expect(renderedGeometry.left).toBeCloseTo(expectedGeometry.x, 1);
+    expect(renderedGeometry.top).toBeCloseTo(expectedGeometry.y, 1);
+    expect(renderedGeometry.width).toBeCloseTo(expectedGeometry.width, 1);
+    expect(renderedGeometry.height).toBeCloseTo(expectedGeometry.height, 1);
   });
 
   imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
