@@ -153,6 +153,11 @@ test.describe('Bookmarks', () => {
     ]);
     await expect(mediaViewer.bookmarks.name(0)).toHaveText('Second bookmark');
     await expect(mediaViewer.bookmarks.name(1)).toHaveText('First bookmark');
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.open();
+    await expect(mediaViewer.bookmarks.name(0)).toHaveText('Second bookmark');
+    await expect(mediaViewer.bookmarks.name(1)).toHaveText('First bookmark');
   });
 
   test('adds thirty bookmarks without losing the bookmark input contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
