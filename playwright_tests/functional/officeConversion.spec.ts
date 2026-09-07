@@ -44,6 +44,7 @@ test.describe('Office document conversion', () => {
       await mediaViewer.submitDocumentDetails('/documents/playwright-conversion-error/binary', 'playwright-office-case', mediaAssets.officeDocument.contentType);
 
       expect((await convertResponse).status()).toBe(status);
+      await expect(page.getByRole('button', { name: 'Load document' })).toBeVisible();
       await expect(mediaViewer.loadState.successMessage).toHaveCount(0);
       await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
     });
@@ -57,6 +58,7 @@ test.describe('Office document conversion', () => {
 
     await mediaViewer.submitDocumentDetails('/documents/playwright-conversion-timeout/binary', 'playwright-office-case', mediaAssets.officeDocument.contentType);
 
+    await expect(page.getByRole('button', { name: 'Load document' })).toBeVisible();
     await expect(mediaViewer.loadState.successMessage).toHaveCount(0);
     await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
   });
