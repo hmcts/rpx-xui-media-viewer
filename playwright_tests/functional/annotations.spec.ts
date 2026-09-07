@@ -43,7 +43,7 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(firstPage);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1));
     const savedAnnotation = (await saveRequest).postDataJSON();
 
     expect(savedAnnotation).toMatchObject({
@@ -80,7 +80,7 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(secondPage).toHaveAttribute('data-loaded', 'true');
 
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(secondPage);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(2));
     const savedAnnotation = (await saveRequest).postDataJSON();
 
     expect(savedAnnotation.page).toBe(2);
@@ -92,11 +92,11 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     const firstSave = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(firstPage, { x: 80, y: 80 });
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1), { x: 80, y: 80 });
     const firstAnnotation = (await firstSave).postDataJSON();
 
     const secondSave = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(firstPage, { x: 250, y: 200 });
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1), { x: 250, y: 200 });
     const secondAnnotation = (await secondSave).postDataJSON();
 
     expect(firstAnnotation.id).not.toBe(secondAnnotation.id);
@@ -185,7 +185,7 @@ annotationsTest.describe('PDF annotations', () => {
     await mediaViewer.reloadDocument(mediaAssets.pdf);
 
     const drawBoxRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1));
     await drawBoxRequest;
     await mediaViewer.comments.addToSelectedAnnotation(drawBoxComment);
 
@@ -247,7 +247,7 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.imageDrawSurface);
     const savedAnnotation = (await saveRequest).postDataJSON();
     expect(savedAnnotation).toMatchObject({
       annotationSetId: 'pw-image-annotations-annotation-set',
@@ -288,7 +288,7 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.imageDrawSurface);
     const savedAnnotation = (await saveRequest).postDataJSON();
     expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
     expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);

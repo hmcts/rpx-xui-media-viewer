@@ -38,22 +38,17 @@ export class Annotations {
     await text.dblclick();
   }
 
-  async drawOnPage(page: Locator, start = { x: 80, y: 80 }): Promise<void> {
-    await page.waitFor({ state: 'visible' });
+  async drawOnPage(surface: Locator, start = { x: 80, y: 80 }): Promise<void> {
     if (!await this.drawBoxButton.isVisible()) {
       await this.page.locator('#mvHighlightBtn').click();
     }
     await this.drawBoxButton.click();
-    const pageNumber = await page.getAttribute('data-page-number');
-    const drawingSurface = this.page.locator('.pageContainer__page--draw').nth(
-      pageNumber ? Number(pageNumber) - 1 : 0
-    );
-    await drawingSurface.waitFor({ state: 'visible' });
-    await this.drawRectangle(drawingSurface, start);
+    await expect(surface).toBeVisible();
+    await expect(surface).toHaveAttribute('tabindex', '0');
+    await this.drawRectangle(surface, start);
   }
 
   private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {
-    await surface.waitFor({ state: 'visible' });
     await expect.poll(async () => {
       const bounds = await surface.boundingBox();
       return !!bounds && bounds.width >= start.x + 100 && bounds.height >= start.y + 50;
