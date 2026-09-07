@@ -77,4 +77,26 @@ describe('Icp Follower Service', () => {
       expect(toolbarEvents.rotate).toHaveBeenCalled();
     }))
   );
+
+  it('should apply remote zoom and avoid repeating the same rotation',
+    inject([Store, ViewerEventService, ToolbarEventService], fakeAsync((store, viewerEvents, toolbarEvents) => {
+      spyOn(viewerEvents, 'goToDestinationICP');
+      spyOn(toolbarEvents, 'rotate');
+      spyOn(toolbarEvents, 'zoom');
+
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 0, scale: 1 }));
+      const remotePosition = { ...pdfPosition, rotation: 90, scale: 1.5 };
+
+      followerService.followScreenUpdate({ pdfPosition: remotePosition });
+      followerService.followScreenUpdate({ pdfPosition: remotePosition });
+
+      expect(viewerEvents.goToDestinationICP).toHaveBeenCalledTimes(2);
+      expect(toolbarEvents.zoom).toHaveBeenCalledWith(1.5);
+      expect(toolbarEvents.rotate).toHaveBeenCalledOnceWith(90);
+    }))
+  );
+
+  it('should ignore an empty screen update', () => {
+    expect(() => followerService.followScreenUpdate({} as any)).not.toThrow();
+  });
 });
