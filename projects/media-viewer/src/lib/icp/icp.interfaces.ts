@@ -15,6 +15,12 @@ export interface IcpSession {
   connectionUrl: string;
 }
 
+export interface IcpSessionResponse {
+  username: string;
+  session: IcpSession;
+  token: string;
+}
+
 export interface IcpParticipant {
   id: string;
   username: string;
