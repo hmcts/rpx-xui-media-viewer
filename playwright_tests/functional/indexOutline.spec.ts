@@ -1,6 +1,20 @@
 import { expect, test, mediaAssets } from '../fixtures/mediaViewerTest';
 
 test.describe('PDF index and outline', () => {
+  test('shows a created bookmark from the sidebar bookmark view', { tag: ['@e2e-functional', '@feature-index-outline'] }, async ({ mediaViewer }) => {
+    await mediaViewer.bookmarks.stubApi();
+    await mediaViewer.openDocument(mediaAssets.outlinePdf);
+    await mediaViewer.bookmarks.open();
+    const created = await mediaViewer.bookmarks.add('Outline bookmark');
+    expect(created).toMatchObject({ name: 'Outline bookmark' });
+
+    await mediaViewer.sidePanels.toggleIndex();
+    await expect(mediaViewer.indexOutline.item('Index Page')).toBeVisible();
+    await mediaViewer.sidePanels.toggleBookmarks();
+    await expect(mediaViewer.bookmarks.name()).toHaveText('Outline bookmark');
+    await expect(mediaViewer.bookmarks.panel).toBeVisible();
+  });
+
   test('navigates a top-level outline document destination', { tag: ['@e2e-functional', '@feature-index-outline'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.outlinePdf);
     await mediaViewer.sidePanels.toggleIndex();

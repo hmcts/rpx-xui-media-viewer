@@ -1,4 +1,4 @@
-import { commentCreationTest, expect, commentsTest, mediaAssets, multiDocumentCommentsTest, twoPageCommentsTest } from '../fixtures/mediaViewerTest';
+import { commentCreationTest, expect, commentsTest, longCommentsTest, mediaAssets, multiDocumentCommentsTest, twoPageCommentsTest } from '../fixtures/mediaViewerTest';
 
 const isLoadedPdfAnnotationRequest = (url: string) =>
   url.includes('/em-anno/annotation-sets/filter') &&
@@ -128,6 +128,22 @@ commentsTest.describe('Comments panel', () => {
     await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 2');
     await mediaViewer.comments.nextSearchResult.click();
     await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 2 of 2');
+
+    await mediaViewer.sidePanels.toggleComments();
+    await expect(mediaViewer.comments.panel).toBeHidden();
+  });
+
+  longCommentsTest('renders long comments with the supported ellipsis contract', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    const longComment = 'A'.repeat(140);
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+
+    const commentText = mediaViewer.comments.comment(longComment).locator('p.commentText');
+    await expect(commentText).toBeVisible();
+    await expect.poll(() => commentText.evaluate(element => {
+      const style = getComputedStyle(element);
+      return [style.overflow, style.textOverflow, style.whiteSpace];
+    })).toEqual(['hidden', 'ellipsis', 'nowrap']);
   });
 
   commentsTest('collates rendered comments and returns to the panel', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {

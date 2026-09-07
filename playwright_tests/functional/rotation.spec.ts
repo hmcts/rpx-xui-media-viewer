@@ -1,6 +1,31 @@
-import { expect, mediaAssets, savedRotationTest, test } from '../fixtures/mediaViewerTest';
+import { annotationsTest, expect, mediaAssets, savedRotationTest, test } from '../fixtures/mediaViewerTest';
 
 test.describe('Rotation', () => {
+  annotationsTest('keeps a PDF text highlight aligned with the text layer after rotation', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.openTextHighlight();
+    const text = page.locator('.textLayer span').filter({ hasText: /example/i }).first();
+    await text.waitFor({ state: 'visible' });
+    await text.dblclick();
+    await mediaViewer.annotations.createButton.click();
+
+    const overlaps = (first: { x: number; y: number; width: number; height: number }, second: { x: number; y: number; width: number; height: number }) =>
+      first.x < second.x + second.width && first.x + first.width > second.x &&
+      first.y < second.y + second.height && first.y + first.height > second.y;
+    const initialAnnotation = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
+    const initialText = await text.boundingBox();
+    expect(initialAnnotation).not.toBeNull();
+    expect(initialText).not.toBeNull();
+    expect(overlaps(initialAnnotation!, initialText!)).toBe(true);
+
+    await mediaViewer.rotation.clockwise();
+    const rotatedAnnotation = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
+    const rotatedText = await text.boundingBox();
+    expect(rotatedAnnotation).not.toBeNull();
+    expect(rotatedText).not.toBeNull();
+    expect(overlaps(rotatedAnnotation!, rotatedText!)).toBe(true);
+  });
+
   test('rotates an image clockwise and back', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.image);
 

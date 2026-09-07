@@ -185,6 +185,40 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.comments.summaryDialog).toContainText(drawBoxComment);
   });
 
+  annotationsTest('deletes a comment from a drawn PDF annotation and preserves the annotation', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    const comment = 'Non-text annotation comment to delete';
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await mediaViewer.comments.addToSelectedAnnotation(comment);
+    await expect(mediaViewer.comments.comment(comment)).toBeVisible();
+
+    const deleteRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.comments.remove(comment);
+    expect((await deleteRequest).postDataJSON().comments).toEqual([]);
+    await expect(mediaViewer.comments.comment(comment)).toHaveCount(0);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment(comment)).toHaveCount(0);
+  });
+
+  annotationsTest('keeps multiple non-text PDF comments distinct in the comments panel', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer }) => {
+    const firstComment = 'First non-text annotation comment';
+    const secondComment = 'Second non-text annotation comment';
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1), { x: 80, y: 80 });
+    await mediaViewer.comments.addToSelectedAnnotation(firstComment);
+    await expect(mediaViewer.comments.comment(firstComment)).toBeVisible();
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1), { x: 250, y: 200 });
+    await mediaViewer.comments.addToSelectedAnnotation(secondComment);
+
+    await expect(mediaViewer.comments.comment(firstComment)).toBeVisible();
+    await expect(mediaViewer.comments.comment(secondComment)).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(2);
+  });
+
   annotationsTest('highlights PDF search results and persists the created annotation set', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
     await mediaViewer.annotations.openSearch();

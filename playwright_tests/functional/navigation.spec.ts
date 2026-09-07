@@ -1,6 +1,21 @@
 import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
 
 test.describe('Page navigation', () => {
+  test('enables the wrapper toolbar toggles and exposes the corresponding viewer controls', { tag: ['@e2e-functional', '@feature-navigation'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.goto();
+
+    for (const toggleId of ['toggleAnnotations', 'toggleRedact', 'toggleICP', 'toggleMultimedia', 'toggleRedactSearch']) {
+      const toggle = page.locator(`#${toggleId}`);
+      await expect(toggle).toBeChecked();
+    }
+
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'toolbar-toggle-contract', mediaAssets.pdf.contentType);
+    await expect(page.locator('#mvHighlightBtn')).toBeEnabled();
+    await expect(page.locator('#mvRedactBtn')).toBeEnabled();
+    await expect(page.locator('#mvPresentBtn')).toBeEnabled();
+    await expect(page.locator('#mvSearchBtn')).toBeEnabled();
+  });
+
   test('navigates between PDF pages', { tag: ['@e2e-functional', '@feature-navigation'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.pdf);
 
