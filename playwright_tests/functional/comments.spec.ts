@@ -140,10 +140,16 @@ commentsTest.describe('Comments panel', () => {
 
     const commentText = mediaViewer.comments.comment(longComment).locator('p.commentText');
     await expect(commentText).toBeVisible();
+    await mediaViewer.comments.commentsTab.click();
     await expect.poll(() => commentText.evaluate(element => {
       const style = getComputedStyle(element);
-      return [style.overflow, style.textOverflow, style.whiteSpace];
-    })).toEqual(['hidden', 'ellipsis', 'nowrap']);
+      return {
+        overflow: style.overflow,
+        textOverflow: style.textOverflow,
+        whiteSpace: style.whiteSpace,
+        isClipped: element.scrollWidth > element.clientWidth,
+      };
+    })).toEqual({ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', isClipped: true });
   });
 
   commentsTest('collates rendered comments and returns to the panel', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {

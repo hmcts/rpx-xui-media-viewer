@@ -18,12 +18,14 @@ test.describe('Rotation', () => {
     expect(initialText).not.toBeNull();
     expect(overlaps(initialAnnotation!, initialText!)).toBe(true);
 
+    const initialOrientation = await mediaViewer.loadState.pdfOrientation(1);
     await mediaViewer.rotation.clockwise();
-    const rotatedAnnotation = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
-    const rotatedText = await text.boundingBox();
-    expect(rotatedAnnotation).not.toBeNull();
-    expect(rotatedText).not.toBeNull();
-    expect(overlaps(rotatedAnnotation!, rotatedText!)).toBe(true);
+    await expect.poll(() => mediaViewer.loadState.pdfOrientation(1)).not.toBe(initialOrientation);
+    await expect.poll(async () => {
+      const rotatedAnnotation = await mediaViewer.annotations.renderedRectangles.first().boundingBox();
+      const rotatedText = await text.boundingBox();
+      return rotatedAnnotation !== null && rotatedText !== null && overlaps(rotatedAnnotation, rotatedText);
+    }).toBe(true);
   });
 
   test('rotates an image clockwise and back', { tag: ['@e2e-functional', '@feature-rotation'] }, async ({ mediaViewer }) => {

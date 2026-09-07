@@ -288,24 +288,50 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     expect(bounds?.height).toBeGreaterThan(0);
   });
 
-  imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     const updatedComment = 'Updated image annotation comment';
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
     await mediaViewer.annotations.renderedRectangles.first().click();
     await mediaViewer.sidePanels.openComments();
+
+    const updateRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    const updateResponse = page.waitForResponse(response => annotationRequest(response.url()) && response.request().method() === 'POST');
     await mediaViewer.comments.edit(existingImageComment, updatedComment);
+    const requestBody = (await updateRequest).postDataJSON();
+    expect((await updateResponse).status()).toBe(200);
+    expect(requestBody).toMatchObject({
+      id: 'pw-image-annotation',
+      comments: [expect.objectContaining({ content: updatedComment })],
+    });
     await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
+
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
+    await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
   });
 
-  imageAnnotationsTest('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
     await mediaViewer.annotations.renderedRectangles.first().click();
     await mediaViewer.sidePanels.openComments();
+    const deleteRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    const deleteResponse = page.waitForResponse(response => annotationRequest(response.url()) && response.request().method() === 'POST');
     await mediaViewer.comments.remove(existingImageComment);
+    const requestBody = (await deleteRequest).postDataJSON();
+    expect((await deleteResponse).status()).toBe(200);
+    expect(requestBody).toMatchObject({
+      id: 'pw-image-annotation',
+      comments: [],
+    });
+    await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
+
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await mediaViewer.sidePanels.openComments();
     await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
   });
 });
