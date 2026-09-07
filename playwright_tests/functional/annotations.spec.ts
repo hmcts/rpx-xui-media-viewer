@@ -236,7 +236,6 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await expect(mediaViewer.loadState.image).toBeVisible();
     await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
-    await mediaViewer.annotations.renderedRectangles.last().click();
     await mediaViewer.sidePanels.openComments();
     await mediaViewer.comments.addToSelectedAnnotation('Created image annotation comment');
     await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
