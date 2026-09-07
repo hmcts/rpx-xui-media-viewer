@@ -99,6 +99,41 @@ test('rejects evidence publication when no source revision is supplied', async (
   assert.deepEqual(fs.readdirSync(evidenceDir), []);
 });
 
+test('rejects an invalid source revision before publishing evidence', async (context) => {
+  const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a11y-evidence-'));
+  context.after(() => fs.rmSync(evidenceDir, { recursive: true, force: true }));
+  preserveEnvironment(context);
+  Object.assign(process.env, {
+    PW_A11Y_EVIDENCE_DIR: evidenceDir,
+    PLAYWRIGHT_REPORT_REVISION: 'not-a-commit-sha',
+  });
+
+  await assert.rejects(
+    publishAccessibilityEvidence(
+      { title: 'Accessibility evidence with invalid revision' },
+      {
+        attachmentPrefix: 'axe',
+        entry: { engine: 'axe', violationCount: 0, rules: [], targets: [] },
+        html: '<p>evidence</p>',
+        json: { violationCount: 0 },
+      }
+    ),
+    /full 40-character commit SHA/
+  );
+  assert.deepEqual(fs.readdirSync(evidenceDir), []);
+});
+
+test('rejects provenance for a revision different from checked-out HEAD', () => {
+  const result = spawnSync(process.execPath, [accessibilityRunnerPath, '--list'], {
+    cwd: path.resolve(__dirname, '../..'),
+    env: { ...process.env, PLAYWRIGHT_REPORT_REVISION: '0'.repeat(40) },
+    encoding: 'utf8',
+  });
+
+  assert.notEqual(result.status, 0);
+  assert.match(result.stderr, /does not match checked-out HEAD/);
+});
+
 test('preserves every concurrent engine entry in the final manifest and index', async (context) => {
   const evidenceDir = fs.mkdtempSync(path.join(os.tmpdir(), 'a11y-evidence-concurrent-'));
   context.after(() => fs.rmSync(evidenceDir, { recursive: true, force: true }));
