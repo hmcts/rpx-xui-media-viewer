@@ -6,6 +6,7 @@ const { resolve } = require('node:path');
 const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = require('../migration-history/mediaViewerCodeceptScenarios.json');
+const cucumberInventory = require('../migration-history/mediaViewerCucumberScenarios.json');
 
 const intentionalManyToOneCoverage = [
   [
@@ -23,6 +24,35 @@ function source(relativePath) {
 }
 
 describe('Media Viewer Codecept-to-Playwright parity', () => {
+  it('accounts for every active historical Cucumber scenario independently', () => {
+    const dispositions = new Set(['covered', 'covered-with-known-defect', 'unsupported', 'retired-by-owner', 'out-of-scope']);
+    assert.equal(cucumberInventory.length, 35, 'the frozen Cucumber inventory must retain all 35 historical scenarios');
+    assert.equal(new Set(cucumberInventory.map(({ legacyFile, scenario }) => `${legacyFile}:${scenario}`)).size, 35);
+    for (const scenario of cucumberInventory) {
+      assert.ok(dispositions.has(scenario.disposition), `${scenario.legacyFile}:${scenario.scenario} needs an explicit disposition`);
+      assert.equal(typeof scenario.assessment, 'string', `${scenario.legacyFile}:${scenario.scenario} needs a semantic assessment`);
+      const hasReplacement = scenario.playwrightFile !== null || scenario.playwrightContract !== null;
+      if (scenario.disposition === 'covered' || scenario.disposition === 'covered-with-known-defect') {
+        assert.equal(hasReplacement, true, `${scenario.legacyFile}:${scenario.scenario} needs a replacement contract`);
+        assert.match(scenario.playwrightFile, /^functional\/.+\.spec\.ts$/);
+        assert.ok(scenario.playwrightContract);
+        assert.ok(Array.isArray(scenario.requiredSourcePatterns) && scenario.requiredSourcePatterns.length > 0);
+        const replacementSource = source(`playwright_tests/${scenario.playwrightFile}`);
+        assert.match(replacementSource, new RegExp(scenario.playwrightContract.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')));
+        for (const requiredPattern of scenario.requiredSourcePatterns) {
+          assert.match(replacementSource, new RegExp(requiredPattern.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')), `${scenario.legacyFile}:${scenario.scenario} lacks semantic evidence: ${requiredPattern}`);
+        }
+      } else {
+        assert.equal(hasReplacement, false, `${scenario.legacyFile}:${scenario.scenario} must not retain an unrelated replacement mapping`);
+        assert.equal(typeof scenario.followUp, 'string');
+      }
+      if (scenario.disposition === 'covered-with-known-defect') {
+        assert.match(scenario.ticket, /^EXUI-\d+$/);
+        assert.equal(typeof scenario.followUp, 'string');
+      }
+    }
+  });
+
   it('maps every historical Codecept scenario to a named Playwright contract', () => {
     const legacyScenarioNames = new Set();
 
