@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const { spawnSync } = require('node:child_process');
+const { execFileSync, spawnSync } = require('node:child_process');
 const { enhanceGeneratedReport } = require('../playwright_tests/common/reporters/odhin-report-enhancer.cjs');
 
 const extraArgs = process.argv.slice(2);
@@ -10,6 +10,23 @@ if (extraArgs[0] === '--') {
 
 const strictMode = ['1', 'true', 'yes', 'on'].includes((process.env.A11Y_STRICT || '').trim().toLowerCase());
 const isListOnlyRun = extraArgs.includes('--list');
+const playwrightArgs = [
+  'playwright',
+  'test',
+  '--config=playwright.config.ts',
+  '--grep',
+  '@accessibility',
+  ...extraArgs,
+  '--retries=0',
+];
+const playwrightCommand = ['npx', ...playwrightArgs].join(' ');
+const checkedOutRevision = execFileSync('git', ['rev-parse', '--verify', 'HEAD'], { encoding: 'utf8' }).trim();
+const requestedRevision = process.env.PLAYWRIGHT_REPORT_REVISION?.trim();
+if (requestedRevision && requestedRevision !== checkedOutRevision) {
+  process.stderr.write(`[accessibility-report] PLAYWRIGHT_REPORT_REVISION ${requestedRevision} does not match checked-out HEAD ${checkedOutRevision}.\n`);
+  process.exit(1);
+}
+const reportRevision = requestedRevision || checkedOutRevision;
 
 const env = {
   ...process.env,
@@ -25,6 +42,8 @@ const env = {
     process.env.PLAYWRIGHT_REPORT_FOLDER || 'functional-output/tests/playwright-accessibility/odhin-report',
   PLAYWRIGHT_REPORT_INDEX_FILENAME: process.env.PLAYWRIGHT_REPORT_INDEX_FILENAME || 'xui-playwright-accessibility.html',
   PLAYWRIGHT_REPORT_PROJECT: process.env.PLAYWRIGHT_REPORT_PROJECT || 'RPX XUI Media Viewer - Accessibility',
+  PLAYWRIGHT_REPORT_COMMAND: process.env.PLAYWRIGHT_REPORT_COMMAND || playwrightCommand,
+  PLAYWRIGHT_REPORT_REVISION: reportRevision,
   PW_ODHIN_TITLE: process.env.PW_ODHIN_TITLE || 'RPX XUI Media Viewer Accessibility',
   FUNCTIONAL_TESTS_WORKERS: process.env.PW_ACCESSIBILITY_WORKERS || process.env.FUNCTIONAL_TESTS_WORKERS || '6',
   PW_A11Y_EXPECT_TIMEOUT_MS: process.env.PW_A11Y_EXPECT_TIMEOUT_MS || '7000',
@@ -37,7 +56,7 @@ const env = {
 
 const result = spawnSync(
   'npx',
-  ['playwright', 'test', '--config=playwright.config.ts', '--grep', '@accessibility', ...extraArgs, '--retries=0'],
+  playwrightArgs,
   { env, stdio: 'inherit' }
 );
 
