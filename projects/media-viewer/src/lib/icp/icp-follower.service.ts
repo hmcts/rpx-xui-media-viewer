@@ -4,7 +4,7 @@ import { select, Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
 import { IcpUpdateService } from './icp-update.service';
 import { ViewerEventService } from '../viewers/viewer-event.service';
-import { distinctUntilChanged, take } from 'rxjs/operators';
+import { take } from 'rxjs/operators';
 import { IcpState, IcpSession } from './icp.interfaces';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
 
@@ -41,29 +41,39 @@ export class IcpFollowerService {
       this.$subscription.unsubscribe();
       this.$subscription = undefined;
     }
+    this.previousRotation = null;
   }
 
   followScreenUpdate({ pdfPosition }) {
-    if (pdfPosition) {
-      this.viewerEvents.goToDestinationICP([
-        pdfPosition.pageNumber - 1,
-        { 'name': 'XYZ' },
-        pdfPosition.left,
-        pdfPosition.top
-      ]);
+    if (!pdfPosition) {
+      return;
     }
+
+    this.viewerEvents.goToDestinationICP([
+      pdfPosition.pageNumber - 1,
+      { 'name': 'XYZ' },
+      pdfPosition.left,
+      pdfPosition.top
+    ]);
+    if (typeof pdfPosition.scale === 'number') {
+      this.toolbarEvents.zoom(pdfPosition.scale);
+    }
+    if (typeof pdfPosition.rotation !== 'number') {
+      return;
+    }
+
     this.store.pipe(
-      select(fromDocSelectors.getPdfPosition), 
-      take(1), 
-      distinctUntilChanged(undefined, a => a.rotation))
+      select(fromDocSelectors.getPdfPosition),
+      take(1))
       .subscribe(position => {
         if (this.previousRotation === pdfPosition.rotation) {
           return;
         }
-        const rotationDelta = (pdfPosition.rotation - position.rotation) % 360;
-        if (rotationDelta && rotationDelta !== 0) {
+        const rotationDelta = (pdfPosition.rotation - (position?.rotation ?? 0)) % 360;
+        if (rotationDelta) {
           this.toolbarEvents.rotate(rotationDelta);
         }
+        this.previousRotation = pdfPosition.rotation;
       });
   }
 }
