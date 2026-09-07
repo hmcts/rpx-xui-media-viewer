@@ -44,8 +44,15 @@ export class IcpFollowerService {
     this.previousRotation = null;
   }
 
-  followScreenUpdate({ pdfPosition }) {
-    if (!pdfPosition) {
+  followScreenUpdate(screenUpdate) {
+    const pdfPosition = screenUpdate?.pdfPosition;
+    if (!pdfPosition ||
+      !Number.isInteger(pdfPosition.pageNumber) ||
+      pdfPosition.pageNumber < 1 ||
+      !Number.isFinite(pdfPosition.left) ||
+      !Number.isFinite(pdfPosition.top) ||
+      (pdfPosition.scale !== undefined && !Number.isFinite(pdfPosition.scale)) ||
+      (pdfPosition.rotation !== undefined && !Number.isFinite(pdfPosition.rotation))) {
       return;
     }
 
@@ -69,7 +76,7 @@ export class IcpFollowerService {
         if (this.previousRotation === pdfPosition.rotation) {
           return;
         }
-        const rotationDelta = (pdfPosition.rotation - (position?.rotation ?? 0)) % 360;
+        const rotationDelta = (pdfPosition.rotation - (this.previousRotation ?? position?.rotation ?? 0)) % 360;
         if (rotationDelta) {
           this.toolbarEvents.rotate(rotationDelta);
         }
