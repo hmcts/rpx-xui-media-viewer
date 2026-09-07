@@ -1,4 +1,4 @@
-import { expect, type Locator, type Page } from '@playwright/test';
+import type { Locator, Page } from '@playwright/test';
 
 export class Annotations {
   readonly textHighlightButton: Locator;
@@ -43,18 +43,13 @@ export class Annotations {
       await this.page.locator('#mvHighlightBtn').click();
     }
     await this.drawBoxButton.click();
-    await expect(surface).toBeVisible();
-    await expect(surface).toHaveAttribute('tabindex', '0');
     await this.drawRectangle(surface, start);
   }
 
   private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {
-    await expect.poll(async () => {
-      const bounds = await surface.boundingBox();
-      return !!bounds && bounds.width >= start.x + 100 && bounds.height >= start.y + 50;
-    }).toBe(true);
+    await surface.waitFor({ state: 'visible' });
     const bounds = await surface.boundingBox();
-    if (!bounds) {
+    if (!bounds || bounds.width < start.x + 100 || bounds.height < start.y + 50) {
       throw new Error('Media page did not reach a drawable size for draw-box annotation');
     }
     await this.page.mouse.move(bounds.x + start.x, bounds.y + start.y);

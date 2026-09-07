@@ -130,18 +130,6 @@ describe('ImageViewerComponent', () => {
     expect(component.errorMessage).toBeNull();
   });
 
-  it('does not initialise the previous image after the document changes', () => {
-    spyOn(window, 'requestAnimationFrame').and.returnValue(1);
-    spyOn(component, 'initAnnoPage');
-    const img = { offsetHeight: 100, offsetWidth: 50, offsetLeft: 20, offsetTop: 30 };
-
-    component.onLoad(img);
-    component.ngOnChanges({ url: new SimpleChange('a', 'b', false) });
-    (window.requestAnimationFrame as jasmine.Spy).calls.mostRecent().args[0](0);
-
-    expect(component.initAnnoPage).not.toHaveBeenCalled();
-  });
-
   it('on load error store error message', () => {
     component.url = 'x';
 
@@ -183,20 +171,6 @@ describe('ImageViewerComponent', () => {
   it('should dispatch AddPages event', inject([Store], (store) => {
     spyOn(store, 'dispatch');
     const img = { offsetHeight: 100, offsetWidth: 50, offsetLeft: 20, offsetTop: 30 };
-    const payload = [{
-      div: { scrollHeight: 100, scrollWidth: 50, offsetLeft: 20 },
-      pageNumber: 1,
-      scale: 1,
-      rotation: 0,
-      id: 1
-    }] as any;
-    component.initAnnoPage(img);
-    expect(store.dispatch).toHaveBeenCalledWith(new fromDocument.AddPages(payload));
-  }));
-
-  it('should use the intrinsic image size when layout dimensions are not ready', inject([Store], (store) => {
-    spyOn(store, 'dispatch');
-    const img = { offsetHeight: 0, offsetWidth: 0, naturalHeight: 100, naturalWidth: 50, offsetLeft: 20, offsetTop: 30 };
     const payload = [{
       div: { scrollHeight: 100, scrollWidth: 50, offsetLeft: 20 },
       pageNumber: 1,

@@ -144,10 +144,10 @@ export function docReducer (state = initialDocumentState,
         }
         const computedWidth = baseWidth !== undefined
           ? roundDown(scaleFactor * baseWidth, scaleRoundX)
-          : page.div['clientWidth'] || page.div['scrollWidth'];
+          : page.div['clientWidth'];
         const computedHeight = baseHeight !== undefined
           ? roundDown(scaleFactor * baseHeight, scaleRoundY)
-          : page.div['clientHeight'] || page.div['scrollHeight'];
+          : page.div['clientHeight'];
 
         if (!hasDifferentPageSize && pageHeight && pageWidth &&
           (pageHeight !== computedHeight || pageWidth !== computedWidth)) {

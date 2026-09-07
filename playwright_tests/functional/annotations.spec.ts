@@ -240,10 +240,11 @@ annotationsTest.describe('PDF annotations', () => {
 
 });
 
+const imageAnnotationDefectTag = '@defect-EXUI-5124';
 const existingImageComment = 'Existing image annotation comment';
 
 imageAnnotationsTest.describe('Image annotations and comments', () => {
-  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
+  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
@@ -284,7 +285,7 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
   });
 
-  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
+  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');

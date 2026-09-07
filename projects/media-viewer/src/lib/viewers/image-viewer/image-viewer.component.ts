@@ -51,8 +51,6 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   private subscriptions: Subscription[] = [];
   private viewerException: ViewerException;
   private response: Subscription;
-  private imageLoadGeneration = 0;
-  private pendingAnimationFrame: number | undefined;
 
   showCommentsPanel: boolean;
   enableGrabNDrag = false;
@@ -98,10 +96,6 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   ngOnDestroy(): void {
-    if (this.pendingAnimationFrame !== undefined) {
-      cancelAnimationFrame(this.pendingAnimationFrame);
-      this.pendingAnimationFrame = undefined;
-    }
     this.subscriptions.filter(subscription => !subscription.closed)
       .forEach(subscription => subscription.unsubscribe());
     if (this.response) {
@@ -111,11 +105,6 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.url) {
-      this.imageLoadGeneration++;
-      if (this.pendingAnimationFrame !== undefined) {
-        cancelAnimationFrame(this.pendingAnimationFrame);
-        this.pendingAnimationFrame = undefined;
-      }
       this.errorMessage = null;
       this.toolbarEvents.reset();
     }
@@ -184,20 +173,12 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
 
   onLoad(img: any) {
     this.mediaLoadStatus.emit(ResponseType.SUCCESS);
-    const generation = this.imageLoadGeneration;
-    this.pendingAnimationFrame = requestAnimationFrame(() => {
-      this.pendingAnimationFrame = undefined;
-      if (generation === this.imageLoadGeneration) {
-        this.initAnnoPage(img);
-      }
-    });
+    this.initAnnoPage(img);
   }
 
   initAnnoPage(img: any) {
-    const imageHeight = img.offsetHeight || img.naturalHeight;
-    const imageWidth = img.offsetWidth || img.naturalWidth;
-    this.imageHeight = this.rotation % 180 !== 0 ? imageWidth : imageHeight;
-    this.imageWidth = this.rotation % 180 !== 0 ? imageHeight : imageWidth;
+    this.imageHeight = this.rotation % 180 !== 0 ? img.offsetWidth : img.offsetHeight;
+    this.imageWidth = this.rotation % 180 !== 0 ? img.offsetHeight : img.offsetWidth;
     this.imageLeft = this.rotation % 180 !== 0 ? img.offsetTop : img.offsetLeft;
     this.imageTop = this.rotation % 180 !== 0 ? img.offsetLeft : img.offsetTop;
     const payload: any = [{
@@ -211,6 +192,7 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
       rotation: this.rotation,
       id: 1
     }];
+
     this.store.dispatch(new fromDocument.AddPages(payload));
   }
 
