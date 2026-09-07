@@ -53,8 +53,10 @@ export class IcpFollowerService {
       pdfPosition.pageNumber < 1 ||
       !Number.isFinite(pdfPosition.left) ||
       !Number.isFinite(pdfPosition.top) ||
-      (pdfPosition.scale !== undefined && !Number.isFinite(pdfPosition.scale)) ||
-      (pdfPosition.rotation !== undefined && !Number.isFinite(pdfPosition.rotation))) {
+      (pdfPosition.scale !== undefined &&
+        (!Number.isFinite(pdfPosition.scale) || pdfPosition.scale <= 0)) ||
+      (pdfPosition.rotation !== undefined &&
+        !([0, 90, 180, 270] as number[]).includes(pdfPosition.rotation))) {
       return;
     }
 
@@ -66,9 +68,10 @@ export class IcpFollowerService {
         if (!screenUpdate.document || !currentDocument || screenUpdate.document !== currentDocument) {
           return;
         }
+        const documentChanged = this.previousDocument !== null && this.previousDocument !== currentDocument;
         if (this.previousDocument !== currentDocument) {
           this.previousDocument = currentDocument;
-          this.previousRotation = null;
+          this.previousRotation = documentChanged ? 0 : null;
         }
         this.applyScreenUpdate(pdfPosition);
       });

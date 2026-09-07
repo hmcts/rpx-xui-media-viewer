@@ -108,6 +108,15 @@ describe('Icp Presenter Service', () => {
     expect(updateScreen).toHaveBeenCalledWith({ pdfPosition, document: session.documentId });
   });
 
+  it('should ignore position updates until the session and position are available', () => {
+    const updateScreen = spyOn(updateService, 'updateScreen');
+    presenterService.onPositionUpdate(undefined);
+    updateService.session = undefined;
+    presenterService.onPositionUpdate(pdfPosition);
+
+    expect(updateScreen).not.toHaveBeenCalled();
+  });
+
   it('should call service to update presenter', () => {
     spyOn(presenterService, 'onPositionUpdate');
     spyOn(updateService, 'updatePresenter');

@@ -139,6 +139,7 @@ describe('Icp Follower Service', () => {
       viewerEvents.goToDestinationICP.calls.reset();
 
       store.dispatch(new SetDocumentId('document-b'));
+      store.dispatch(new PdfPositionUpdate({ ...pdfPosition, rotation: 270 }));
       followerService.followScreenUpdate({ pdfPosition: { ...pdfPosition, rotation: 180 }, document: 'document-a' });
       expect(viewerEvents.goToDestinationICP).not.toHaveBeenCalled();
       expect(rotate).not.toHaveBeenCalled();
@@ -175,13 +176,15 @@ describe('Icp Follower Service', () => {
   );
 
   it('should ignore malformed nested positions without applying viewer changes',
-    inject([ViewerEventService, ToolbarEventService], (viewerEvents, toolbarEvents) => {
+    inject([Store, ViewerEventService, ToolbarEventService], (store, viewerEvents, toolbarEvents) => {
       const goToDestination = spyOn(viewerEvents, 'goToDestinationICP');
       const zoom = spyOn(toolbarEvents, 'zoom');
       const rotate = spyOn(toolbarEvents, 'rotate');
       const basePdfPosition = { ...pdfPosition };
 
-      followerService.followScreenUpdate({ pdfPosition: null } as any);
+      store.dispatch(new SetDocumentId('document-id'));
+
+      followerService.followScreenUpdate({ pdfPosition: null, document: 'document-id' } as any);
 
       for (const pdfPosition of [
         { ...basePdfPosition, pageNumber: undefined },
@@ -191,9 +194,13 @@ describe('Icp Follower Service', () => {
         { ...basePdfPosition, top: undefined },
         { ...basePdfPosition, top: Number.NEGATIVE_INFINITY },
         { ...basePdfPosition, scale: Number.NaN },
+        { ...basePdfPosition, scale: 0 },
+        { ...basePdfPosition, scale: -1 },
         { ...basePdfPosition, rotation: Number.POSITIVE_INFINITY },
+        { ...basePdfPosition, rotation: 45 },
+        { ...basePdfPosition, rotation: -90 },
       ]) {
-        followerService.followScreenUpdate({ pdfPosition });
+        followerService.followScreenUpdate({ pdfPosition, document: 'document-id' });
       }
 
       expect(goToDestination).not.toHaveBeenCalled();
