@@ -1,35 +1,11 @@
 const assert = require('node:assert/strict');
-const { readFileSync } = require('node:fs');
+const { existsSync, readFileSync } = require('node:fs');
 const { describe, it } = require('node:test');
 const { resolve } = require('node:path');
 
 const repositoryRoot = resolve(__dirname, '../..');
 
-const replacementContracts = [
-  ['createCCDCase.js', 'Create CCD Case for MV...', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'creates the CCD case used by Media Viewer journeys through the authenticated browser route'],
-  ['dmStoreScenarios.js', 'Upload PDF Document', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'uploads a PDF document through the CCD browser event'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Image Scenario', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'uploads an image document through the CCD browser event'],
-  ['dmStoreScenarios.js', 'Dm Store Upload Word Document Scenario', 'external-service-contracts/aatCcdBrowserDefects.spec.ts', 'uploads a Word document through the CCD browser event'],
-  ['annotationsDeleteAll.js', 'Delete all existing text highlights', 'annotations.spec.ts', 'deletes every existing PDF highlight through the annotation API'],
-  ['imageViewerAnnotationsAndComments.js', 'Non Textual Highlight & Add comment in image viewer', 'annotations.spec.ts', 'creates a non-text image highlight and comment through the rendered Media Viewer'],
-  ['imageViewerAnnotationsAndComments.js', 'Ability to highlight the image viewer using Draw-box function', 'annotations.spec.ts', 'creates a draw-box image highlight with a positive rectangle contract'],
-  ['imageViewerAnnotationsAndComments.js', 'Update Non Textual comment in image viewer', 'annotations.spec.ts', 'updates a persisted non-text image comment'],
-  ['imageViewerAnnotationsAndComments.js', 'Delete Non Textual comment in image viewer', 'annotations.spec.ts', 'deletes a persisted non-text image comment'],
-  ['indexAndOutline.js', 'Navigate Bundle Documents Through Page Index Number', 'indexOutline.spec.ts', 'navigates a top-level outline document destination'],
-  ['indexAndOutline.js', 'Navigate Nested Documents Using Index', 'indexOutline.spec.ts', 'navigates a nested outline document destination and retains the parent selection'],
-  ['redact.js', 'Mark Content For Redaction Using Draw Box Function', 'redactions.spec.ts', 'creates a draw-box redaction, previews it and clears the persisted marker'],
-  ['redact.js', 'Redact Content Using Redact Text Function', 'redactions.spec.ts', 'redacts selected text and removes the persisted marker'],
-  ['redact.js', 'Redact Content Using Search And Redact All Function', 'redactions.spec.ts', 'redacts every PDF search result and persists the generated markers'],
-  ['redact.js', 'Create Redactions Using Draw Box and Redact Text Functions', 'redactions.spec.ts', 'keeps text and draw-box redactions together after reload'],
-  ['redact.js', 'Preview all content marked for redaction', 'redactions.spec.ts', 'creates a draw-box redaction, previews it and clears the persisted marker'],
-  ['redact.js', 'Save redactions to download', 'redactions.spec.ts', 'saves a redacted document with the drawn marker'],
-  ['redact.js', 'Redact text and then removing the redaction', 'redactions.spec.ts', 'redacts selected text and removes the persisted marker'],
-  ['redact.js', 'Redact first page', 'redactions.spec.ts', 'redacts a full PDF page with positive geometry'],
-  ['redact.js', 'Redact multiple pages', 'redactions.spec.ts', 'retains redactions on multiple PDF pages'],
-  ['redact.js', 'Clear redactions that are added when document has been downloaded', 'redactions.spec.ts', 'downloads draw-box redactions, adds text redaction and clears all markers'],
-  ['redact.js', 'Unmark selected content (marked for redaction)', 'redactions.spec.ts', 'deletes one persisted marker while keeping its sibling redaction'],
-  ['redact.js', 'Unmark all content (marked for redaction)', 'redactions.spec.ts', 'clears persisted redactions across PDF pages without restoring them after reload'],
-];
+const replacementContracts = require('../migration-history/mediaViewerCodeceptScenarios.json');
 
 const intentionalManyToOneCoverage = [
   [
@@ -46,20 +22,11 @@ function source(relativePath) {
   return readFileSync(resolve(repositoryRoot, relativePath), 'utf8');
 }
 
-function executableScenarioNames(legacySource) {
-  return [...legacySource.matchAll(/^\s*Scenario\('([^']+)'/gm)].map((scenario) => scenario[1].trim());
-}
-
 describe('Media Viewer Codecept-to-Playwright parity', () => {
   it('maps every historical Codecept scenario to a named Playwright contract', () => {
     const legacyScenarioNames = new Set();
 
-    for (const [legacyFile] of replacementContracts) {
-      const legacySource = source(`test/end-to-end/mvFeatures/${legacyFile}`);
-      for (const scenarioName of executableScenarioNames(legacySource)) {
-        legacyScenarioNames.add(scenarioName);
-      }
-    }
+    for (const [, legacyScenario] of replacementContracts) legacyScenarioNames.add(legacyScenario);
 
     assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
     assert.equal(replacementContracts.length, 23, 'every historical Codecept contract must have a Playwright replacement');
@@ -82,11 +49,9 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       'any many-to-one mapping must be explicitly declared and reviewed'
     );
     assert.equal(legacyScenariosByPlaywrightContract.size, 21, 'the migration inventory must retain 21 unique Playwright contracts plus two declared many-to-one mappings');
-    assert.match(
-      source('test/config.js'),
-      /TestPathToRun:\s*process\.env\.E2E_TEST_PATH\s*\|\|\s*'\.\/mvFeatures\/__retired__\/\*\.js'/,
-      'Codecept must have no default execution path after complete migration'
-    );
+    assert.equal(existsSync(resolve(repositoryRoot, 'test/config.js')), false, 'the retired Codecept runner config must not remain');
+    assert.equal(existsSync(resolve(repositoryRoot, 'test/end-to-end')), false, 'the retired Codecept runner tree must not remain');
+    assert.equal(existsSync(resolve(repositoryRoot, 'e2e')), false, 'the retired Protractor runner tree must not remain');
     const packageScripts = JSON.parse(source('package.json')).scripts;
     assert.equal(packageScripts['test:functional'], 'yarn test:playwright:functional');
     assert.equal(packageScripts['test:fullfunctional'], 'yarn test:playwright:functional');
@@ -123,8 +88,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       'normal Jenkins assurance must not load credentials that belong only to retired external contracts'
     );
 
-    for (const [legacyFile, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
-      assert.match(source(`test/end-to-end/mvFeatures/${legacyFile}`), new RegExp(`Scenario\\('${legacyScenario.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}`));
+    for (const [, legacyScenario, playwrightFile, playwrightContract] of replacementContracts) {
       const playwrightPath = playwrightFile.includes('/')
         ? `playwright_tests/${playwrightFile}`
         : `playwright_tests/functional/${playwrightFile}`;

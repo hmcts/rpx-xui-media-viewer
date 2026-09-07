@@ -245,10 +245,9 @@ Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktre
 `docker compose -f docker-compose.yml down`.
 
 ### 5. Run Playwright tests
-Media Viewer is starting its Playwright migration with the same runner and
-reporting shape used in MC and MO, scaled to the current smoke coverage. The
-legacy Protractor and CodeceptJS functional packs still exist; new browser
-coverage should be added under `playwright_tests/`.
+Media Viewer uses the Playwright runner and reporting shape used in MC and MO.
+The legacy Protractor, Cucumber and CodeceptJS runners have been retired; new
+browser coverage belongs under `playwright_tests/`.
 
 Current Playwright lanes:
 
@@ -301,7 +300,7 @@ yarn test:crossbrowser
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
 `MV_SMOKE_CASE_ID`. `yarn test:smoke` and `yarn test:local:aat` run the
 Playwright smoke, so the standalone and local-AAT PDF loading journeys no longer
-fall back to CodeceptJS.
+use only the Playwright projects.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
@@ -391,10 +390,9 @@ Migration boundaries:
 - Put new native Playwright specs under `playwright_tests/`.
 - Keep screen interactions and reusable locators in page objects under
   `playwright_tests/pages/`; keep assertions visible in specs.
-- Historical CodeceptJS scenarios are retained as source traceability only;
-  their executable pipeline routing is retired once the mapped Playwright
-  contract is selected by default or is represented by a discoverable,
-  ticketed product-defect contract.
+- Historical CodeceptJS mappings are retained as data in
+  `test/migration-history/mediaViewerCodeceptScenarios.json`; no legacy runner
+  or executable legacy source remains in this repository.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
   logic.
@@ -614,7 +612,7 @@ The list of exceptions thrown by the Media Viewer are as follows:
 - HttpErrorResponse
 - PasswordException
 
-## Cucumber Tests
- ```
-  npm run package, npm run e2e:cucumber
-  ```
+## Legacy browser tests
+
+The former Protractor/Cucumber and CodeceptJS runners were retired as part of
+the Playwright migration. Use the Playwright commands above for browser tests.

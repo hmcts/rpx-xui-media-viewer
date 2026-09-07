@@ -79,7 +79,7 @@ export const createAatCcdCase = async (request: APIRequestContext): Promise<stri
     ),
     'AAT CCD create-case event'
   );
-  const data = JSON.parse(await readFile(resolve('test/end-to-end/data/ccd-case-basic-data.json'), 'utf8'));
+  const data = JSON.parse(await readFile(resolve('playwright_tests/fixtures/assets/ccd-case-basic-data.json'), 'utf8'));
   const created = await responseJson<{ id: string }>(
     await request.post(`${ccdUrl}/caseworkers/${user.id}/jurisdictions/EMPLOYMENT/case-types/Leeds/cases`, {
       headers: {
@@ -118,7 +118,7 @@ type DmStoreUploadResponse = {
 };
 
 export const uploadAatDocument = async (request: APIRequestContext, filename: string): Promise<AatDocument> => {
-  const filePath = resolve('test/end-to-end/data', filename);
+  const filePath = resolve('playwright_tests/fixtures/assets', filename);
   const response = await request.post('/documents', {
     multipart: {
       files: {
