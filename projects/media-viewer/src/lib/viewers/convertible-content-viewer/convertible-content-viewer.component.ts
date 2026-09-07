@@ -63,11 +63,6 @@ export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnC
   }
 
   onLoadException(exception: ViewerException) {
-    this.mediaLoadStatus.emit(ResponseType.FAILURE);
-    this.viewerException.emit(exception);
-  }
-
-  onPdfViewerException(exception: ViewerException) {
     this.viewerException.emit(exception);
   }
 

@@ -1,6 +1,6 @@
 <mv-pdf-viewer *ngIf="convertedUrl"
                (mediaLoadStatus)="onMediaLoad($event)"
-               (pdfViewerException)="onPdfViewerException($event)"
+               (pdfViewerException)="onLoadException($event)"
                (documentTitle)="onDocumentTitleChange($event)"
                [url]="convertedUrl"
                [downloadUrl]="originalUrl"

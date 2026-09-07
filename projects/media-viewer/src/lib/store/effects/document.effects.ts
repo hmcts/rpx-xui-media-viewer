@@ -26,12 +26,7 @@ export class DocumentEffects {
           return new documentActions.ConvertSuccess(url);
         }),
         catchError(error => {
-          const message = typeof error === 'string'
-            ? error
-            : error && typeof error === 'object' && 'message' in error && typeof error.message === 'string'
-              ? error.message
-              : 'Document conversion failed';
-          return of(new documentActions.ConvertFailure(message));
+          return of(new documentActions.ConvertFailure(error));
         }));
     }))
   );

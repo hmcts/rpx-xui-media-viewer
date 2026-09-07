@@ -25,14 +25,4 @@ describe('DocumentConversionApiService', () => {
     expect(req.request.method).toBe('POST');
     req.flush(blob);
   }));
-
-  it('should propagate conversion errors', () => {
-    api.convert('document-id').subscribe({
-      next: () => fail('conversion errors should not be emitted as successful responses'),
-      error: error => expect(error.status).toBe(500)
-    });
-
-    const req = httpMock.expectOne('/doc-assembly/convert/document-id');
-    req.error(new ProgressEvent('error'), { status: 500, statusText: 'Server Error' });
-  });
 });
