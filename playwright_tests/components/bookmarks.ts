@@ -73,7 +73,7 @@ export class Bookmarks {
         const update = updates.get(bookmark.id);
         return update ? { ...bookmark, ...update, previous: update.previous } : bookmark;
       });
-      await route.fulfill({ json: bookmarks });
+      await route.fulfill({ json: payload });
       this.moveComplete?.();
       this.moveComplete = undefined;
     });
