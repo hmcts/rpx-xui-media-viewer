@@ -78,5 +78,27 @@ describe('Icp Effects', () => {
       expect(effects.joinIcpSocketSession$).toBeObservable(expected);
       expect(icpSocket.joinSession).toHaveBeenCalledWith('name', session, 'access-token');
     });
+
+    it('should emit a failure and handle a subsequent join action', () => {
+      const firstAction = new icpActions.JoinIcpSocketSession({ session, username: 'name', token: 'first-token' });
+      const secondAction = new icpActions.JoinIcpSocketSession({ session, username: 'name', token: 'second-token' });
+      const error = new Error('join failed');
+      icpSocket.joinSession.calls.reset();
+      icpSocket.joinSession.and.returnValues(
+        throwError(() => error),
+        of({ client: { id: 'clientId', username: 'name' }, presenter: { id: 'presenterId', username: 'presenter' } })
+      );
+      const failure = new icpActions.JoinIcpSocketSessionFailure(error);
+      const success = new icpActions.IcpSocketSessionJoined({ session, participantInfo: {
+        client: { id: 'clientId', username: 'name' },
+        presenter: { id: 'presenterId', username: 'presenter' }
+      } });
+      actions$ = hot('-a-b', { a: firstAction, b: secondAction });
+      const expected = cold('-c-d', { c: failure, d: success });
+
+      expect(effects.joinIcpSocketSession$).toBeObservable(expected);
+      expect(icpSocket.joinSession).toHaveBeenCalledWith('name', session, 'first-token');
+      expect(icpSocket.joinSession).toHaveBeenCalledWith('name', session, 'second-token');
+    });
   });
 });

@@ -50,6 +50,7 @@ export function icpReducer (state = initialIcpSessionState,
       };
     }
 
+    case fromIcpActions.JOIN_ICP_SOCKET_SESSION_FAIL:
     case fromIcpActions.LEAVE_ICP_SOCKET_SESSION: {
       return {
         ...state,

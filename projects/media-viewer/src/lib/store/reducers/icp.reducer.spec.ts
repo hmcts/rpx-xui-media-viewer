@@ -4,6 +4,7 @@ import {
   IcpParticipantListUpdated,
   IcpPresenterUpdated,
   IcpSocketSessionJoined,
+  JoinIcpSocketSessionFailure,
   LeaveIcpSocketSession,
   LoadIcpSession,
   SetCaseId
@@ -47,6 +48,11 @@ describe('IcpReducer', () => {
     expect(state.client).toEqual(participantInfo.client);
     expect(state.presenter).toEqual(participantInfo.presenter);
     expect(state.session).toEqual(session);
+  });
+
+  it('should clear state when joining the socket session fails', function () {
+    const state = fromIcp.icpReducer(icpState, new JoinIcpSocketSessionFailure(new Error('join failed')));
+    expect(state).toEqual(initialIcpSessionState);
   });
 
   it('should update presenter', function () {
