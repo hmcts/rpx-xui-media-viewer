@@ -32,8 +32,8 @@ describe('Icp Effects', () => {
       ],
       providers: [
         { provide: IcpSessionApiService, useValue: icpApi },
+        { provide: IcpUpdateService, useValue: icpSocket },
         IcpEffects,
-        IcpUpdateService,
         SocketService,
         provideMockActions(() => actions$)
       ]
@@ -63,22 +63,20 @@ describe('Icp Effects', () => {
     });
   });
 
-  // describe('joinIcpSocketSession$', () => {
-  //   const action = new icpActions.JoinIcpSocketSession({session: session, username: 'name'});
-  //   const participants = {
-  //     client: {
-  //       id: 'clientId',
-  //       username: 'name'
-  //     },
-  //     presenter: {
-  //       id: 'presenterId',
-  //       username: 'name'
-  //     }
-  //   };
-  //   icpSocket.joinSession.and.returnValue(participants);
-  //   const completion = new icpActions.IcpSocketSessionJoined({session: session, participantInfo: participants});
-  //   actions$ = hot('-a', { a: action });
-  //   const expected = cold('-b', { b: completion });
-  //   expect(effects.joinIcpSocketSession$).toBeObservable(expected);
-  // });
+  describe('joinIcpSocketSession$', () => {
+    it('should join the socket session and publish participants', () => {
+      const action = new icpActions.JoinIcpSocketSession({ session, username: 'name' });
+      const participants = {
+        client: { id: 'clientId', username: 'name' },
+        presenter: { id: 'presenterId', username: 'presenter' }
+      };
+      icpSocket.joinSession.and.returnValue(of(participants));
+      const completion = new icpActions.IcpSocketSessionJoined({ session, participantInfo: participants });
+      actions$ = hot('-a', { a: action });
+      const expected = cold('-b', { b: completion });
+
+      expect(effects.joinIcpSocketSession$).toBeObservable(expected);
+      expect(icpSocket.joinSession).toHaveBeenCalledWith('name', session, undefined);
+    });
+  });
 });
