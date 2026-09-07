@@ -67,6 +67,10 @@ export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnC
     this.viewerException.emit(exception);
   }
 
+  onPdfViewerException(exception: ViewerException) {
+    this.viewerException.emit(exception);
+  }
+
   onDocumentTitleChange(title: string) {
     this.documentTitle.emit(title);
   }

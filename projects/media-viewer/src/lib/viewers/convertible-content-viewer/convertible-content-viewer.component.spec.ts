@@ -82,11 +82,29 @@ describe('ConvertibleContentViewerComponent', () => {
     expect(component.mediaLoadStatus.emit).toHaveBeenCalledWith(ResponseType.FAILURE);
   }));
 
-  it('should surface a conversion error from the store', inject([MockStore], (store: MockStore) => {
-    const exceptionSpy = spyOn(component, 'onLoadException');
+  it('should emit one failure status when the PDF viewer reports a failure and exception', () => {
+    spyOn(component.viewerException, 'emit');
+    spyOn(component.mediaLoadStatus, 'emit');
+    const exception = new ViewerException();
+
+    component.onMediaLoad(ResponseType.FAILURE);
+    component.onPdfViewerException(exception);
+
+    expect(component.mediaLoadStatus.emit).toHaveBeenCalledTimes(1);
+    expect(component.mediaLoadStatus.emit).toHaveBeenCalledWith(ResponseType.FAILURE);
+    expect(component.viewerException.emit).toHaveBeenCalledTimes(1);
+    expect(component.viewerException.emit).toHaveBeenCalledWith(exception);
+  });
+
+  it('should emit exactly one failure status and exception for a conversion error from the store', inject([MockStore], (store: MockStore) => {
+    const statusSpy = spyOn(component.mediaLoadStatus, 'emit');
+    const exceptionSpy = spyOn(component.viewerException, 'emit');
     store.overrideSelector(fromSelectors.getConvertedDocument, { url: undefined, error: 'conversion failed' });
     store.refreshState();
 
+    expect(statusSpy).toHaveBeenCalledTimes(1);
+    expect(statusSpy).toHaveBeenCalledWith(ResponseType.FAILURE);
+    expect(exceptionSpy).toHaveBeenCalledTimes(1);
     expect(exceptionSpy).toHaveBeenCalledWith(jasmine.objectContaining({ exceptionType: 'conversion failed' }));
   }));
 
