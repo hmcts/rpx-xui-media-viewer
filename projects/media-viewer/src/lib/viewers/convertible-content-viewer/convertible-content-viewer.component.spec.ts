@@ -1,7 +1,8 @@
 import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
 import { Store } from '@ngrx/store';
 import { CUSTOM_ELEMENTS_SCHEMA, SimpleChange, SimpleChanges } from '@angular/core';
-import { provideMockStore } from '@ngrx/store/testing';
+import { MockStore, provideMockStore } from '@ngrx/store/testing';
+import * as fromSelectors from '../../store/selectors/document.selectors';
 import { Convert } from '../../store/actions/document.actions';
 import { GrabNDragDirective } from '../grab-n-drag.directive';
 import { ResponseType, ViewerException } from '../viewer-exception.model';
@@ -79,6 +80,14 @@ describe('ConvertibleContentViewerComponent', () => {
 
     expect(component.viewerException.emit).toHaveBeenCalled();
     expect(component.mediaLoadStatus.emit).toHaveBeenCalledWith(ResponseType.FAILURE);
+  }));
+
+  it('should surface a conversion error from the store', inject([MockStore], (store: MockStore) => {
+    const exceptionSpy = spyOn(component, 'onLoadException');
+    store.overrideSelector(fromSelectors.getConvertedDocument, { url: undefined, error: 'conversion failed' });
+    store.refreshState();
+
+    expect(exceptionSpy).toHaveBeenCalledWith(jasmine.objectContaining({ exceptionType: 'conversion failed' }));
   }));
 
   it('should emit documentTitle', fakeAsync(() => {
