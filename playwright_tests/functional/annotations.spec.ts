@@ -227,24 +227,44 @@ annotationsTest.describe('PDF annotations', () => {
 
 });
 
-const imageAnnotationDefectTag = '@defect-EXUI-5124';
 const existingImageComment = 'Existing image annotation comment';
 
 imageAnnotationsTest.describe('Image annotations and comments', () => {
-  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
+    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
     await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    const savedAnnotation = (await saveRequest).postDataJSON();
+    expect(savedAnnotation).toMatchObject({
+      annotationSetId: 'pw-image-annotations-annotation-set',
+      documentId: mediaAssets.image.url,
+      page: 1,
+      type: 'highlight',
+    });
+    expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
+    expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toBeVisible();
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    await mediaViewer.annotations.renderedRectangles.last().click();
     await mediaViewer.sidePanels.openComments();
     await mediaViewer.comments.addToSelectedAnnotation('Created image annotation comment');
     await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
   });
 
-  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
+    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
     await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    const savedAnnotation = (await saveRequest).postDataJSON();
+    expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
+    expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
     const rectangle = mediaViewer.annotations.renderedRectangles.last();
     await expect(rectangle).toBeVisible();
