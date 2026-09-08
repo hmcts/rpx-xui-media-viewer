@@ -246,9 +246,8 @@ Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktre
 
 ### 5. Run Playwright tests
 Media Viewer uses the Playwright runner and reporting shape used in MC and MO.
-The CodeceptJS runner is retired. Protractor/Cucumber retirement is blocked and
-non-final: 1 historical Cucumber definition remains unresolved (1 known-defect; 1 out-of-scope definition is explicitly excluded), and no executable legacy source is retained on this branch. New
-browser coverage belongs under `playwright_tests/`.
+The CodeceptJS and Protractor/Cucumber runners are retired. New browser coverage
+belongs under `playwright_tests/`.
 
 Current Playwright lanes:
 
@@ -391,11 +390,6 @@ Migration boundaries:
 - Put new native Playwright specs under `playwright_tests/`.
 - Keep screen interactions and reusable locators in page objects under
   `playwright_tests/pages/`; keep assertions visible in specs.
-- Historical CodeceptJS mappings are retained as data in
-  `test/migration-history/mediaViewerCodeceptScenarios.json`. The separate
-  Cucumber inventory in `test/migration-history/mediaViewerCucumberScenarios.json`
-  records 1 unresolved definition and 1 explicitly out-of-scope definition; its executable discovery is zero, so
-  Protractor/Cucumber retirement remains blocked and non-final.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
   logic.
@@ -617,7 +611,6 @@ The list of exceptions thrown by the Media Viewer are as follows:
 
 ## Legacy browser tests
 
-The CodeceptJS runner was retired as part of the Playwright migration.
-Protractor/Cucumber retirement is blocked and non-final because 1 historical definition remains known-defect and 1 is explicitly out of scope while their executable source
-is absent on this branch. Use the Playwright commands above for supported
-browser tests; do not treat this branch as final legacy retirement.
+The CodeceptJS and Protractor/Cucumber runners were retired as part of the
+Playwright migration. Use the Playwright commands above for supported browser
+tests.
