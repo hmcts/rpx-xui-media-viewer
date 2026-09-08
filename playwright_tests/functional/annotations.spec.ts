@@ -43,7 +43,7 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(firstPage);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1));
     const savedAnnotation = (await saveRequest).postDataJSON();
 
     expect(savedAnnotation).toMatchObject({
@@ -73,17 +73,30 @@ annotationsTest.describe('PDF annotations', () => {
     expect(rehydratedBounds?.height).toBeGreaterThan(0);
   });
 
+  annotationsTest('draws a PDF highlight on the requested page', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.navigation.goToPage(2);
+    const secondPage = mediaViewer.loadState.pdfPage(2);
+    await expect(secondPage).toHaveAttribute('data-loaded', 'true');
+
+    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(2));
+    const savedAnnotation = (await saveRequest).postDataJSON();
+
+    expect(savedAnnotation.page).toBe(2);
+  });
+
   annotationsTest('keeps independently drawn highlight geometry distinct after reload', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
     const firstPage = mediaViewer.loadState.pdfPage(1);
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
 
     const firstSave = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(firstPage, { x: 80, y: 80 });
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1), { x: 80, y: 80 });
     const firstAnnotation = (await firstSave).postDataJSON();
 
     const secondSave = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(firstPage, { x: 250, y: 200 });
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1), { x: 250, y: 200 });
     const secondAnnotation = (await secondSave).postDataJSON();
 
     expect(firstAnnotation.id).not.toBe(secondAnnotation.id);
@@ -172,7 +185,7 @@ annotationsTest.describe('PDF annotations', () => {
     await mediaViewer.reloadDocument(mediaAssets.pdf);
 
     const drawBoxRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.drawSurface(1));
     await drawBoxRequest;
     await mediaViewer.comments.addToSelectedAnnotation(drawBoxComment);
 
@@ -270,10 +283,40 @@ const imageAnnotationDefectTag = '@defect-EXUI-5124';
 const existingImageComment = 'Existing image annotation comment';
 
 imageAnnotationsTest.describe('Image annotations and comments', () => {
-  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('creates a non-text image highlight and comment through the rendered Media Viewer', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.imageDrawSurface);
+    const savedAnnotation = (await saveRequest).postDataJSON();
+    expect(savedAnnotation).toMatchObject({
+      annotationSetId: 'pw-image-annotations-annotation-set',
+      documentId: mediaAssets.image.url,
+      page: 1,
+      type: 'highlight',
+    });
+    expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
+    expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    const annotationSetResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname.endsWith('/em-anno/annotation-sets/filter') &&
+        url.searchParams.get('documentId') === mediaAssets.image.url &&
+        response.request().method() === 'GET';
+    });
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    const rehydratedAnnotationSet = await (await annotationSetResponse).json();
+    const rehydratedAnnotation = rehydratedAnnotationSet.annotations.find((annotation: { id: string }) => annotation.id === savedAnnotation.id);
+    expect(rehydratedAnnotation).toMatchObject({
+      id: savedAnnotation.id,
+      rectangles: [expect.objectContaining({
+        x: savedAnnotation.rectangles[0].x,
+        y: savedAnnotation.rectangles[0].y,
+        width: savedAnnotation.rectangles[0].width,
+        height: savedAnnotation.rectangles[0].height,
+      })],
+    });
+    await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
     await mediaViewer.annotations.renderedRectangles.last().click();
     await mediaViewer.sidePanels.openComments();
@@ -281,16 +324,47 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     await expect(mediaViewer.comments.comment('Created image annotation comment')).toBeVisible();
   });
 
-  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('creates a draw-box image highlight with a positive rectangle contract', { tag: ['@e2e-functional', '@feature-image-annotations', imageAnnotationDefectTag] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
-    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.image);
+    const saveRequest = page.waitForRequest((request) => annotationRequest(request.url()) && request.method() === 'POST');
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.imageDrawSurface);
+    const savedAnnotation = (await saveRequest).postDataJSON();
+    expect(savedAnnotation.rectangles[0].width).toBeGreaterThan(0);
+    expect(savedAnnotation.rectangles[0].height).toBeGreaterThan(0);
+    await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
+    const annotationSetResponse = page.waitForResponse((response) => {
+      const url = new URL(response.url());
+      return url.pathname.endsWith('/em-anno/annotation-sets/filter') &&
+        url.searchParams.get('documentId') === mediaAssets.image.url &&
+        response.request().method() === 'GET';
+    });
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    const rehydratedAnnotationSet = await (await annotationSetResponse).json();
+    expect(rehydratedAnnotationSet.annotations).toEqual(expect.arrayContaining([
+      expect.objectContaining({
+        id: savedAnnotation.id,
+        rectangles: [expect.objectContaining(savedAnnotation.rectangles[0])],
+      }),
+    ]));
+    await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles).toHaveCount(2);
     const rectangle = mediaViewer.annotations.renderedRectangles.last();
     await expect(rectangle).toBeVisible();
-    const bounds = await rectangle.boundingBox();
-    expect(bounds?.width).toBeGreaterThan(0);
-    expect(bounds?.height).toBeGreaterThan(0);
+    const renderedGeometry = await rectangle.evaluate((element) => {
+      const style = getComputedStyle(element);
+      return {
+        left: parseFloat(style.left),
+        top: parseFloat(style.top),
+        width: parseFloat(style.width),
+        height: parseFloat(style.height),
+      };
+    });
+    const expectedGeometry = savedAnnotation.rectangles[0];
+    expect(renderedGeometry.left).toBeCloseTo(expectedGeometry.x, 1);
+    expect(renderedGeometry.top).toBeCloseTo(expectedGeometry.y, 1);
+    expect(renderedGeometry.width).toBeCloseTo(expectedGeometry.width, 1);
+    expect(renderedGeometry.height).toBeCloseTo(expectedGeometry.height, 1);
   });
 
   imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {

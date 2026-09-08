@@ -218,7 +218,7 @@
     "ticket": "EXUI-5124",
     "requiredSourcePatterns": [
       "openAnnotatedDocument(mediaAssets.image)",
-      "drawOnPage(mediaViewer.loadState.image)",
+      "drawOnPage(mediaViewer.loadState.imageDrawSurface)",
       "Created image annotation comment"
     ],
     "followUp": "Fix EXUI-5124, run the tagged contract, and require persisted geometry plus comment rehydration before changing this to covered.",
@@ -456,7 +456,7 @@
     "playwrightContract": "collates distinct text-selection and draw-box comments after rehydration",
     "assessment": "The replacement performs a real PDF draw-box gesture, adds a comment to the selected draw-box annotation and proves it in the panel and summary after reload.",
     "requiredSourcePatterns": [
-      "drawOnPage(firstPage)",
+      "drawOnPage(mediaViewer.loadState.drawSurface(1))",
       "drawBoxComment",
       "addToSelectedAnnotation(drawBoxComment)"
     ],

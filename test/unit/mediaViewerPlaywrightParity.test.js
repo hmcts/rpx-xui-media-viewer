@@ -211,7 +211,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     const imageAnnotationContracts = source('playwright_tests/functional/annotations.spec.ts');
     assert.match(imageAnnotationContracts, /@defect-EXUI-5124/);
     assert.match(imageAnnotationContracts, /openAnnotatedDocument\(mediaAssets\.image\)/, 'image contracts must load the rendered viewer before exercising it');
-    assert.match(imageAnnotationContracts, /drawOnPage\(mediaViewer\.loadState\.image\)/, 'image create coverage must use a real user-level draw gesture');
+    assert.match(imageAnnotationContracts, /drawOnPage\(mediaViewer\.loadState\.imageDrawSurface\)/, 'image create coverage must use the actionable draw surface');
     assert.doesNotMatch(imageAnnotationContracts, /page\.evaluate\(async/, 'image UI parity must not be replaced by direct browser-context API calls');
     assert.doesNotMatch(knownDefectContracts, /test\.(?:skip|fixme)\(/, 'known defects must be excluded by tag, never skipped');
     assert.match(source('playwright.config.ts'), /grepInvert:\s*includeKnownDefectTests \? undefined : knownExternalDefectTags/);
