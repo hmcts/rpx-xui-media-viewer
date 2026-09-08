@@ -1,4 +1,4 @@
-import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
+import { commentsTest, expect, mediaAssets, redactionsTest, test } from '../fixtures/mediaViewerTest';
 import { auditAccessibilityPage, type AccessibilityEngine } from '../utils/accessibility/accessibilityAudit';
 
 const accessibilityEngines: AccessibilityEngine[] = ['axe', 'wave-like', 'screen-reader'];
@@ -145,6 +145,115 @@ test.describe('Media Viewer unified accessibility audit @accessibility @a11y @wa
       defaultEngines: accessibilityEngines,
       feature: 'media-viewer',
       pageState: 'PDF redaction toolbar',
+    });
+  });
+
+  test('PDF search advanced options state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.search.open();
+    await mediaViewer.search.openAdvancedOptions();
+    await expect(mediaViewer.search.highlightAllCheckbox).toBeVisible();
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF search advanced options',
+    });
+  });
+
+  test('PDF populated bookmarks panel state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.bookmarks.stubApi([{
+      id: 'accessibility-bookmark',
+      documentId: 'standalone-media-viewer-fixture',
+      name: 'Accessibility bookmark',
+      pageNumber: 0,
+      xCoordinate: 10,
+      yCoordinate: 10,
+      children: [],
+      previous: null,
+      parent: null,
+      index: 0,
+    }]);
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.open();
+    await expect(mediaViewer.bookmarks.name()).toHaveText('Accessibility bookmark');
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF populated bookmarks panel',
+    });
+  });
+
+  commentsTest('PDF populated comments panel state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.panel).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(2);
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF populated comments panel',
+    });
+  });
+
+  commentsTest('PDF comments search tab state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.openSearch();
+    await expect(mediaViewer.comments.searchInput).toBeVisible();
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF comments search tab',
+    });
+  });
+
+  commentsTest('PDF comments summary dialog state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+    await mediaViewer.comments.openSummary();
+    await expect(mediaViewer.comments.summaryDialog.getByRole('heading')).toBeVisible();
+    await expect(mediaViewer.comments.summaryDialog).toContainText('Existing viewer comment');
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF comments summary dialog',
+    });
+  });
+
+  test('PDF highlight toolbar state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.openTextHighlight();
+    await expect(mediaViewer.annotations.textHighlightButton).toBeVisible();
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF highlight toolbar',
+    });
+  });
+
+  test('PDF highlight context toolbar state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.openTextHighlight();
+    await mediaViewer.annotations.selectExampleFixtureText();
+    await expect(mediaViewer.annotations.createButton).toBeVisible();
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF highlight context toolbar',
+    });
+  });
+
+  redactionsTest('PDF redaction search state is accessible', async ({ page, mediaViewer }, testInfo) => {
+    await mediaViewer.goto();
+    await mediaViewer.enableRedactions();
+    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'accessibility-redaction-search', mediaAssets.pdf.contentType);
+    await mediaViewer.openRedactions();
+    await mediaViewer.redactions.openSearch();
+    await expect(mediaViewer.redactions.searchInput).toBeVisible();
+    await auditAccessibilityPage(page, testInfo, {
+      defaultEngines: accessibilityEngines,
+      feature: 'media-viewer',
+      pageState: 'PDF redaction search',
     });
   });
 });
