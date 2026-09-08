@@ -14,7 +14,6 @@ export class SearchControls {
   readonly matchCaseCheckbox: Locator;
   readonly wholeWordCheckbox: Locator;
   readonly highlights: Locator;
-  readonly textLayer: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -30,7 +29,6 @@ export class SearchControls {
     this.matchCaseCheckbox = page.getByRole('checkbox', { name: 'Match text (exact case)' });
     this.wholeWordCheckbox = page.getByRole('checkbox', { name: 'Match whole words or sentences' });
     this.highlights = page.locator('.highlight');
-    this.textLayer = page.locator('.textLayer span').first();
   }
 
   async open(): Promise<void> {
@@ -41,7 +39,7 @@ export class SearchControls {
 
   async searchFor(term: string): Promise<void> {
     await this.open();
-    await this.textLayer.waitFor({ state: 'visible' });
+    await this.page.locator('.textLayer span').first().waitFor({ state: 'visible' });
     await this.input.fill(term);
     await this.input.press('Enter');
   }
