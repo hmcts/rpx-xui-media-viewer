@@ -2,21 +2,21 @@
   {
     "legacyFile": "e2e/src/features/bookmarks.feature",
     "scenario": "Delete a bookmark",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The historical journey creates a bookmark from a PDF text selection and then deletes it. The current delete test starts from a seeded bookmark, so it does not prove the create-then-delete journey.",
-    "followUp": "Add a self-contained user-level create-from-text-selection then delete contract.",
+    "disposition": "covered",
+    "playwrightFile": "functional/bookmarks.spec.ts",
+    "playwrightContract": "creates a bookmark from text selection and deletes it",
+    "assessment": "The replacement creates the bookmark from a real PDF text selection, saves it, deletes the returned bookmark through the viewer UI and proves the list is empty.",
+    "requiredSourcePatterns": ["createFromTextSelection()", "bookmarks.delete()", "saved.id"],
     "sourceLine": 10
   },
   {
     "legacyFile": "e2e/src/features/bookmarks.feature",
     "scenario": "Update a bookmark",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current rename test starts from an API-seeded bookmark. It does not prove the historical selection, creation and subsequent update sequence.",
-    "followUp": "Add a self-contained user-level create-from-text-selection then rename contract.",
+    "disposition": "covered",
+    "playwrightFile": "functional/bookmarks.spec.ts",
+    "playwrightContract": "creates a bookmark from text selection and renames it",
+    "assessment": "The replacement creates the bookmark from a real PDF text selection, saves it and renames that selected bookmark through the viewer UI, asserting the returned id and name.",
+    "requiredSourcePatterns": ["createFromTextSelection()", "bookmarks.rename", "Renamed selected bookmark"],
     "sourceLine": 18
   },
   {
@@ -27,9 +27,9 @@
     "playwrightContract": "creates a bookmark from a real text selection",
     "assessment": "The replacement performs a real PDF text selection, uses the contextual bookmark action and asserts the bookmark POST payload and rendered bookmark list.",
     "requiredSourcePatterns": [
-      "dblclick()",
-      "#bookmarkButton",
-      "/em-anno/bookmarks"
+      "createFromTextSelection()",
+      "bookmarks.nodes",
+      "bookmark"
     ],
     "sourceLine": 26
   },
@@ -64,11 +64,11 @@
   {
     "legacyFile": "e2e/src/features/comments.panel.feature",
     "scenario": "Show And Hide the Comments Panel",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The historical steps combine comments-search no-result behaviour with panel navigation despite the scenario name. Current tests cover those behaviours separately, not as this one coherent journey.",
-    "followUp": "Add one contract covering panel open, the comments search tab, a no-result search and panel close.",
+    "disposition": "covered",
+    "playwrightFile": "functional/comments.spec.ts",
+    "playwrightContract": "clears stale highlights, reports no matches and navigates multiple results",
+    "assessment": "The replacement opens the panel, searches both a missing value and matching comments, proves stale highlights are cleared and closes the panel after the search journey.",
+    "requiredSourcePatterns": ["openSearch()", "No matches have been found", "toggleComments()"],
     "sourceLine": 23
   },
   {
@@ -297,41 +297,41 @@
   {
     "legacyFile": "e2e/src/features/multimedia.feature",
     "scenario": "Check whether the video player is working or not?",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current native-player smoke contract proves controls exist but does not play a video and assert playing state.",
-    "followUp": "Add a deterministic MP4 fixture contract proving video load and play state.",
+    "disposition": "covered",
+    "playwrightFile": "functional/multimedia.spec.ts",
+    "playwrightContract": "loads the enabled native player and exposes usable media controls",
+    "assessment": "The replacement loads a deterministic MP4 fixture and proves native controls, readiness and a real play transition.",
+    "requiredSourcePatterns": ["video", "keyboard.press('Space')", "media.paused"],
     "sourceLine": 12
   },
   {
     "legacyFile": "e2e/src/features/multimedia.feature",
     "scenario": "Pause Video",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current focused multimedia contract is audio-only; no current test proves a video pause transition.",
-    "followUp": "Add a deterministic MP4 play-then-pause contract and assert paused state.",
+    "disposition": "covered",
+    "playwrightFile": "functional/multimedia.spec.ts",
+    "playwrightContract": "loads the enabled native player and exposes usable media controls",
+    "assessment": "The replacement plays the deterministic MP4 fixture and proves the native player transitions back to paused through keyboard interaction.",
+    "requiredSourcePatterns": ["video", "keyboard.press('Space')", "media.paused"],
     "sourceLine": 17
   },
   {
     "legacyFile": "e2e/src/features/multimedia.feature",
     "scenario": "Rewind Video",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current focused multimedia contract is audio-only; no current test proves a video rewind transition.",
-    "followUp": "Add a deterministic MP4 play-then-rewind contract and assert currentTime decreases.",
+    "disposition": "covered",
+    "playwrightFile": "functional/multimedia.spec.ts",
+    "playwrightContract": "loads the enabled native player and exposes usable media controls",
+    "assessment": "The replacement plays and pauses the deterministic MP4 fixture, then uses the native Home control to return currentTime to the start.",
+    "requiredSourcePatterns": ["video", "keyboard.press('Home')", "currentTime"],
     "sourceLine": 22
   },
   {
     "legacyFile": "e2e/src/features/navigation.feature",
     "scenario": "Enable Toolbar Toggle buttons",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current navigation test proves the toolbar is visible and page boundaries work, but does not exercise the historical toggle-button enablement contract.",
-    "followUp": "Add a self-contained contract that enables each applicable toolbar toggle and asserts its enabled/expanded state.",
+    "disposition": "covered",
+    "playwrightFile": "functional/navigation.spec.ts",
+    "playwrightContract": "enables and disables the wrapper feature toggles with their viewer controls",
+    "assessment": "The replacement toggles annotation, redaction, ICP, search-redact and multimedia features off and on, asserting the corresponding viewer controls disappear and return in the expected state.",
+    "requiredSourcePatterns": ["toggleAnnotations", "mvHighlightBtn", "mvRedactBtn"],
     "sourceLine": 9
   },
   {
@@ -393,11 +393,11 @@
   {
     "legacyFile": "e2e/src/features/outline.feature",
     "scenario": "Navigate through show bookmarks",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "No current contract opens the outline sidebar, selects Show Bookmarks and asserts the resulting bookmark list.",
-    "followUp": "Add a self-contained outline Show Bookmarks contract with one created bookmark.",
+    "disposition": "covered",
+    "playwrightFile": "functional/indexOutline.spec.ts",
+    "playwrightContract": "shows a created bookmark from the sidebar bookmark view",
+    "assessment": "The replacement creates a bookmark in the loaded bundle document, switches from the outline view to the bookmark view and proves the bookmark is rendered.",
+    "requiredSourcePatterns": ["bookmarks.add", "toggleIndex()", "toggleBookmarks()"],
     "sourceLine": 24
   },
   {
@@ -431,21 +431,21 @@
   {
     "legacyFile": "e2e/src/features/pdf.viewer.annotations.feature",
     "scenario": "Delete Textual comment",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current delete contract does not identify or assert deletion of a seeded textual comment specifically.",
-    "followUp": "Seed a textual annotation with a comment, select it in the UI, assert its DELETE request and prove the sibling annotation remains.",
+    "disposition": "covered",
+    "playwrightFile": "functional/comments.spec.ts",
+    "playwrightContract": "deletes a comment and removes it from the panel",
+    "assessment": "The replacement selects the named seeded textual comment, asserts the saved empty comment list, proves the sibling comment remains and rehydrates the deletion.",
+    "requiredSourcePatterns": ["comments.remove('Existing viewer comment'", "Unrelated viewer comment", "commentCards"],
     "sourceLine": 23
   },
   {
     "legacyFile": "e2e/src/features/pdf.viewer.annotations.feature",
     "scenario": "Update a PDF text Comment",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current rotation/comment contract creates a comment but does not edit an existing PDF text comment and assert replacement text.",
-    "followUp": "Add a real text-highlight create, comment edit and reload contract.",
+    "disposition": "covered",
+    "playwrightFile": "functional/comments.spec.ts",
+    "playwrightContract": "updates a comment and renders the replacement text",
+    "assessment": "The replacement edits the named seeded textual comment, asserts the replacement and sibling rendering, then proves the saved replacement after rehydration.",
+    "requiredSourcePatterns": ["comments.edit('Existing viewer comment'", "Updated viewer comment", "rehydratedAnnotationResponse"],
     "sourceLine": 29
   },
   {
@@ -465,31 +465,31 @@
   {
     "legacyFile": "e2e/src/features/pdf.viewer.annotations.feature",
     "scenario": "Delete Non Textual comment",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current generic rectangle deletion contract does not seed or identify a non-text annotation, so it cannot prove this historical disposition semantically.",
-    "followUp": "Seed a draw-box annotation with a comment and assert user-level selection, deletion and retained siblings.",
+    "disposition": "covered",
+    "playwrightFile": "functional/annotations.spec.ts",
+    "playwrightContract": "deletes a comment from a drawn PDF annotation and preserves the annotation",
+    "assessment": "The replacement creates a draw-box annotation, adds a comment, deletes that named comment, proves the annotation remains and rehydrates the empty comment state.",
+    "requiredSourcePatterns": ["drawOnPage", "comments.remove(comment)", "rectangles).toHaveCount(1)"],
     "sourceLine": 43
   },
   {
     "legacyFile": "e2e/src/features/pdf.viewer.annotations.feature",
     "scenario": "Comments Ellipsis Test",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current comments summary contract proves summary content and navigation but contains no ellipsis/truncation assertion for a long comment card.",
-    "followUp": "Add a long-comment contract asserting the rendered ellipsis styling/content affordance.",
+    "disposition": "covered",
+    "playwrightFile": "functional/comments.spec.ts",
+    "playwrightContract": "renders long comments with the supported ellipsis contract",
+    "assessment": "The replacement renders a deterministic long comment, verifies the supported overflow, text-overflow and white-space styles and proves the text is actually clipped.",
+    "requiredSourcePatterns": ["longComment", "textOverflow", "isClipped"],
     "sourceLine": 49
   },
   {
     "legacyFile": "e2e/src/features/pdf.viewer.annotations.feature",
     "scenario": "Add multiple non-textual comments on PDF page",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current collation contract creates one text-selection and one draw-box comment. It does not prove multiple non-text comments on the same PDF page.",
-    "followUp": "Add two independent draw-box comments on one page and assert both distinct comments in the panel.",
+    "disposition": "covered",
+    "playwrightFile": "functional/annotations.spec.ts",
+    "playwrightContract": "keeps multiple non-text PDF comments distinct in the comments panel",
+    "assessment": "The replacement creates two independent draw-box annotations on one PDF page, adds distinct comments to each and proves both cards are rendered.",
+    "requiredSourcePatterns": ["firstComment", "secondComment", "commentCards"],
     "sourceLine": 55
   },
   {
@@ -523,11 +523,11 @@
   {
     "legacyFile": "e2e/src/features/pdf.viewer.redactions.feature",
     "scenario": "Testing the preview redactions button",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current preview contract creates only a draw-box marker and then clears it; it does not create both text and box redactions or prove switching back from preview as the historical journey describes.",
-    "followUp": "Add a combined text-and-box preview contract asserting preview rendering and return to editable mode.",
+    "disposition": "covered",
+    "playwrightFile": "functional/redactions.spec.ts",
+    "playwrightContract": "keeps text and draw-box redactions together after reload",
+    "assessment": "The replacement creates both text and draw-box redactions, enters preview, proves the preview state, returns to editable mode and rehydrates both markers.",
+    "requiredSourcePatterns": ["redactExampleFixtureText", "drawOnPage", "Hide preview", "reloadDocument"],
     "sourceLine": 28
   },
   {
@@ -598,11 +598,11 @@
   {
     "legacyFile": "e2e/src/features/rotate.feature",
     "scenario": "PDF Text Highlighting - Rotate Support",
-    "disposition": "unsupported",
-    "playwrightFile": null,
-    "playwrightContract": null,
-    "assessment": "The current rotation/comment contract proves a comment survives rotation, but it does not assert the text-highlight rectangle remains geometrically aligned with the rotated PDF text.",
-    "followUp": "Add a seeded text-highlight geometry contract that compares annotation and PDF text-layer bounds before and after rotation.",
+    "disposition": "covered",
+    "playwrightFile": "functional/rotation.spec.ts",
+    "playwrightContract": "keeps a PDF text highlight aligned with the text layer after rotation",
+    "assessment": "The replacement creates a real PDF text highlight and proves its rendered rectangle overlaps the selected text layer before and after clockwise rotation, waiting for the orientation transition.",
+    "requiredSourcePatterns": ["textLayer", "overlaps", "overlaps", "rotation.clockwise()"],
     "sourceLine": 27
   },
   {

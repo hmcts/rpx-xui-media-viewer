@@ -1,6 +1,6 @@
 import { test as base } from '@playwright/test';
 import { MediaViewerPage } from '../pages/mediaViewerPage';
-import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneEmptyAnnotationsAnnotationSet, cloneImageAnnotationsAnnotationSet, cloneReplacementCommentsAnnotationSet, cloneTwoPageCommentsAnnotationSet } from './mediaViewerComments';
+import { cloneCommentCreationAnnotationSet, cloneCommentsAnnotationSet, cloneEmptyAnnotationsAnnotationSet, cloneImageAnnotationsAnnotationSet, cloneLongCommentsAnnotationSet, cloneReplacementCommentsAnnotationSet, cloneTwoPageCommentsAnnotationSet } from './mediaViewerComments';
 import { mediaAssets } from './mediaAssets';
 export { mediaAssets } from './mediaAssets';
 
@@ -26,6 +26,15 @@ export const commentsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
   mediaViewer: async ({ page }, use) => {
     const mediaViewer = new MediaViewerPage(page);
     await mediaViewer.stubAnnotationResponses([cloneCommentsAnnotationSet()]);
+    await mediaViewer.stubRotationResponses();
+    await use(mediaViewer);
+  },
+});
+
+export const longCommentsTest = base.extend<{ mediaViewer: MediaViewerPage }>({
+  mediaViewer: async ({ page }, use) => {
+    const mediaViewer = new MediaViewerPage(page);
+    await mediaViewer.stubAnnotationResponses([cloneLongCommentsAnnotationSet()]);
     await mediaViewer.stubRotationResponses();
     await use(mediaViewer);
   },

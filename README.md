@@ -247,8 +247,7 @@ Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktre
 ### 5. Run Playwright tests
 Media Viewer uses the Playwright runner and reporting shape used in MC and MO.
 The CodeceptJS runner is retired. Protractor/Cucumber retirement is blocked and
-non-final: 16 historical Cucumber definitions remain unsupported or
-known-defect, and no executable legacy source is retained on this branch. New
+non-final: 1 historical Cucumber definition remains unresolved (1 known-defect; 1 out-of-scope definition is explicitly excluded), and no executable legacy source is retained on this branch. New
 browser coverage belongs under `playwright_tests/`.
 
 Current Playwright lanes:
@@ -256,7 +255,7 @@ Current Playwright lanes:
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 83 default fixture-backed browser contracts across 13 feature files, with 85 discoverable when the two EXUI-5124 image-annotation contracts are explicitly included. Multimedia coverage is Chromium-only; external AAT/CCD contracts are separate diagnostics and are not migration assurance. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
 | Cross-browser smoke | `playwright.config.ts`, projects `smoke-firefox` and `smoke-webkit` | `yarn test:crossbrowser` | Runs the same readiness contract in Firefox and WebKit and publishes separate JUnit/Odhín output under `functional-output/tests/playwright-crossbrowser`. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
@@ -395,7 +394,7 @@ Migration boundaries:
 - Historical CodeceptJS mappings are retained as data in
   `test/migration-history/mediaViewerCodeceptScenarios.json`. The separate
   Cucumber inventory in `test/migration-history/mediaViewerCucumberScenarios.json`
-  records 16 unresolved definitions; its executable discovery is zero, so
+  records 1 unresolved definition and 1 explicitly out-of-scope definition; its executable discovery is zero, so
   Protractor/Cucumber retirement remains blocked and non-final.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
@@ -619,7 +618,6 @@ The list of exceptions thrown by the Media Viewer are as follows:
 ## Legacy browser tests
 
 The CodeceptJS runner was retired as part of the Playwright migration.
-Protractor/Cucumber retirement is blocked and non-final because 16 historical
-definitions remain unsupported or known-defect while their executable source
+Protractor/Cucumber retirement is blocked and non-final because 1 historical definition remains known-defect and 1 is explicitly out of scope while their executable source
 is absent on this branch. Use the Playwright commands above for supported
 browser tests; do not treat this branch as final legacy retirement.

@@ -7,6 +7,8 @@ const repositoryRoot = resolve(__dirname, '../..');
 
 const replacementContracts = require('../migration-history/mediaViewerCodeceptScenarios.json');
 const cucumberInventory = require('../migration-history/mediaViewerCucumberScenarios.json');
+const expectedHistoricalInventory = { total: 52, covered: 50, knownDefect: 1, outOfScope: 1 };
+const expectedReplacementContractCount = 23;
 
 const intentionalManyToOneCoverage = [
   [
@@ -32,11 +34,34 @@ function executableCucumberScenarioCount() {
     .reduce((count, file) => count + (source(`e2e/src/features/${file}`).match(/^\s*Scenario(?: Outline)?:/gm) ?? []).length, 0);
 }
 
+function functionalDiscovery() {
+  const functionalDirectory = resolve(repositoryRoot, 'playwright_tests/functional');
+  return readdirSync(functionalDirectory)
+    .filter((file) => file.endsWith('.spec.ts'))
+    .reduce((discovery, file) => {
+      const sourceText = source(`playwright_tests/functional/${file}`);
+      for (const match of sourceText.matchAll(/^\s*(?:\w+Test|test)\('.*?\{ tag: \[(.*?)\]/gm)) {
+        const feature = match[1].match(/'@feature-([^']+)'/);
+        if (!feature) continue;
+        const featureName = feature[1];
+        discovery[featureName] = discovery[featureName] ?? { total: 0, default: 0, excluded: 0 };
+        discovery[featureName].total += 1;
+        if (match[1].includes('@defect-') || match[1].includes('DefectTag')) discovery[featureName].excluded += 1;
+        else discovery[featureName].default += 1;
+      }
+      return discovery;
+    }, {});
+}
+
+function expectedLegacyReconciliation(unresolvedDefinitions, executableDefinitions) {
+  return `${unresolvedDefinitions} unresolved historical definition${unresolvedDefinitions === 1 ? '' : 's'} does not match ${executableDefinitions} executable discovery; Cucumber retirement remains blocked pending EXUI-5124 evidence, while the one DM Store-dependent definition remains explicitly out of scope for this self-contained suite`;
+}
+
 describe('Media Viewer Codecept-to-Playwright parity', () => {
   it('accounts for every active historical Cucumber scenario independently', () => {
     const dispositions = new Set(['covered', 'covered-with-known-defect', 'unsupported', 'retired-by-owner', 'out-of-scope']);
-    assert.equal(cucumberInventory.length, 52, 'the frozen Cucumber inventory must retain every historical scenario definition');
-    assert.equal(new Set(cucumberInventory.map(({ legacyFile, sourceLine }) => `${legacyFile}:${sourceLine}`)).size, 52);
+    assert.equal(cucumberInventory.length, expectedHistoricalInventory.total);
+    assert.equal(new Set(cucumberInventory.map(({ legacyFile, sourceLine }) => `${legacyFile}:${sourceLine}`)).size, cucumberInventory.length);
     for (const scenario of cucumberInventory) {
       assert.equal(Number.isInteger(scenario.sourceLine) && scenario.sourceLine > 0, true, `${scenario.legacyFile}:${scenario.scenario} needs source provenance`);
       assert.ok(dispositions.has(scenario.disposition), `${scenario.legacyFile}:${scenario.scenario} needs an explicit disposition`);
@@ -68,13 +93,14 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
 
     for (const [, legacyScenario] of replacementContracts) legacyScenarioNames.add(legacyScenario);
 
-    assert.equal(legacyScenarioNames.size, 23, 'the migration inventory must retain all 23 historical Codecept contracts');
-    assert.equal(replacementContracts.length, 23, 'every historical Codecept contract must have a Playwright replacement');
+    assert.equal(legacyScenarioNames.size, replacementContracts.length, 'every historical Codecept contract must have a Playwright replacement');
+    assert.equal(replacementContracts.length, expectedReplacementContractCount);
     const coverageInventory = JSON.parse(source('playwright_tests/functional/mediaViewerCoverage.json'));
     const dispositionCounts = cucumberInventory.reduce((counts, scenario) => {
       counts[scenario.disposition] = (counts[scenario.disposition] ?? 0) + 1;
       return counts;
     }, {});
+    assert.deepEqual(dispositionCounts, { covered: expectedHistoricalInventory.covered, 'covered-with-known-defect': expectedHistoricalInventory.knownDefect, 'out-of-scope': expectedHistoricalInventory.outOfScope });
     assert.deepEqual(coverageInventory.legacyInventory, {
       sourceFamily: 'Protractor Cucumber',
       sourceDefinitions: cucumberInventory.length,
@@ -85,7 +111,10 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
       retirementStatus: 'blocked',
       dispositionCounts,
       manifest: './test/migration-history/mediaViewerCucumberScenarios.json',
-      reconciliation: '16 unresolved historical definitions do not match 0 executable discovery; Cucumber retirement is non-final until executable legacy sources are preserved or explicit owner disposition is recorded'
+      reconciliation: expectedLegacyReconciliation(
+        cucumberInventory.filter(({ disposition }) => disposition === 'unsupported' || disposition === 'covered-with-known-defect').length,
+        executableCucumberScenarioCount(),
+      )
     });
 
     const legacyScenariosByPlaywrightContract = new Map();
@@ -105,7 +134,7 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
         .sort(([left], [right]) => left.localeCompare(right)),
       'any many-to-one mapping must be explicitly declared and reviewed'
     );
-    assert.equal(legacyScenariosByPlaywrightContract.size, 21, 'the migration inventory must retain 21 unique Playwright contracts plus two declared many-to-one mappings');
+    assert.equal(legacyScenariosByPlaywrightContract.size, replacementContracts.length - intentionalManyToOneCoverage.length, 'many-to-one mappings must account for the reduced unique contract total');
     assert.equal(existsSync(resolve(repositoryRoot, 'test/config.js')), false, 'the retired Codecept runner config must not remain');
     assert.equal(existsSync(resolve(repositoryRoot, 'test/end-to-end')), false, 'the retired Codecept runner tree must not remain');
     assert.equal(existsSync(resolve(repositoryRoot, 'e2e')), false, 'no executable Protractor source is retained; retirement remains blocked until unresolved history is dispositioned');
@@ -200,11 +229,31 @@ describe('Media Viewer Codecept-to-Playwright parity', () => {
     assert.equal(legacyInventory.unresolvedDefinitions, unresolvedDefinitions);
     assert.equal(legacyInventory.executableDefinitions, executableDefinitions);
     assert.equal(legacyInventory.retirementStatus, 'blocked');
-    assert.match(legacyInventory.reconciliation, /unresolved historical definitions.*executable discovery/s);
+    assert.match(legacyInventory.reconciliation, /unresolved historical definitions?.*executable discovery/s);
     if (legacyInventory.retirementStatus === 'retired') {
       assert.equal(legacyInventory.unresolvedDefinitions, legacyInventory.executableDefinitions);
     } else {
       assert.notEqual(legacyInventory.unresolvedDefinitions, legacyInventory.executableDefinitions);
     }
+  });
+
+  it('mechanically reconciles capability totals and statuses with Playwright discovery', () => {
+    const coverageInventory = JSON.parse(source('playwright_tests/functional/mediaViewerCoverage.json'));
+    const discovery = functionalDiscovery();
+    const functionalCapabilities = coverageInventory.capabilities.filter(({ playwrightFeature }) => discovery[playwrightFeature]);
+
+    for (const capability of functionalCapabilities) {
+      assert.equal(capability.playwrightTests, discovery[capability.playwrightFeature].total, `${capability.name} total differs from discovery`);
+      assert.ok(['Covered', 'Partial', 'Legacy only', 'Not covered'].includes(capability.status), `${capability.name} has an unsupported status`);
+    }
+    assert.equal(functionalCapabilities.length, Object.keys(discovery).length, 'A discovered feature is missing from the coverage inventory');
+
+    const discoveredTotal = Object.values(discovery).reduce((total, feature) => total + feature.total, 0);
+    const defaultTotal = Object.values(discovery).reduce((total, feature) => total + feature.default, 0);
+    const defectTotal = Object.values(discovery).reduce((total, feature) => total + feature.excluded, 0);
+    const functionalReadme = source('playwright_tests/functional/README.md');
+    const documentedTotals = functionalReadme.match(/\*\*(\d+) default \/ (\d+) with EXUI-5124 opt-in\*\*/g).map((match) => match.match(/\d+/g).slice(0, 2).map(Number));
+    assert.deepEqual(documentedTotals, [[defaultTotal, discoveredTotal], [defaultTotal + 1, discoveredTotal + 1]]);
+    assert.equal(discoveredTotal - defaultTotal, defectTotal, 'opt-in discovery delta must equal tagged defect discovery');
   });
 });
