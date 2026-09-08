@@ -38,13 +38,12 @@ export class Annotations {
     await text.dblclick();
   }
 
-  async drawOnPage(page: Locator, start = { x: 80, y: 80 }): Promise<void> {
+  async drawOnPage(surface: Locator, start = { x: 80, y: 80 }): Promise<void> {
     if (!await this.drawBoxButton.isVisible()) {
       await this.page.locator('#mvHighlightBtn').click();
     }
     await this.drawBoxButton.click();
-    await this.page.locator('.pageContainer__page--draw').first().waitFor({ state: 'visible' });
-    await this.drawRectangle(page, start);
+    await this.drawRectangle(surface, start);
   }
 
   private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {

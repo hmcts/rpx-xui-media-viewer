@@ -33,9 +33,9 @@ yarn test:playwright:functional
 ```
 
 The capability report uses `Migration status` for parity and `Default execution`
-for normal CI selection. The opt-in external-service contracts and the two
-EXUI-5124 defect contracts remain migrated and discoverable, but are not counted
-as default CI execution.
+for normal CI selection. The two `@defect-EXUI-5124` image-create contracts and
+opt-in external-service contracts remain discoverable but are not counted as
+default CI execution.
 
 Run one feature while developing:
 
