@@ -1,6 +1,20 @@
 import { expect, test, mediaAssets } from '../fixtures/mediaViewerTest';
 
 test.describe('PDF index and outline', () => {
+  test('shows a created bookmark from the sidebar bookmark view', { tag: ['@e2e-functional', '@feature-index-outline'] }, async ({ mediaViewer }) => {
+    await mediaViewer.bookmarks.stubApi();
+    await mediaViewer.openDocument(mediaAssets.outlinePdf);
+    await mediaViewer.bookmarks.open();
+    const created = await mediaViewer.bookmarks.add('Outline bookmark');
+    expect(created).toMatchObject({ name: 'Outline bookmark' });
+
+    await mediaViewer.sidePanels.toggleIndex();
+    await expect(mediaViewer.indexOutline.item('Index Page')).toBeVisible();
+    await mediaViewer.sidePanels.toggleBookmarks();
+    await expect(mediaViewer.bookmarks.name()).toHaveText('Outline bookmark');
+    await expect(mediaViewer.bookmarks.panel).toBeVisible();
+  });
+
   test('navigates a top-level outline document destination', { tag: ['@e2e-functional', '@feature-index-outline'] }, async ({ mediaViewer }) => {
     await mediaViewer.openDocument(mediaAssets.outlinePdf);
     await mediaViewer.sidePanels.toggleIndex();
@@ -22,5 +36,31 @@ test.describe('PDF index and outline', () => {
     await expect(mediaViewer.navigation.pageNumberInput).toHaveValue('8');
     await expect(child).toHaveClass(/highlightedOutlineItem/);
     await expect(mediaViewer.indexOutline.item(parentTitle)).toHaveClass(/highlightedOutlineItem/);
+  });
+
+  test('expands the bundle and navigates to both historical nested destinations', { tag: ['@e2e-functional', '@feature-index-outline'] }, async ({ mediaViewer }) => {
+    await mediaViewer.openDocument(mediaAssets.outlinePdf);
+    await mediaViewer.sidePanels.toggleIndex();
+
+    const bundle = mediaViewer.indexOutline.item('Bundle').first();
+    const bundleToggle = bundle.locator('..').locator(':scope > .outlineItemToggler');
+    const firstSection = mediaViewer.indexOutline.item('A. Section A - Chronology');
+    await expect(firstSection).toBeVisible();
+    await expect(bundleToggle).toHaveCount(1);
+    await bundleToggle.press('Enter');
+    await expect(firstSection).toBeHidden();
+    await bundleToggle.press('Enter');
+    await expect(firstSection).toBeVisible();
+
+    const nestedDestinations = [
+      { index: 0, page: '4' },
+      { index: 4, page: '20' },
+    ];
+    for (const destination of nestedDestinations) {
+      const link = mediaViewer.indexOutline.item('Prepared Discharge Final Order').nth(destination.index);
+      await link.click();
+      await expect(mediaViewer.navigation.pageNumberInput).toHaveValue(destination.page);
+      await expect(link).toHaveClass(/highlightedOutlineItem/);
+    }
   });
 });

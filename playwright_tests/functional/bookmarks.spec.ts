@@ -24,26 +24,11 @@ test.describe('Bookmarks', () => {
     await expect(mediaViewer.bookmarks.name()).toContainText('Created bookmark');
   });
 
-  test('creates a bookmark from a real text selection', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+  test('creates a bookmark from a real text selection', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi();
     await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
-    await page.locator('#mvHighlightBtn').click();
-    await page.locator('#highlightTextBtn').click();
-
-    const text = page.locator('.textLayer span').filter({ hasText: /example/i }).first();
-    await text.waitFor({ state: 'visible' });
-    const bounds = await text.boundingBox();
-    if (!bounds) {
-      throw new Error('PDF text fixture was not visible for selection');
-    }
-    await text.dblclick();
-
-    await expect(page.locator('#bookmarkButton')).toBeVisible();
-    const createRequest = page.waitForRequest(request =>
-      request.url().endsWith('/em-anno/bookmarks') && request.method() === 'POST');
-    await page.locator('#bookmarkButton').click();
-    const created = await createRequest;
-    expect(created.postDataJSON()).toEqual(expect.objectContaining({
+    const created = await mediaViewer.bookmarks.createFromTextSelection();
+    expect(created).toEqual(expect.objectContaining({
       id: expect.any(String),
       documentId: mediaAssets.pdf.url,
       name: expect.any(String),
@@ -54,6 +39,31 @@ test.describe('Bookmarks', () => {
     await mediaViewer.bookmarks.open();
     await expect(mediaViewer.bookmarks.nodes).toHaveCount(1);
     await expect(mediaViewer.bookmarks.input()).toBeVisible();
+  });
+
+  test('creates a bookmark from text selection and deletes it', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+    await mediaViewer.bookmarks.stubApi();
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.createFromTextSelection();
+    await mediaViewer.bookmarks.open();
+    const saved = await mediaViewer.bookmarks.saveDraft('Selected bookmark');
+
+    await expect(mediaViewer.bookmarks.name()).toBeVisible();
+    const deleted = await mediaViewer.bookmarks.delete();
+    expect(deleted.deleted).toEqual([saved.id]);
+    await expect(mediaViewer.bookmarks.nodes).toHaveCount(0);
+  });
+
+  test('creates a bookmark from text selection and renames it', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+    await mediaViewer.bookmarks.stubApi();
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    const created = await mediaViewer.bookmarks.createFromTextSelection();
+    await mediaViewer.bookmarks.open();
+    await mediaViewer.bookmarks.saveDraft('Selected bookmark');
+
+    const updated = await mediaViewer.bookmarks.rename(0, 'Renamed selected bookmark');
+    expect(updated).toMatchObject({ id: created.id, name: 'Renamed selected bookmark' });
+    await expect(mediaViewer.bookmarks.name()).toHaveText('Renamed selected bookmark');
   });
 
   test('updates a bookmark created by the viewer API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {

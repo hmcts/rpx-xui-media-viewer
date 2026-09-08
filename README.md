@@ -245,17 +245,16 @@ Stop the local processes with `Ctrl+C`, then clean up Redis from the ICP worktre
 `docker compose -f docker-compose.yml down`.
 
 ### 5. Run Playwright tests
-Media Viewer is starting its Playwright migration with the same runner and
-reporting shape used in MC and MO, scaled to the current smoke coverage. The
-legacy Protractor and CodeceptJS functional packs still exist; new browser
-coverage should be added under `playwright_tests/`.
+Media Viewer uses the Playwright runner and reporting shape used in MC and MO.
+The CodeceptJS and Protractor/Cucumber runners are retired. New browser coverage
+belongs under `playwright_tests/`.
 
 Current Playwright lanes:
 
 | Lane | Config/project | Command | Scope |
 | --- | --- | --- | --- |
 | Standalone smoke | `playwright.config.ts`, project `smoke` | `yarn test:playwright:smoke` or `yarn test:smoke` | One readiness contract: loads a standalone PDF and proves the rendered viewer, first page and canvas are usable. |
-| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 74 fixture-backed browser contracts across 13 feature files, including separate failed PDF/image rendered-state diagnostics. Two additional image-annotation create contracts are discoverable, ticketed against [EXUI-5124](https://tools.hmcts.net/jira/browse/EXUI-5124), and excluded from the default selection because the current product does not persist an image draw-box annotation. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
+| Migrated functional | `playwright.config.ts`, project `functional` | `yarn test:playwright:functional` | 84 default fixture-backed browser contracts across 13 feature files, with 86 discoverable when the two EXUI-5124 image-annotation contracts are explicitly included. Multimedia coverage is Chromium-only; external AAT/CCD contracts are separate diagnostics and are not migration assurance. See [`playwright_tests/functional/README.md`](playwright_tests/functional/README.md). |
 | External service diagnostics | `playwright.config.ts`, opt-in project `external-service-contracts` | `yarn test:playwright:external-service-contracts` | Optional live AAT CCD/DM Store/annotation probes for a deliberate environment investigation. The default command executes 6 non-defect service contracts; four CCD browser-route contracts tagged against [EXUI-5122](https://tools.hmcts.net/jira/browse/EXUI-5122) and [EXUI-5123](https://tools.hmcts.net/jira/browse/EXUI-5123) remain discoverable but are excluded by default. Use `PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS=true` to discover and execute all 10. They are never part of normal PR assurance. |
 | Cross-browser smoke | `playwright.config.ts`, projects `smoke-firefox` and `smoke-webkit` | `yarn test:crossbrowser` | Runs the same readiness contract in Firefox and WebKit and publishes separate JUnit/Odhín output under `functional-output/tests/playwright-crossbrowser`. |
 | Viewer support | `playwright.config.ts`, project `support` | `yarn test:playwright:support` | Proves the reusable PDF, image and unsupported-media fixtures, component objects and response diagnostics. |
@@ -301,7 +300,7 @@ yarn test:crossbrowser
 Override the smoke document and case id with `MV_SMOKE_PDF_DOCUMENT_URL` and
 `MV_SMOKE_CASE_ID`. `yarn test:smoke` and `yarn test:local:aat` run the
 Playwright smoke, so the standalone and local-AAT PDF loading journeys no longer
-fall back to CodeceptJS.
+use only the Playwright projects.
 
 The lane wrapper commands write Playwright evidence under `functional-output/tests`:
 
@@ -343,9 +342,10 @@ Reporting behavior follows the MC/MO pattern:
   HTML Publisher links.
 
 The Jenkins `YarnBuilder` performs its immutable dependency install before the
-first setup task. The pipeline then installs Puppeteer Chrome once for legacy
-tests and Chromium into the workspace-local `PLAYWRIGHT_BROWSERS_PATH`, and sets
-`PLAYWRIGHT_SKIP_INSTALL=true` so Playwright lanes do not reinstall it.
+first setup task. The pipeline installs Puppeteer Chrome for Karma and the
+functional preflight, then installs Chromium into the workspace-local
+`PLAYWRIGHT_BROWSERS_PATH` and sets `PLAYWRIGHT_SKIP_INSTALL=true` so Playwright
+lanes do not reinstall it.
 
 Useful overrides:
 - `PLAYWRIGHT_BASE_URL` or `TEST_URL`: target application URL, default `http://localhost:3000/`
@@ -391,10 +391,6 @@ Migration boundaries:
 - Put new native Playwright specs under `playwright_tests/`.
 - Keep screen interactions and reusable locators in page objects under
   `playwright_tests/pages/`; keep assertions visible in specs.
-- Historical CodeceptJS scenarios are retained as source traceability only;
-  their executable pipeline routing is retired once the mapped Playwright
-  contract is selected by default or is represented by a discoverable,
-  ticketed product-defect contract.
 - Add stable report output paths for every new Playwright lane so Jenkins can
   publish Odhín and JUnit and archive failure diagnostics without bespoke stage
   logic.
@@ -614,7 +610,9 @@ The list of exceptions thrown by the Media Viewer are as follows:
 - HttpErrorResponse
 - PasswordException
 
-## Cucumber Tests
- ```
-  npm run package, npm run e2e:cucumber
-  ```
+## Legacy browser tests
+
+The CodeceptJS and Protractor/Cucumber runners were retired as part of the
+Playwright migration. Migration closure was recorded in PR #82; the active
+browser test source is now Playwright. Use the Playwright commands above for
+supported browser tests. No recurring legacy-parity test is retained.
