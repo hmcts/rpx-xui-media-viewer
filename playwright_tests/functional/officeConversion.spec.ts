@@ -1,5 +1,7 @@
 import { expect, mediaAssets, test } from '../fixtures/mediaViewerTest';
 
+const conversionDefectTag = '@defect-EXUI-4961';
+
 const convertedDocuments = [
   { contentType: 'word', documentId: 'playwright-office-document' },
   { contentType: 'excel', documentId: 'playwright-excel-document' },
@@ -32,7 +34,7 @@ test.describe('Office document conversion', () => {
   }
 
   for (const status of [400, 500]) {
-    test(`reports conversion HTTP ${status} as a failure`, { tag: ['@e2e-functional', '@feature-office-conversion'] }, async ({ mediaViewer, page }) => {
+    test(`reports conversion HTTP ${status} as a failure`, { tag: ['@e2e-functional', '@feature-office-conversion', conversionDefectTag] }, async ({ mediaViewer, page }) => {
       await page.route('**/doc-assembly/convert/playwright-conversion-error', async (route) => {
         await route.fulfill({ status, json: { message: 'conversion failed' } });
       });
@@ -44,13 +46,13 @@ test.describe('Office document conversion', () => {
       await mediaViewer.submitDocumentDetails('/documents/playwright-conversion-error/binary', 'playwright-office-case', mediaAssets.officeDocument.contentType);
 
       expect((await convertResponse).status()).toBe(status);
-      await expect(page.getByRole('button', { name: 'Load document' })).toBeVisible();
+      await expect(mediaViewer.loadState.errorMessage).toBeVisible();
       await expect(mediaViewer.loadState.successMessage).toHaveCount(0);
       await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
     });
   }
 
-  test('reports a conversion timeout as a failure', { tag: ['@e2e-functional', '@feature-office-conversion'] }, async ({ mediaViewer, page }) => {
+  test('reports a conversion timeout as a failure', { tag: ['@e2e-functional', '@feature-office-conversion', conversionDefectTag] }, async ({ mediaViewer, page }) => {
     await page.route('**/doc-assembly/convert/playwright-conversion-timeout', async (route) => {
       await route.abort('timedout');
     });
@@ -58,12 +60,12 @@ test.describe('Office document conversion', () => {
 
     await mediaViewer.submitDocumentDetails('/documents/playwright-conversion-timeout/binary', 'playwright-office-case', mediaAssets.officeDocument.contentType);
 
-    await expect(page.getByRole('button', { name: 'Load document' })).toBeVisible();
+    await expect(mediaViewer.loadState.errorMessage).toBeVisible();
     await expect(mediaViewer.loadState.successMessage).toHaveCount(0);
     await expect(mediaViewer.loadState.firstPdfPage).toHaveCount(0);
   });
 
-  test('reports a malformed converted PDF as a failure', { tag: ['@e2e-functional', '@feature-office-conversion'] }, async ({ mediaViewer, page }) => {
+  test('reports a malformed converted PDF as a failure', { tag: ['@e2e-functional', '@feature-office-conversion', conversionDefectTag] }, async ({ mediaViewer, page }) => {
     await page.route('**/doc-assembly/convert/playwright-malformed-document', async (route) => {
       await route.fulfill({ contentType: 'application/pdf', body: 'not a PDF' });
     });
