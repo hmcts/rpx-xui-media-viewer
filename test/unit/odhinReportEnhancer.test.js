@@ -3,7 +3,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { __test__ } = require('../../playwright_tests/common/reporters/odhin-report-enhancer.cjs');
-const coverageInventory = require('../../playwright_tests/functional/mediaViewerCoverage.json');
 
 test('feature tag takes precedence over the spec folder', () => {
   assert.equal(
