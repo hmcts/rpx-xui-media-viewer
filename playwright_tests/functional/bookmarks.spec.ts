@@ -137,22 +137,34 @@ test.describe('Bookmarks', () => {
     await expect(mediaViewer.bookmarks.name(0)).toHaveText('Later page');
   });
 
-  test('persists reorder through the drag-and-drop API contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+  test('preserves an untouched bookmark during reorder and reload', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([
       bookmark('bookmark-1', 'First bookmark', 0),
       bookmark('bookmark-2', 'Second bookmark', 1),
+      { ...bookmark('bookmark-3', 'Moved bookmark', 2), previous: 'bookmark-2' },
+      { ...bookmark('bookmark-4', 'Untouched bookmark', 3), previous: 'bookmark-3' },
     ]);
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();
     await mediaViewer.bookmarks.customSortButton.click();
 
-    const movedBookmarks = await mediaViewer.bookmarks.reorder(1, 0);
+    const movedBookmarks = await mediaViewer.bookmarks.reorder(2, 0);
     expect(movedBookmarks.map(({ name, previous }) => ({ name, previous }))).toEqual([
-      { name: 'Second bookmark', previous: undefined },
-      { name: 'First bookmark', previous: 'bookmark-2' },
+      { name: 'Moved bookmark', previous: undefined },
+      { name: 'Untouched bookmark', previous: 'bookmark-2' },
+      { name: 'First bookmark', previous: 'bookmark-3' },
     ]);
-    await expect(mediaViewer.bookmarks.name(0)).toHaveText('Second bookmark');
+    await expect(mediaViewer.bookmarks.name(0)).toHaveText('Moved bookmark');
     await expect(mediaViewer.bookmarks.name(1)).toHaveText('First bookmark');
+    await expect(mediaViewer.bookmarks.name(2)).toHaveText('Second bookmark');
+    await expect(mediaViewer.bookmarks.name(3)).toHaveText('Untouched bookmark');
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.open();
+    await expect(mediaViewer.bookmarks.name(0)).toHaveText('Moved bookmark');
+    await expect(mediaViewer.bookmarks.name(1)).toHaveText('First bookmark');
+    await expect(mediaViewer.bookmarks.name(2)).toHaveText('Second bookmark');
+    await expect(mediaViewer.bookmarks.name(3)).toHaveText('Untouched bookmark');
   });
 
   test('adds thirty bookmarks without losing the bookmark input contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {

@@ -68,11 +68,12 @@ export class Bookmarks {
         return;
       }
 
-      bookmarks = payload.map((bookmark: Bookmark) => {
-        const current = bookmarks.find(item => item.id === bookmark.id);
-        return { ...current, ...bookmark, previous: bookmark.previous };
+      const updates = new Map<string, Bookmark>(payload.map((bookmark: Bookmark) => [bookmark.id, bookmark] as const));
+      bookmarks = bookmarks.map(bookmark => {
+        const update = updates.get(bookmark.id);
+        return update ? { ...bookmark, ...update, previous: update.previous } : bookmark;
       });
-      await route.fulfill({ json: bookmarks });
+      await route.fulfill({ json: payload });
       this.moveComplete?.();
       this.moveComplete = undefined;
     });
