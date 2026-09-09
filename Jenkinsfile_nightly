@@ -184,7 +184,7 @@ withNightlyPipeline(type, product, component) {
   env.HRS_API_URL = "http://em-hrs-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
   env.ANNOTATION_API_URL = "http://em-anno-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
   env.NPA_URL = "http://em-npa-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
-  env.ICP_API_URL = "https://em-icp.${params.ENVIRONMENT}.platform.hmcts.net"
+  env.ICP_API_URL = "https://xui-icp.${params.ENVIRONMENT}.platform.hmcts.net"
   env.REDIRECT_URL = "https://xui-media-viewer-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal/oauth2/callback"
   env.REFORM_ENVIRONMENT = params.ENVIRONMENT
   env.NODE_ENV = "TEST"
