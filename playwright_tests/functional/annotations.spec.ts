@@ -198,6 +198,45 @@ annotationsTest.describe('PDF annotations', () => {
     await expect(mediaViewer.comments.summaryDialog).toContainText(drawBoxComment);
   });
 
+  annotationsTest('deletes a comment from a drawn PDF annotation and preserves the annotation', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
+    const comment = 'Non-text annotation comment to delete';
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1));
+    await mediaViewer.comments.addToSelectedAnnotation(comment);
+    await expect(mediaViewer.comments.comment(comment)).toBeVisible();
+
+    const deleteRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    const deleteResponse = page.waitForResponse(response => annotationRequest(response.url()) && response.request().method() === 'POST');
+    await mediaViewer.comments.remove(comment);
+    const requestBody = (await deleteRequest).postDataJSON();
+    const response = await deleteResponse;
+    expect(await response.json()).toMatchObject({ id: requestBody.id, comments: [] });
+    expect(response.status()).toBe(200);
+    expect(requestBody.comments).toEqual([]);
+    await expect(mediaViewer.comments.comment(comment)).toHaveCount(0);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+
+    await mediaViewer.reloadDocument(mediaAssets.pdf);
+    await expect(mediaViewer.annotations.rectangles).toHaveCount(1);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment(comment)).toHaveCount(0);
+  });
+
+  annotationsTest('keeps multiple non-text PDF comments distinct in the comments panel', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer }) => {
+    const firstComment = 'First non-text annotation comment';
+    const secondComment = 'Second non-text annotation comment';
+    await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1), { x: 80, y: 80 });
+    await mediaViewer.comments.addToSelectedAnnotation(firstComment);
+    await expect(mediaViewer.comments.comment(firstComment)).toBeVisible();
+    await mediaViewer.annotations.drawOnPage(mediaViewer.loadState.pdfPage(1), { x: 250, y: 200 });
+    await mediaViewer.comments.addToSelectedAnnotation(secondComment);
+
+    await expect(mediaViewer.comments.comment(firstComment)).toBeVisible();
+    await expect(mediaViewer.comments.comment(secondComment)).toBeVisible();
+    await expect(mediaViewer.comments.commentCards).toHaveCount(2);
+  });
+
   annotationsTest('highlights PDF search results and persists the created annotation set', { tag: ['@e2e-functional', '@feature-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
     await mediaViewer.annotations.openSearch();
@@ -328,24 +367,50 @@ imageAnnotationsTest.describe('Image annotations and comments', () => {
     expect(renderedGeometry.height).toBeCloseTo(expectedGeometry.height, 1);
   });
 
-  imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('updates a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     const updatedComment = 'Updated image annotation comment';
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
     await mediaViewer.annotations.renderedRectangles.first().click();
     await mediaViewer.sidePanels.openComments();
+
+    const updateRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    const updateResponse = page.waitForResponse(response => annotationRequest(response.url()) && response.request().method() === 'POST');
     await mediaViewer.comments.edit(existingImageComment, updatedComment);
+    const requestBody = (await updateRequest).postDataJSON();
+    expect((await updateResponse).status()).toBe(200);
+    expect(requestBody).toMatchObject({
+      id: 'pw-image-annotation',
+      comments: [expect.objectContaining({ content: updatedComment })],
+    });
     await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
+
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await mediaViewer.sidePanels.openComments();
+    await expect(mediaViewer.comments.comment(updatedComment)).toBeVisible();
+    await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
   });
 
-  imageAnnotationsTest('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer }) => {
+  imageAnnotationsTest('deletes a persisted non-text image comment', { tag: ['@e2e-functional', '@feature-image-annotations'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.openAnnotatedDocument(mediaAssets.image);
     await expect(mediaViewer.loadState.image).toBeVisible();
     await expect(mediaViewer.annotations.renderedRectangles.first()).toBeVisible();
     await mediaViewer.annotations.renderedRectangles.first().click();
     await mediaViewer.sidePanels.openComments();
+    const deleteRequest = page.waitForRequest(request => annotationRequest(request.url()) && request.method() === 'POST');
+    const deleteResponse = page.waitForResponse(response => annotationRequest(response.url()) && response.request().method() === 'POST');
     await mediaViewer.comments.remove(existingImageComment);
+    const requestBody = (await deleteRequest).postDataJSON();
+    expect((await deleteResponse).status()).toBe(200);
+    expect(requestBody).toMatchObject({
+      id: 'pw-image-annotation',
+      comments: [],
+    });
+    await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
+
+    await mediaViewer.reloadDocument(mediaAssets.image);
+    await mediaViewer.sidePanels.openComments();
     await expect(mediaViewer.comments.comment(existingImageComment)).toHaveCount(0);
   });
 });

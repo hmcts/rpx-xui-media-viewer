@@ -189,6 +189,13 @@ const cloneAnnotationSet = (annotationSet: AnnotationSetFixture): AnnotationSetF
   JSON.parse(JSON.stringify(annotationSet)) as AnnotationSetFixture;
 
 export const cloneCommentsAnnotationSet = () => cloneAnnotationSet(commentsAnnotationSet);
+export const cloneLongCommentsAnnotationSet = (): AnnotationSetFixture => {
+  const annotationSet = cloneCommentsAnnotationSet();
+  const comments = annotationSet.annotations[0].comments as Array<Record<string, unknown>>;
+  const comment = comments[0];
+  comment.content = 'A'.repeat(140);
+  return annotationSet;
+};
 export const cloneImageAnnotationsAnnotationSet = () => cloneAnnotationSet(imageAnnotationsAnnotationSet);
 export const cloneCommentCreationAnnotationSet = () => cloneAnnotationSet(commentCreationAnnotationSet);
 export const cloneEmptyAnnotationsAnnotationSet = () => cloneAnnotationSet(emptyAnnotationsAnnotationSet);

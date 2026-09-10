@@ -8,6 +8,7 @@ test.describe('Zoom', () => {
     const firstPageCanvas = mediaViewer.loadState.pdfCanvas(1);
     await expect(firstPage).toBeVisible();
     await expect(firstPage).toHaveAttribute('data-loaded', 'true');
+    await expect(mediaViewer.loadState.successMessage).toBeVisible();
     await expect(firstPageCanvas).toHaveAttribute('width', /^[1-9]\d*$/);
     await expect(mediaViewer.zoom.zoomSelect).toHaveValue('1');
     const initialCanvasWidth = Number(await firstPageCanvas.getAttribute('width'));

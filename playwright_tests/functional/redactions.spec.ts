@@ -21,6 +21,10 @@ test.describe('Redaction', () => {
 
     await mediaViewer.redactions.previewButton.click();
     await expect(mediaViewer.redactions.viewer).toHaveClass(/is-redaction-preview/);
+    await expect(mediaViewer.redactions.toolbar.getByRole('button', { name: 'Hide preview' })).toBeVisible();
+    await mediaViewer.redactions.toolbar.getByRole('button', { name: 'Hide preview' }).click();
+    await expect(mediaViewer.redactions.viewer).not.toHaveClass(/is-redaction-preview/);
+    await expect(mediaViewer.redactions.previewButton).toBeVisible();
 
     const clearRequest = page.waitForRequest((request) => request.method() === 'DELETE' && new URL(request.url()).pathname.endsWith(payload.documentId));
     await mediaViewer.redactions.clearAllButton.click();
@@ -186,6 +190,11 @@ test.describe('Redaction', () => {
     await mediaViewer.redactions.drawOnPage(mediaViewer.loadState.pdfPage(1));
     await secondSave;
     await expect(mediaViewer.redactions.markers).toHaveCount(2);
+    await mediaViewer.redactions.previewButton.click();
+    await expect(mediaViewer.redactions.viewer).toHaveClass(/is-redaction-preview/);
+    await expect(mediaViewer.redactions.toolbar.getByRole('button', { name: 'Hide preview' })).toBeVisible();
+    await mediaViewer.redactions.toolbar.getByRole('button', { name: 'Hide preview' }).click();
+    await expect(mediaViewer.redactions.viewer).not.toHaveClass(/is-redaction-preview/);
     await mediaViewer.reloadDocument(mediaAssets.pdf, 'playwright-redaction-combined-case');
     await mediaViewer.openRedactions();
     await expect(mediaViewer.redactions.markers).toHaveCount(2);

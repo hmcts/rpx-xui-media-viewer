@@ -32,7 +32,7 @@ export class AatCasePage {
   async upload(index: number, filename: string, description: string): Promise<void> {
     const upload = this.page.locator(`#documentCollection_${index}_uploadedDocument`);
     await this.page.getByRole('button', { name: 'Add new' }).click();
-    await upload.setInputFiles(resolve('test/end-to-end/data', filename));
+    await upload.setInputFiles(resolve('playwright_tests/fixtures/assets', filename));
     await this.page.locator(`#documentCollection_${index}_shortDescription`).fill(description);
     await this.page.getByRole('button', { name: 'Continue' }).click();
     await this.page.getByRole('button', { name: 'Submit' }).click();
