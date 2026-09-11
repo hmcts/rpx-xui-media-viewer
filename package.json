@@ -61,6 +61,7 @@
     "test:coveralls-upload": "cross-env NODE_PATH=. cat ./reports/tests/coverage/ng/lcov.info | coveralls",
     "test:codecov-upload": "codecov -f ./reports/tests/coverage/ng/lcov.info",
     "lint": "yarn lint:src && yarn lint:api && yarn lint:playwright && yarn lint:playwright-reporting",
+    "test:ci-evidence": "node --test test/ci-evidence.reporter.test.cjs",
     "lint:api": "ng lint --lint-file-patterns 'api/**/*.ts'",
     "lint:api:fix": "ng lint --fix --lint-file-patterns 'api/**/*.ts'",
     "lint:playwright": "cross-env ESLINT_USE_FLAT_CONFIG=false eslint playwright.config.ts 'playwright_tests/**/*.ts' --no-error-on-unmatched-pattern && tsc --noEmit -p playwright_tests/tsconfig.json",
