@@ -108,11 +108,6 @@ const resolveTerminalReporter = (env: EnvMap): ReporterName => {
       : 'list';
 };
 
-const shouldEmitCiEvidence = (env: EnvMap): boolean => {
-  const configured = env.PLAYWRIGHT_CI_EVIDENCE?.trim().toLowerCase();
-  return configured ? configured === 'true' : Boolean(env.CI || env.JENKINS_URL || env.BUILD_NUMBER);
-};
-
 const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription[] => {
   const terminalReporter = resolveTerminalReporter(env);
   const requestedReporters = splitReporters(env.PLAYWRIGHT_REPORTERS);
@@ -168,13 +163,10 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
     return [reporterName] as const;
   });
 
-  if (shouldEmitCiEvidence(env)) {
+  if (env.CI && env.PLAYWRIGHT_INCLUDE_A11Y !== 'true' && env.PLAYWRIGHT_INCLUDE_WAVE_A11Y !== 'true') {
     reporters.push([
-      './playwright_tests/common/reporters/ci-evidence.reporter.cjs',
-      {
-        outputFolder: env.PLAYWRIGHT_REPORT_FOLDER ?? `${defaultOutputRoot}/odhin-report`,
-        repository: 'rpx-xui-media-viewer',
-      },
+      'json',
+      { outputFile: env.PLAYWRIGHT_JSON_OUTPUT ?? `${env.PLAYWRIGHT_REPORT_FOLDER ?? `${defaultOutputRoot}/odhin-report`}/ci-evidence/playwright.json` },
     ]);
   }
   return reporters;
