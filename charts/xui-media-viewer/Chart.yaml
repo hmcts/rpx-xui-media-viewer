@@ -6,5 +6,5 @@ home: https://github.com/hmcts/rpx-xui-media-viewer
 version: 0.0.22
 dependencies:
   - name: nodejs
-    version: 3.2.0
+    version: 3.3.1
     repository: 'oci://hmctsprod.azurecr.io/helm'
