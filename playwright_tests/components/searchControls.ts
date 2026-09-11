@@ -39,6 +39,7 @@ export class SearchControls {
 
   async searchFor(term: string): Promise<void> {
     await this.open();
+    await this.page.locator('.textLayer span').first().waitFor({ state: 'visible' });
     await this.input.fill(term);
     await this.input.press('Enter');
   }

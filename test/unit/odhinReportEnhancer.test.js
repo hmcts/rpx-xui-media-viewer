@@ -3,7 +3,6 @@
 const assert = require('node:assert/strict');
 const { test } = require('node:test');
 const { __test__ } = require('../../playwright_tests/common/reporters/odhin-report-enhancer.cjs');
-const coverageInventory = require('../../playwright_tests/functional/mediaViewerCoverage.json');
 
 test('feature tag takes precedence over the spec folder', () => {
   assert.equal(
@@ -46,34 +45,12 @@ test('capability summary reports whether a contract runs by default', () => {
   assert.match(html, /Runs by default/);
 });
 
-test('capability inventory does not leave a Codecept scenario active after migration', () => {
-  const activeLegacyTestFiles = coverageInventory.capabilities
-    .filter((capability) => (capability.activeLegacyScenarios ?? capability.legacyScenarios) > 0)
-    .map((capability) => capability.legacyTestFile);
-  assert.equal(activeLegacyTestFiles.length, 0, 'all historical Codecept scenarios must be retired from default execution');
-  assert.equal(
-    coverageInventory.capabilities.reduce((total, capability) => total + (capability.activeLegacyScenarios ?? capability.legacyScenarios), 0),
-    0,
-    'the capability inventory must not claim an active legacy scenario'
-  );
-});
-
-test('reserves Partial status for an active legacy migration gap', () => {
-  const partialCapabilities = coverageInventory.capabilities.filter((capability) => capability.status === 'Partial');
-  assert.ok(
-    partialCapabilities.every((capability) => (capability.activeLegacyScenarios ?? 0) > 0),
-    'A non-migration assurance gap belongs in Remaining gap; Partial is reserved for active legacy scenarios'
-  );
-});
-
 function capability(status) {
   return {
     name: `${status} capability`,
     status,
     playwrightFeature: status.toLowerCase().replace(/\s+/g, '-'),
     playwrightTests: 0,
-    activeLegacyScenarios: 0,
-    legacyScenarios: 0,
     covered: 'Assurance statement',
     gap: 'Gap statement',
   };

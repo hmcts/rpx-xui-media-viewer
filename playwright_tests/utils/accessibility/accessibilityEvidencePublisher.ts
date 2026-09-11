@@ -22,8 +22,23 @@ export type PublishedAccessibilityEvidenceEntry = {
   url?: string;
 };
 
+export type AccessibilityEvidenceProvenance = {
+  runCommand?: string;
+  outputContext: {
+    evidenceDir: string;
+    reportFolder: string;
+    testOutputDir: string;
+    junitOutput: string;
+  };
+  sourceRevision: string;
+};
+
 const EVIDENCE_MANIFEST_FILE = 'manifest.json';
 const EVIDENCE_ENTRY_PREFIX = 'manifest-entry-';
+const EVIDENCE_PROVENANCE_FILE = 'provenance.json';
+const EVIDENCE_AGGREGATE_LOCK_FILE = '.aggregate.lock';
+const AGGREGATE_LOCK_WAIT_MS = 30_000;
+const AGGREGATE_LOCK_RETRY_MS = 25;
 
 export async function publishAccessibilityEvidence(
   testInfo: TestInfo,
@@ -41,6 +56,7 @@ export async function publishAccessibilityEvidence(
   }
 ): Promise<PublishedAccessibilityEvidenceEntry> {
   const evidenceDir = getEvidenceDir();
+  const sourceRevision = requiredSourceRevision();
   const baseName = `${sanitiseFileName(testInfo.title)}-${evidence.attachmentPrefix}`;
   const htmlFileName = `${baseName}.html`;
   const jsonFileName = `${baseName}.json`;
@@ -65,8 +81,11 @@ export async function publishAccessibilityEvidence(
   }
 
   await writeEvidenceEntry(evidenceDir, baseName, entry);
-  await writeEvidenceManifest(evidenceDir, entry);
-  await writeEvidenceIndex(evidenceDir);
+  await withEvidenceAggregateLock(evidenceDir, async () => {
+    await writeEvidenceProvenance(evidenceDir, sourceRevision);
+    await writeEvidenceManifest(evidenceDir, entry);
+    await writeEvidenceIndex(evidenceDir);
+  });
   return entry;
 }
 
@@ -80,12 +99,72 @@ export function getEvidenceDir(): string {
   );
 }
 
+function requiredSourceRevision(): string {
+  const sourceRevision = firstEnvironmentValue('PLAYWRIGHT_REPORT_REVISION');
+  if (!sourceRevision) {
+    throw new Error('PLAYWRIGHT_REPORT_REVISION must be supplied for accessibility evidence provenance');
+  }
+  if (!/^[0-9a-f]{40}$/i.test(sourceRevision)) {
+    throw new Error('PLAYWRIGHT_REPORT_REVISION must be a full 40-character commit SHA');
+  }
+  return sourceRevision;
+}
+
+async function writeEvidenceProvenance(evidenceDir: string, sourceRevision: string): Promise<void> {
+  const runCommand = firstEnvironmentValue('PLAYWRIGHT_REPORT_COMMAND');
+  const provenance: AccessibilityEvidenceProvenance = {
+    ...(runCommand ? { runCommand } : {}),
+    outputContext: {
+      evidenceDir,
+      reportFolder:
+        process.env.PLAYWRIGHT_REPORT_FOLDER || 'functional-output/tests/playwright-accessibility/odhin-report',
+      testOutputDir: process.env.PLAYWRIGHT_TEST_OUTPUT_DIR || 'functional-output/tests/playwright/test-results',
+      junitOutput:
+        process.env.PLAYWRIGHT_JUNIT_OUTPUT ||
+        'functional-output/tests/playwright-accessibility/playwright-accessibility-junit.xml',
+    },
+    sourceRevision,
+  };
+
+  await fs.writeFile(path.join(evidenceDir, EVIDENCE_PROVENANCE_FILE), JSON.stringify(provenance, null, 2));
+}
+
+function firstEnvironmentValue(...names: string[]): string | undefined {
+  return names.map((name) => process.env[name]?.trim()).find(Boolean);
+}
+
 async function writeEvidenceEntry(
   evidenceDir: string,
   baseName: string,
   entry: PublishedAccessibilityEvidenceEntry
 ): Promise<void> {
   await fs.writeFile(path.join(evidenceDir, `${EVIDENCE_ENTRY_PREFIX}${baseName}.json`), JSON.stringify(entry, null, 2));
+}
+
+async function withEvidenceAggregateLock<T>(evidenceDir: string, action: () => Promise<T>): Promise<T> {
+  const lockPath = path.join(evidenceDir, EVIDENCE_AGGREGATE_LOCK_FILE);
+  const startedAt = Date.now();
+
+  while (true) {
+    try {
+      const lock = await fs.open(lockPath, 'wx');
+      try {
+        return await action();
+      } finally {
+        await lock.close();
+        await fs.unlink(lockPath);
+      }
+    } catch (error) {
+      if (!isExistingPathError(error) || Date.now() - startedAt >= AGGREGATE_LOCK_WAIT_MS) {
+        throw error;
+      }
+      await new Promise((resolve) => setTimeout(resolve, AGGREGATE_LOCK_RETRY_MS));
+    }
+  }
+}
+
+function isExistingPathError(error: unknown): boolean {
+  return Boolean(error && typeof error === 'object' && 'code' in error && error.code === 'EEXIST');
 }
 
 async function writeEvidenceManifest(evidenceDir: string, entry: PublishedAccessibilityEvidenceEntry): Promise<void> {
@@ -192,6 +271,7 @@ async function writeEvidenceIndex(evidenceDir: string): Promise<void> {
           <div class="banner">
             <h1>ACCESSIBILITY EVIDENCE</h1>
             <p>Open each item for engine-specific findings, screenshots, JSON, and native reports where available.</p>
+            <p><a href="./${EVIDENCE_PROVENANCE_FILE}">Run provenance</a> (command, output paths, and supplied source revision)</p>
           </div>
           <ol>${rows}</ol>
         </body>

@@ -68,11 +68,12 @@ export class Bookmarks {
         return;
       }
 
-      bookmarks = payload.map((bookmark: Bookmark) => {
-        const current = bookmarks.find(item => item.id === bookmark.id);
-        return { ...current, ...bookmark, previous: bookmark.previous };
+      const updates = new Map<string, Bookmark>(payload.map((bookmark: Bookmark) => [bookmark.id, bookmark] as const));
+      bookmarks = bookmarks.map(bookmark => {
+        const update = updates.get(bookmark.id);
+        return update ? { ...bookmark, ...update, previous: update.previous } : bookmark;
       });
-      await route.fulfill({ json: bookmarks });
+      await route.fulfill({ json: payload });
       this.moveComplete?.();
       this.moveComplete = undefined;
     });
@@ -85,6 +86,19 @@ export class Bookmarks {
     }
     await this.panel.waitFor({ state: 'visible' });
     await this.addButton.waitFor({ state: 'visible' });
+  }
+
+  async createFromTextSelection(): Promise<Bookmark> {
+    await this.page.locator('#mvHighlightBtn').click();
+    await this.page.locator('#highlightTextBtn').click();
+
+    const text = this.page.locator('.textLayer span').filter({ hasText: /example/i }).first();
+    await text.waitFor({ state: 'visible' });
+    await text.dblclick();
+    const request = this.page.waitForRequest(request =>
+      request.url().endsWith('/em-anno/bookmarks') && request.method() === 'POST');
+    await this.page.locator('#bookmarkButton').click();
+    return (await request).postDataJSON() as Bookmark;
   }
 
   node(index = 0): Locator {
@@ -118,6 +132,15 @@ export class Bookmarks {
       return (await updateRequest).postDataJSON() as Bookmark;
     }
     return undefined;
+  }
+
+  async saveDraft(name: string): Promise<Bookmark> {
+    const updateRequest = this.page.waitForRequest(request =>
+      request.url().endsWith('/em-anno/bookmarks') && request.method() === 'PUT');
+    const draft = this.draftNode();
+    await draft.locator('.bookmark__input').fill(name);
+    await draft.locator('.bookmark__save').click();
+    return (await updateRequest).postDataJSON() as Bookmark;
   }
 
   async reorder(from: number, to: number): Promise<Bookmark[]> {
