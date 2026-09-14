@@ -1,6 +1,6 @@
 #!groovy
 
-def scheduledNightlyTriggers = env.BRANCH_NAME == 'master' ? [cron('H 17 * * *')] : []
+def scheduledNightlyTriggers = env.BRANCH_NAME == 'master' ? [cron('30 17 * * 1-5')] : []
 
 properties([
   [
