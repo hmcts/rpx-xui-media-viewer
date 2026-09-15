@@ -114,8 +114,10 @@ def uploadPlaywrightEvidence = { String outputRoot ->
     rm -rf -- '${staging}'
     mkdir -p '${staging}/odhin-report' '${staging}/test-results'
     cp -R '${outputRoot}/odhin-report/.' '${staging}/odhin-report/'
-    cd '${outputRoot}'
-    find test-results -type f \( -name '*.json' -o -name 'trace.zip' -o -name '*.png' \) -exec cp --parents '{}' 'blob-evidence/' \;
+    if [ -d '${outputRoot}/test-results' ]; then
+      cd '${outputRoot}'
+      find test-results -type f \( -name '*.json' -o -name 'trace.zip' -o -name '*.png' \) -exec cp --parents '{}' 'blob-evidence/' \;
+    fi
   """
   azureEvidenceUpload(env.CI_EVIDENCE_SUBSCRIPTION, env.CI_EVIDENCE_STORAGE_ACCOUNT, staging, destination)
 }
