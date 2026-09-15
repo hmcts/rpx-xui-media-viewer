@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import { Component, Input } from '@angular/core';
 
 /*
 * Gov UK Label component
@@ -7,22 +7,23 @@ import {Component, Input} from '@angular/core';
 * @prop config - obj with properties
 * */
 @Component({
-    selector: 'mv-gov-label',
-    template: `<h1 *ngIf="config.isPageHeading else noHeading">
+  selector: 'mv-gov-label',
+  template: `<h1 *ngIf="config.isPageHeading else noHeading">
           <label *ngIf="config.label" [class]="config.classes + ' govuk-label'"
-                 [for]="config.id" [innerHTML]="config.label">
+                 [for]="config.id">
+            {{ config.label }}
           </label>
         </h1>
         <ng-template #noHeading>
           <label *ngIf="config.label" [class]="config.classes + ' govuk-label'"
-                 [for]="config.id" [innerHTML]="config.label">
+                 [for]="config.id">
+            {{ config.label }}
           </label>
         </ng-template>
   `,
-    standalone: false
+  standalone: false
 })
 export class GovUkLabelComponent {
   constructor () { }
   @Input() config: { label: string, name: string; id: string, isPageHeading, classes: string };
-
 }
