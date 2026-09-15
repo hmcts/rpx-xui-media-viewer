@@ -102,6 +102,10 @@ def hasPlaywrightJUnit = { String outputRoot ->
 }
 
 def uploadPlaywrightEvidence = { String outputRoot ->
+  if (env.CI_EVIDENCE_ENABLED != 'true') {
+    echo 'CI evidence Blob upload is disabled; set CI_EVIDENCE_ENABLED=true after storage provisioning.'
+    return
+  }
   if (!env.CI_EVIDENCE_SUBSCRIPTION || !env.CI_EVIDENCE_STORAGE_ACCOUNT) {
     error('CI_EVIDENCE_SUBSCRIPTION and CI_EVIDENCE_STORAGE_ACCOUNT must be configured before Blob upload')
   }
