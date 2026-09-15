@@ -70,8 +70,9 @@ def uploadPlaywrightEvidence = { String outputRoot ->
     error('CI_EVIDENCE_SUBSCRIPTION and CI_EVIDENCE_STORAGE_ACCOUNT must be configured before Blob upload')
   }
   def reportPath = outputRoot.replaceFirst('^functional-output/tests/', '')
+  def jobSlug = (env.JOB_NAME ?: 'media-viewer').replaceAll('[^A-Za-z0-9]+', '-').toLowerCase()
   def datePath = sh(returnStdout: true, script: 'date -u +%Y/%m/%d').trim()
-  def destination = "reports/90d/${component}/${datePath}/build-${env.BUILD_NUMBER}/${reportPath}"
+  def destination = "reports/90d/${component}/${jobSlug}/${datePath}/build-${env.BUILD_NUMBER}/${reportPath}"
   def staging = "${outputRoot}/blob-evidence"
   sh """
     set -eu
