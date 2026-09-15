@@ -169,6 +169,7 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
       { outputFile: env.PLAYWRIGHT_JSON_OUTPUT ?? `${env.PLAYWRIGHT_REPORT_FOLDER ?? `${defaultOutputRoot}/odhin-report`}/ci-evidence/playwright.json` },
     ]);
   }
+  if (env.PW_ENABLE_PERFETTO !== 'false') reporters.push(['perfetto']);
   return reporters;
 };
 
@@ -196,7 +197,7 @@ export default defineConfig({
   reporter: resolveReporters(process.env, workerCount),
   use: {
     baseURL: resolveBaseUrl(process.env),
-    trace: 'retain-on-failure',
+    trace: { mode: 'retain-on-failure', snapshots: { dom: true, aria: true, screen: true } },
     screenshot: 'only-on-failure',
     video: 'off',
   },
