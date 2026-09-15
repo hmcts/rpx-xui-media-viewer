@@ -33,7 +33,7 @@ properties([
 ])
 
 
-@Library("Infrastructure@2.7.0")
+@Library("Infrastructure@feature/xui-evidence-uploader")
 
 def type = "nodejs"
 def product = "xui"
@@ -101,6 +101,32 @@ def hasPlaywrightJUnit = { String outputRoot ->
   ) == 0
 }
 
+def uploadPlaywrightEvidence = { String outputRoot ->
+  if (env.CI_EVIDENCE_ENABLED != 'true') {
+    echo 'CI evidence Blob upload is disabled; set CI_EVIDENCE_ENABLED=true after storage provisioning.'
+    return
+  }
+  if (!env.CI_EVIDENCE_SUBSCRIPTION || !env.CI_EVIDENCE_STORAGE_ACCOUNT) {
+    error('CI_EVIDENCE_SUBSCRIPTION and CI_EVIDENCE_STORAGE_ACCOUNT must be configured before Blob upload')
+  }
+  def reportPath = outputRoot.replaceFirst('^functional-output/tests/', '')
+  def jobSlug = (env.JOB_NAME ?: 'media-viewer').replaceAll('[^A-Za-z0-9]+', '-').toLowerCase()
+  def datePath = sh(returnStdout: true, script: 'date -u +%Y/%m/%d').trim()
+  def destination = "reports/90d/${component}/${jobSlug}/${datePath}/build-${env.BUILD_NUMBER}/${reportPath}"
+  def staging = "${outputRoot}/blob-evidence"
+  sh """
+    set -eu
+    rm -rf -- '${staging}'
+    mkdir -p '${staging}/odhin-report' '${staging}/test-results'
+    cp -R '${outputRoot}/odhin-report/.' '${staging}/odhin-report/'
+    if [ -d '${outputRoot}/test-results' ]; then
+      cd '${outputRoot}'
+      find test-results -type f \( -name '*.json' -o -name 'trace.zip' -o -name '*.png' \) -exec cp --parents '{}' 'blob-evidence/' \;
+    fi
+  """
+  azureEvidenceUpload(env.CI_EVIDENCE_SUBSCRIPTION, env.CI_EVIDENCE_STORAGE_ACCOUNT, staging, destination)
+}
+
 def publishPlaywrightReport = { String outputRoot, String reportName, String reportFile, boolean requireJUnit = true, boolean skipMarkingBuildUnstable = false ->
   steps.sh(
     "node scripts/ensure-odhin-report.js --report-dir '${outputRoot}/odhin-report' --report-file '${reportFile}' --suite-name '${reportName}' --test-output-dir '${outputRoot}/test-results'"
@@ -117,6 +143,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     allowEmptyArchive: true,
     artifacts: "${outputRoot}/**"
   )
+  uploadPlaywrightEvidence(outputRoot)
   if (hasPlaywrightJUnit(outputRoot)) {
     publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
   } else if (requireJUnit) {
