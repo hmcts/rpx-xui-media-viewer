@@ -114,7 +114,7 @@ export class Bookmarks {
   }
 
   private draftNode(): Locator {
-    return this.nodes.filter({ has: this.page.locator('.bookmark__input') }).last();
+    return this.nodes.filter({ has: this.page.locator('.bookmark__input:visible') }).last();
   }
 
   async add(name?: string): Promise<Bookmark | undefined> {
