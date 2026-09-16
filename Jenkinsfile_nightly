@@ -1,6 +1,6 @@
 #!groovy
 
-def scheduledNightlyTriggers = env.BRANCH_NAME == 'master' ? [cron('H 17 * * *')] : []
+def scheduledNightlyTriggers = env.BRANCH_NAME == 'master' ? [cron('30 17 * * 1-5')] : []
 
 properties([
   [
@@ -25,7 +25,7 @@ properties([
   ])
 ])
 
-@Library("Infrastructure@2.5.1")
+@Library("Infrastructure@2.8.0")
 
 def type = "nodejs"
 def product = "xui"
@@ -77,6 +77,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     reportFiles          : reportFile,
     reportName           : reportName
   ])
+  steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'test-results/perfetto*.json'
   steps.archiveArtifacts(
     allowEmptyArchive: true,
     artifacts: "${outputRoot}/**"
@@ -184,7 +185,7 @@ withNightlyPipeline(type, product, component) {
   env.HRS_API_URL = "http://em-hrs-api-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
   env.ANNOTATION_API_URL = "http://em-anno-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
   env.NPA_URL = "http://em-npa-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal"
-  env.ICP_API_URL = "https://em-icp.${params.ENVIRONMENT}.platform.hmcts.net"
+  env.ICP_API_URL = "https://xui-icp.${params.ENVIRONMENT}.platform.hmcts.net"
   env.REDIRECT_URL = "https://xui-media-viewer-${params.ENVIRONMENT}.service.core-compute-${params.ENVIRONMENT}.internal/oauth2/callback"
   env.REFORM_ENVIRONMENT = params.ENVIRONMENT
   env.NODE_ENV = "TEST"
