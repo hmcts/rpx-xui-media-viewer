@@ -114,6 +114,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
     reportName           : reportName
   ])
   steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/tests/**/test-results/perfetto*.json'
+  steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/tests/playwright-*/**/test-results/perfetto*.json'
   steps.archiveArtifacts(
     allowEmptyArchive: true,
     artifacts: "${outputRoot}/**"
