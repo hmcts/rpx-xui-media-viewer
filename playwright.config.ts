@@ -115,6 +115,9 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
     ? requestedReporters
     : [terminalReporter, 'junit', 'odhin-progress', 'odhin'];
   const uniqueReporterNames = [...new Set(reporterNames)];
+  if (env.PW_ENABLE_PERFETTO !== 'false' && !uniqueReporterNames.includes('perfetto')) {
+    uniqueReporterNames.unshift('perfetto');
+  }
 
   const reporters = uniqueReporterNames.map((reporterName): ReporterDescription => {
     if (reporterName === 'junit') {
@@ -147,6 +150,13 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
       ] as const;
     }
 
+    if (reporterName === 'perfetto') {
+      return [
+        'perfetto',
+        { outputFile: env.PLAYWRIGHT_PERFETTO_OUTPUT_FILE ?? `${defaultOutputRoot}/test-results/perfetto.json` },
+      ] as const;
+    }
+
     if (reporterName === 'odhin-progress') {
       return [
         './playwright_tests/common/reporters/odhin-progress.reporter.cjs',
@@ -167,12 +177,6 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
     reporters.push([
       'json',
       { outputFile: env.PLAYWRIGHT_JSON_OUTPUT ?? `${env.PLAYWRIGHT_REPORT_FOLDER ?? `${defaultOutputRoot}/odhin-report`}/ci-evidence/playwright.json` },
-    ]);
-  }
-  if (env.PW_ENABLE_PERFETTO !== 'false') {
-    reporters.push([
-      'perfetto',
-      { outputFile: env.PLAYWRIGHT_PERFETTO_OUTPUT_FILE ?? `${defaultOutputRoot}/test-results/perfetto.json` },
     ]);
   }
   return reporters;
