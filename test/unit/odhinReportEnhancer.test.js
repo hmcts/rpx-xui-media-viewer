@@ -50,14 +50,25 @@ test('capability summary reports whether a contract runs by default', () => {
 });
 
 test('links suite-local Perfetto timelines from the generated Odhín report', () => {
-  const outputFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'media-odhin-'));
-  fs.mkdirSync(path.join(outputFolder, '..', 'test-results'), { recursive: true });
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'media-odhin-'));
+  const outputFolder = path.join(root, 'odhin-report');
+  const testResultsFolder = path.join(root, 'test-results');
+  fs.mkdirSync(outputFolder, { recursive: true });
+  fs.mkdirSync(testResultsFolder, { recursive: true });
   fs.writeFileSync(path.join(outputFolder, 'index.html'), '<html><body><div class="tab"><button class="main-tablinks">Tests</button></div><main>Results</main></body></html>');
-  fs.writeFileSync(path.join(outputFolder, '..', 'test-results', 'perfetto.json'), '{}');
+  fs.writeFileSync(path.join(testResultsFolder, 'perfetto.json'), '{}');
 
-  __test__.enhanceGeneratedReport(outputFolder, []);
-
-  const report = fs.readFileSync(path.join(outputFolder, 'index.html'), 'utf8');
+  const buildUrl = process.env.BUILD_URL;
+  delete process.env.BUILD_URL;
+  let report = '';
+  try {
+    __test__.enhanceGeneratedReport(outputFolder, []);
+    report = fs.readFileSync(path.join(outputFolder, 'index.html'), 'utf8');
+  } finally {
+    if (buildUrl === undefined) delete process.env.BUILD_URL;
+    else process.env.BUILD_URL = buildUrl;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
   assert.match(report, /class="main-tablinks" onclick="openMainTab\(event, 'TabPerfetto'\)">Perfetto Results/);
   assert.match(report, /id="TabPerfetto" style="display: none" class="main-tabcontent"/);
   assert.match(report, /href="\.\.\/test-results\/perfetto\.json"/);
