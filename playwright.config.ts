@@ -197,7 +197,7 @@ export default defineConfig({
   reporter: resolveReporters(process.env, workerCount),
   use: {
     baseURL: resolveBaseUrl(process.env),
-    trace: { mode: 'retain-on-failure', snapshots: true, screenshots: true, sources: true },
+    trace: { mode: 'retain-on-failure', snapshots: { dom: true, aria: true, screen: true }, screenshots: true, sources: true },
     screenshot: 'only-on-failure',
     video: 'off',
   },
