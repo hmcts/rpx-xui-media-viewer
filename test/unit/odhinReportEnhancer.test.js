@@ -52,14 +52,14 @@ test('capability summary reports whether a contract runs by default', () => {
 test('links suite-local Perfetto timelines from the generated Odhín report', () => {
   const outputFolder = fs.mkdtempSync(path.join(os.tmpdir(), 'media-odhin-'));
   fs.mkdirSync(path.join(outputFolder, '..', 'test-results'), { recursive: true });
-  fs.writeFileSync(path.join(outputFolder, 'index.html'), '<html><body><main>Results</main></body></html>');
+  fs.writeFileSync(path.join(outputFolder, 'index.html'), '<html><body><div class="tab"><button class="main-tablinks">Tests</button></div><main>Results</main></body></html>');
   fs.writeFileSync(path.join(outputFolder, '..', 'test-results', 'perfetto.json'), '{}');
 
   __test__.enhanceGeneratedReport(outputFolder, []);
 
   const report = fs.readFileSync(path.join(outputFolder, 'index.html'), 'utf8');
-  assert.match(report, /id="odhin-perfetto-tab"[^>]*>Perfetto Results/);
-  assert.match(report, /id="odhin-perfetto-panel"/);
+  assert.match(report, /class="main-tablinks" onclick="openMainTab\(event, 'TabPerfetto'\)">Perfetto Results/);
+  assert.match(report, /id="TabPerfetto" style="display: none" class="main-tabcontent"/);
   assert.match(report, /href="\.\.\/test-results\/perfetto\.json"/);
 });
 
