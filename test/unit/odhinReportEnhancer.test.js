@@ -59,7 +59,9 @@ test('links suite-local Perfetto timelines from the generated Odhín report', ()
   fs.writeFileSync(path.join(testResultsFolder, 'perfetto.json'), '{}');
 
   const buildUrl = process.env.BUILD_URL;
+  const artifactBaseUrl = process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL;
   delete process.env.BUILD_URL;
+  delete process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL;
   let report = '';
   try {
     __test__.enhanceGeneratedReport(outputFolder, []);
@@ -67,6 +69,8 @@ test('links suite-local Perfetto timelines from the generated Odhín report', ()
   } finally {
     if (buildUrl === undefined) delete process.env.BUILD_URL;
     else process.env.BUILD_URL = buildUrl;
+    if (artifactBaseUrl === undefined) delete process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL;
+    else process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL = artifactBaseUrl;
     fs.rmSync(root, { recursive: true, force: true });
   }
   assert.match(report, /class="main-tablinks" onclick="openMainTab\(event, 'TabPerfetto'\)">Perfetto Results/);
