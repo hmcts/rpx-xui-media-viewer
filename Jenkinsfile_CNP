@@ -119,7 +119,7 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
   steps.archiveArtifacts(
     allowEmptyArchive: true,
     artifacts: "${outputRoot}/**",
-    excludes: '**/test-results/**/trace.zip'
+    excludes: '**/test-results/**/trace.zip,**/test-results/**/*.png,**/test-results/**/*.jpg,**/test-results/**/*.jpeg'
   )
   if (hasPlaywrightJUnit(outputRoot)) {
     publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
