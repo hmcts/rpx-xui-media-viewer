@@ -5,7 +5,14 @@ const { test } = require('node:test');
 const OdhinAdaptiveReporter = require('../../playwright_tests/common/reporters/odhin-adaptive.reporter.cjs');
 
 test('always keeps Odhín attachments external', () => {
-  const reporter = new OdhinAdaptiveReporter({ embedAttachments: true });
+  let receivedOptions;
+  new OdhinAdaptiveReporter({
+    embedAttachments: true,
+    createInnerReporter: (options) => {
+      receivedOptions = options;
+      return {};
+    }
+  });
 
-  assert.equal(reporter.inner.generate.execOptions.embedAttachments, false);
+  assert.equal(receivedOptions.embedAttachments, false);
 });
