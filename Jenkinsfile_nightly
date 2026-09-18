@@ -80,7 +80,8 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
   steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/tests/playwright-smoke/**/test-results/perfetto*.json,functional-output/tests/playwright-functional/**/test-results/perfetto*.json,functional-output/tests/playwright-support/**/test-results/perfetto*.json,functional-output/tests/playwright-crossbrowser/**/test-results/perfetto*.json'
   steps.archiveArtifacts(
     allowEmptyArchive: true,
-    artifacts: "${outputRoot}/**"
+    artifacts: "${outputRoot}/**",
+    excludes: '**/test-results/**/trace.zip,**/test-results/**/*.png,**/test-results/**/*.jpg,**/test-results/**/*.jpeg'
   )
   if (hasPlaywrightJUnit(outputRoot)) {
     publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
