@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.37",
+  "version": "4.2.37-tar-upscale",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -107,7 +107,7 @@
     "nunjucks": "^3.2.4",
     "otp": "^2.0.1",
     "pdfjs-dist": "^4.10.38",
-    "rpx-xui-translation": "1.2.12",
+    "rpx-xui-translation": "1.2.13-tar-upscale-2",
     "rxjs": "^7.8.2",
     "sass": "^1.102.0",
     "socket.io-client": "^4.8.3",
@@ -119,7 +119,6 @@
     "hosted-git-info": "^7.0.0",
     "ini": "4.1.3",
     "minimist": "^1.2.8",
-    "tar": "7.5.21",
     "serialize-javascript": "^5.0.1",
     "socket.io-parser": "4.2.7",
     "ssri": "^8.0.1",
