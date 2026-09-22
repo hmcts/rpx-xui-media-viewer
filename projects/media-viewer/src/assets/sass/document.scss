@@ -1,3 +1,6 @@
+@use "govuk-frontend/govuk/all" as *;
+@use "settings" as *;
+
 .aui {
 
   &--show-comments {
@@ -57,28 +60,32 @@
 
 .aui__toolbar-container {
   @include aui-width-container;
-  border-left:1px solid govuk-colour("light-grey");
-  border-right: 1px solid govuk-colour("light-grey");
-  height: 100%;
-  position: relative;
-  left: 0; top: 0;
-  z-index: 1;
+  & {
+    border-left:1px solid govuk-colour("light-grey");
+    border-right: 1px solid govuk-colour("light-grey");
+    height: 100%;
+    position: relative;
+    left: 0; top: 0;
+    z-index: 1;
+  }
 }
 
 
 .aui__toolbar-button {
   @include govuk-font($size: 19);
-  background-color: govuk-colour("white");
-  border: 0 none;
-  border: 1px solid #f00;
-  color: govuk-colour("black");
-  cursor: pointer;
-  float: left;
-  height: 50px;
-  margin: 0;
-  padding-left: 15px;
-  padding-right: 15px;
-  position: relative;
+  & {
+    background-color: govuk-colour("white");
+    border: 0 none;
+    border: 1px solid #f00;
+    color: govuk-colour("black");
+    cursor: pointer;
+    float: left;
+    height: 50px;
+    margin: 0;
+    padding-left: 15px;
+    padding-right: 15px;
+    position: relative;
+  }
   &:first-child {
     &::after {
       background-color: #DEE0E2;
@@ -161,7 +168,9 @@
 .aui__window-container {
   @include aui-width-container;
   @include govuk-clearfix;
-  position: relative;
+  & {
+    position: relative;
+  }
 }
 
 
@@ -190,7 +199,9 @@
 
 .aui__document-page {
   @include aspect-ratio(1,1.414); // True A4 aspect ratio
-  margin-top: govuk-spacing(4);
+  & {
+    margin-top: govuk-spacing(4);
+  }
 
   &:first-child {
     margin-top: 0;
@@ -198,11 +209,13 @@
 
   &[data-page]::after {
     @include govuk-font(16);
-    color: $govuk-secondary-text-colour;
-    content: attr(data-page);
-    line-height: 1;
-    position: absolute; right: govuk-spacing(4);
-    bottom: govuk-spacing(4);
+    & {
+      color: $govuk-secondary-text-colour;
+      content: attr(data-page);
+      line-height: 1;
+      position: absolute; right: govuk-spacing(4);
+      bottom: govuk-spacing(4);
+    }
   }
 
   img {
@@ -239,4 +252,3 @@
   }
 
 }
-

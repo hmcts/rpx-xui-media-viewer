@@ -1,3 +1,5 @@
+@use "govuk-frontend/govuk/all" as *;
+
 a.disabledLink {
   pointer-events: none;
   cursor: default;

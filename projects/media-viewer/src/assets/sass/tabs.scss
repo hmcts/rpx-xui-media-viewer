@@ -1,3 +1,5 @@
+@use "govuk-frontend/govuk/all" as *;
+
 .govuk-tabs {
   p{
     @include govuk-font($size: 16);
