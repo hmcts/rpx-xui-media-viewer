@@ -177,13 +177,6 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
   }
 
   private getSelectionRectangles(range: Range): DOMRect[] | DOMRectList {
-    if (this.toolbarEvents.redactionMode.getValue()) {
-      const boundingRect = range.getBoundingClientRect();
-      if (boundingRect && boundingRect.width > 0 && boundingRect.height > 0) {
-        return [boundingRect as DOMRect];
-      }
-    }
-
     return range.getClientRects();
   }
 
@@ -235,7 +228,10 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     for (let i = 0; i < clientRects.length; i++) {
       const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
       const findSelectionRectangle = selectionRectangles.find(
-        (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
+        (rect) => rect.width === selectionRectangle.width
+          && rect.height === selectionRectangle.height
+          && rect.x === selectionRectangle.x
+          && rect.y === selectionRectangle.y
       );
       if (!findSelectionRectangle) {
         selectionRectangles.push(selectionRectangle);
