@@ -254,16 +254,18 @@ describe('CommentComponent', () => {
     expect(component.hasUnsavedChanges).toBe(false);
   }));
 
-  it('should get selected short comment', () => {
+  it('should get selected short comment', fakeAsync(() => {
     component.selected = true;
     component._editable = true;
     component.fullComment = 'short comment';
 
     fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
 
     const expectedText = nativeElement.querySelector('textarea').value;
     expect(expectedText.trim()).toBe('short comment');
-  });
+  }));
 
   it('should get unselected short comment', () => {
     component._editable = false;
