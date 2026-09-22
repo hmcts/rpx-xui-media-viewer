@@ -8,7 +8,10 @@ import any = jasmine.any;
 describe('HighlightCreateDirective', () => {
 
   let directive: HighlightCreateDirective;
-  const toolbarEvents = { highlightModeSubject: new BehaviorSubject(false) } as any;
+  const toolbarEvents = {
+    highlightModeSubject: new BehaviorSubject(false),
+    redactionMode: new BehaviorSubject(false)
+  } as any;
   const viewerEvents = { textSelected: () => { }, clearCtxToolbar: () => { } } as any;
   const highlightService = { applyRotation: () => { } } as any;
   const allPages = {
@@ -35,6 +38,8 @@ describe('HighlightCreateDirective', () => {
   };
 
   beforeEach(() => {
+    toolbarEvents.highlightModeSubject.next(false);
+    toolbarEvents.redactionMode.next(false);
     directive = new HighlightCreateDirective(new ElementRef<HTMLElement>(hostElement),
       toolbarEvents, viewerEvents, highlightService, store);
   });
@@ -168,6 +173,70 @@ describe('HighlightCreateDirective', () => {
     expect(highlightService.applyRotation).toHaveBeenCalledWith(height, width, 20, 10, 50, 20, 0, 1);
     expect(viewerEvents.textSelected)
       .toHaveBeenCalledWith({ page: 1, rectangles: [{ id, ...rectangle }] });
+  });
+
+  it('should use the selected block bounds when creating text redactions', () => {
+    const clientRect = { top: 80, left: 60, bottom: 100, right: 70, width: 10, height: 20 } as any;
+    const boundingRect = { top: 80, left: 60, bottom: 180, right: 260, width: 200, height: 100 } as any;
+    const mockRange = {
+      getBoundingClientRect: () => boundingRect,
+      getClientRects: () => [clientRect]
+    } as any;
+    const mockSelection = {
+      rangeCount: 1,
+      isCollapsed: false,
+      getRangeAt: () => ({ cloneRange: () => mockRange }),
+      removeAllRanges: () => { }
+    } as any;
+    spyOn(toolbarEvents.highlightModeSubject, 'getValue').and.returnValue(true);
+    spyOn(toolbarEvents.redactionMode, 'getValue').and.returnValue(true);
+    spyOn(window, 'getSelection').and.returnValue(mockSelection);
+
+    const mockElement = getMockElement('');
+    const mockEvent = { target: { ...mouseEvent.target, parentElement: mockElement, closest : () => mockElement } } as any;
+    directive.allPages = { '1': { ...page } };
+    spyOn(viewerEvents, 'textSelected');
+    const rectangle = { x: 20, y: 50, height: 100, width: 200 };
+    spyOn(highlightService, 'applyRotation').and.returnValue(rectangle);
+    const { height, width } = page.styles;
+
+    directive.onMouseUp(mockEvent);
+
+    expect(highlightService.applyRotation).toHaveBeenCalledWith(height, width, 100, 200, 50, 20, 0, 1);
+    expect(viewerEvents.textSelected)
+      .toHaveBeenCalledWith({ page: 1, rectangles: [jasmine.objectContaining(rectangle)] });
+  });
+
+  it('should fall back to text rectangles for redactions when selected block bounds are empty', () => {
+    const clientRect = { top: 80, left: 60, bottom: 100, right: 70, width: 10, height: 20 } as any;
+    const boundingRect = { top: 80, left: 60, bottom: 80, right: 60, width: 0, height: 0 } as any;
+    const mockRange = {
+      getBoundingClientRect: () => boundingRect,
+      getClientRects: () => [clientRect]
+    } as any;
+    const mockSelection = {
+      rangeCount: 1,
+      isCollapsed: false,
+      getRangeAt: () => ({ cloneRange: () => mockRange }),
+      removeAllRanges: () => { }
+    } as any;
+    spyOn(toolbarEvents.highlightModeSubject, 'getValue').and.returnValue(true);
+    spyOn(toolbarEvents.redactionMode, 'getValue').and.returnValue(true);
+    spyOn(window, 'getSelection').and.returnValue(mockSelection);
+
+    const mockElement = getMockElement('');
+    const mockEvent = { target: { ...mouseEvent.target, parentElement: mockElement, closest : () => mockElement } } as any;
+    directive.allPages = { '1': { ...page } };
+    spyOn(viewerEvents, 'textSelected');
+    const rectangle = { x: 20, y: 50, height: 20, width: 10 };
+    spyOn(highlightService, 'applyRotation').and.returnValue(rectangle);
+    const { height, width } = page.styles;
+
+    directive.onMouseUp(mockEvent);
+
+    expect(highlightService.applyRotation).toHaveBeenCalledWith(height, width, 20, 10, 50, 20, 0, 1);
+    expect(viewerEvents.textSelected)
+      .toHaveBeenCalledWith({ page: 1, rectangles: [jasmine.objectContaining(rectangle)] });
   });
 
   it('should create two rectangles', () => {
