@@ -8,7 +8,9 @@ import any = jasmine.any;
 describe('HighlightCreateDirective', () => {
 
   let directive: HighlightCreateDirective;
-  const toolbarEvents = { highlightModeSubject: new BehaviorSubject(false) } as any;
+  const toolbarEvents = {
+    highlightModeSubject: new BehaviorSubject(false)
+  } as any;
   const viewerEvents = { textSelected: () => { }, clearCtxToolbar: () => { } } as any;
   const highlightService = { applyRotation: () => { } } as any;
   const allPages = {
@@ -35,6 +37,7 @@ describe('HighlightCreateDirective', () => {
   };
 
   beforeEach(() => {
+    toolbarEvents.highlightModeSubject.next(false);
     directive = new HighlightCreateDirective(new ElementRef<HTMLElement>(hostElement),
       toolbarEvents, viewerEvents, highlightService, store);
   });
@@ -168,6 +171,38 @@ describe('HighlightCreateDirective', () => {
     expect(highlightService.applyRotation).toHaveBeenCalledWith(height, width, 20, 10, 50, 20, 0, 1);
     expect(viewerEvents.textSelected)
       .toHaveBeenCalledWith({ page: 1, rectangles: [{ id, ...rectangle }] });
+  });
+
+  it('should preserve text rectangles on different lines with the same width and x position', () => {
+    const mockClientRects = [
+      { top: 80, left: 60, bottom: 100, right: 160 },
+      { top: 120, left: 60, bottom: 140, right: 160 }
+    ] as any;
+    const mockRange = { getClientRects: () => mockClientRects } as any;
+    const mockSelection = {
+      rangeCount: 1,
+      isCollapsed: false,
+      getRangeAt: () => ({ cloneRange: () => mockRange }),
+      removeAllRanges: () => { }
+    } as any;
+    spyOn(toolbarEvents.highlightModeSubject, 'getValue').and.returnValue(true);
+    spyOn(window, 'getSelection').and.returnValue(mockSelection);
+
+    const mockElement = getMockElement('');
+    const mockEvent = { target: { ...mouseEvent.target, parentElement: mockElement, closest : () => mockElement } } as any;
+    directive.allPages = { '1': { ...page } };
+    spyOn(viewerEvents, 'textSelected');
+    const firstLine = { x: 20, y: 50, height: 20, width: 100 };
+    const secondLine = { x: 20, y: 90, height: 20, width: 100 };
+    spyOn(highlightService, 'applyRotation').and.returnValues(firstLine, secondLine);
+
+    directive.onMouseUp(mockEvent);
+
+    expect(viewerEvents.textSelected)
+      .toHaveBeenCalledWith({
+        page: 1,
+        rectangles: [jasmine.objectContaining(firstLine), jasmine.objectContaining(secondLine)]
+      });
   });
 
   it('should create two rectangles', () => {
