@@ -70,6 +70,7 @@ def configurePlaywrightSmoke = { String outputRoot, String targetEnvironment ->
   steps.sh("rm -rf -- '${outputRoot}'")
   env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
   env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-smoke-junit.xml"
+  env.PLAYWRIGHT_PERFETTO_OUTPUT_FILE = "${outputRoot}/test-results/perfetto.json"
   env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
   env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightSmokeOdhinReportFile
   env.PLAYWRIGHT_REPORT_TITLE = playwrightSmokeOdhinTitle
@@ -80,6 +81,7 @@ def configurePlaywrightFunctional = { String outputRoot, String targetEnvironmen
   steps.sh("rm -rf -- '${outputRoot}'")
   env.PLAYWRIGHT_TEST_OUTPUT_DIR = "${outputRoot}/test-results"
   env.PLAYWRIGHT_JUNIT_OUTPUT = "${outputRoot}/playwright-functional-junit.xml"
+  env.PLAYWRIGHT_PERFETTO_OUTPUT_FILE = "${outputRoot}/test-results/perfetto.json"
   env.PLAYWRIGHT_REPORT_FOLDER = "${outputRoot}/odhin-report"
   env.PLAYWRIGHT_REPORT_INDEX_FILENAME = playwrightFunctionalOdhinReportFile
   env.PLAYWRIGHT_REPORT_TITLE = playwrightFunctionalOdhinTitle
@@ -116,7 +118,8 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
   steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/tests/**/test-results/perfetto*.json'
   steps.archiveArtifacts(
     allowEmptyArchive: true,
-    artifacts: "${outputRoot}/**"
+    artifacts: "${outputRoot}/**",
+    excludes: '**/test-results/**/trace.zip,**/test-results/**/*.png,**/test-results/**/*.jpg,**/test-results/**/*.jpeg'
   )
   if (hasPlaywrightJUnit(outputRoot)) {
     publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
@@ -132,6 +135,7 @@ def runPlaywrightSupportTests = { String outputRoot, String reportName, String t
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-junit.xml",
+    "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${outputRoot}/test-results/perfetto.json",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",
     "PLAYWRIGHT_REPORT_TITLE=${playwrightSupportOdhinTitle}",
@@ -151,6 +155,7 @@ def runPlaywrightAccessibilityTests = { String outputRoot, String reportName, St
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-accessibility-junit.xml",
+    "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${outputRoot}/test-results/perfetto.json",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightAccessibilityOdhinReportFile}",
     "PLAYWRIGHT_REPORT_TITLE=${playwrightAccessibilityOdhinTitle}",
@@ -187,6 +192,7 @@ def runPlaywrightCrossbrowserTests = { String outputRoot, String reportName, Str
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-crossbrowser-junit.xml",
+    "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${outputRoot}/test-results/perfetto.json",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightCrossbrowserOdhinReportFile}",
     "PLAYWRIGHT_REPORT_TITLE=${playwrightCrossbrowserOdhinTitle}",

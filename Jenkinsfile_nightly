@@ -80,7 +80,8 @@ def publishPlaywrightReport = { String outputRoot, String reportName, String rep
   steps.archiveArtifacts allowEmptyArchive: true, artifacts: 'functional-output/tests/**/test-results/perfetto*.json'
   steps.archiveArtifacts(
     allowEmptyArchive: true,
-    artifacts: "${outputRoot}/**"
+    artifacts: "${outputRoot}/**",
+    excludes: '**/test-results/**/trace.zip,**/test-results/**/*.png,**/test-results/**/*.jpg,**/test-results/**/*.jpeg'
   )
   if (hasPlaywrightJUnit(outputRoot)) {
     publishPlaywrightJUnit("${outputRoot}/**/*junit.xml", skipMarkingBuildUnstable)
@@ -96,6 +97,7 @@ def runPlaywrightAccessibilityTests = { String outputRoot, String reportName ->
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-accessibility-junit.xml",
+    "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${outputRoot}/test-results/perfetto.json",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightAccessibilityOdhinReportFile}",
     "PLAYWRIGHT_REPORT_TITLE=${playwrightAccessibilityOdhinTitle}",
@@ -133,6 +135,7 @@ def runPlaywrightCrossbrowserTests = { String outputRoot, String reportName ->
   withEnv(playwrightBrowsersEnv() + [
     "PLAYWRIGHT_TEST_OUTPUT_DIR=${outputRoot}/test-results",
     "PLAYWRIGHT_JUNIT_OUTPUT=${outputRoot}/playwright-crossbrowser-junit.xml",
+    "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${outputRoot}/test-results/perfetto.json",
     "PLAYWRIGHT_REPORT_FOLDER=${outputRoot}/odhin-report",
     "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightCrossbrowserOdhinReportFile}",
     "PLAYWRIGHT_REPORT_TITLE=${playwrightCrossbrowserOdhinTitle}",
@@ -291,6 +294,7 @@ withNightlyPipeline(type, product, component) {
       withEnv(playwrightBrowsersEnv() + [
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSmokeOutputRoot}/test-results",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSmokeOutputRoot}/playwright-smoke-junit.xml",
+        "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${playwrightSmokeOutputRoot}/test-results/perfetto.json",
         "PLAYWRIGHT_REPORT_FOLDER=${playwrightSmokeOutputRoot}/odhin-report",
         "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSmokeOdhinReportFile}",
         "PLAYWRIGHT_REPORT_TITLE=${playwrightSmokeOdhinTitle}",
@@ -310,6 +314,7 @@ withNightlyPipeline(type, product, component) {
       withEnv(playwrightBrowsersEnv() + [
         "PLAYWRIGHT_TEST_OUTPUT_DIR=${playwrightSupportOutputRoot}/test-results",
         "PLAYWRIGHT_JUNIT_OUTPUT=${playwrightSupportOutputRoot}/playwright-support-junit.xml",
+        "PLAYWRIGHT_PERFETTO_OUTPUT_FILE=${playwrightSupportOutputRoot}/test-results/perfetto.json",
         "PLAYWRIGHT_REPORT_FOLDER=${playwrightSupportOutputRoot}/odhin-report",
         "PLAYWRIGHT_REPORT_INDEX_FILENAME=${playwrightSupportOdhinReportFile}",
         "PLAYWRIGHT_REPORT_TITLE=${playwrightSupportOdhinTitle}",
