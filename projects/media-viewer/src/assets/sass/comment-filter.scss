@@ -1,3 +1,5 @@
+@use "govuk-frontend/govuk/all" as *;
+
 .comment-filter {
   border: none;
   margin-bottom: 20px;
@@ -72,8 +74,10 @@
   font-weight: bold;
   position: relative;
   @include govuk-font($size: 19);
-  color: govuk-colour("blue");
-  cursor: pointer;
+  & {
+    color: govuk-colour("blue");
+    cursor: pointer;
+  }
 
 }
 

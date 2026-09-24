@@ -1,3 +1,5 @@
+@use "govuk-frontend/govuk/all" as *;
+
 .searchbar {
   z-index: 100;
   position: absolute;
@@ -14,8 +16,10 @@
   }
   span {
     @include govuk-font($size: 16);
-    color: $govuk-secondary-text-colour;
-    min-width: 110px;
+    & {
+      color: $govuk-secondary-text-colour;
+      min-width: 110px;
+    }
   }
 }
 

@@ -1,3 +1,6 @@
+@use "sass:color";
+@use "node_modules/ngx-chips/core/styles/core/core" as *;
+
 .tags {
   margin-bottom: 10px;
   &__renderer {
@@ -18,10 +21,8 @@
 }
 
 
-@import "node_modules/ngx-chips/core/styles/core/core";
-
 $foundation-primary: #1779ba;
-$foundation-primary-dark: darken($foundation-primary, 10%);
+$foundation-primary-dark: color.adjust($foundation-primary, $lightness: -10%);
 
 $foundation-theme: (
   container-border-bottom: 1px solid $foundation-primary
@@ -84,4 +85,3 @@ button {
 
   }
 }
-

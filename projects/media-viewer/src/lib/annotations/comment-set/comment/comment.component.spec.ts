@@ -1,6 +1,6 @@
 import { RpxTranslationModule } from 'rpx-xui-translation';
 import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
-import { CUSTOM_ELEMENTS_SCHEMA, provideNgReflectAttributes } from '@angular/core';
+import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { CommentComponent } from './comment.component';
 import { FormsModule } from '@angular/forms';
 import { CommentService } from './comment.service';
@@ -99,8 +99,7 @@ describe('CommentComponent', () => {
       providers: [
         CommentService,
         CommentService,
-        TagsServices,
-        provideNgReflectAttributes()
+        TagsServices
       ],
       schemas: [
         CUSTOM_ELEMENTS_SCHEMA
@@ -255,17 +254,18 @@ describe('CommentComponent', () => {
     expect(component.hasUnsavedChanges).toBe(false);
   }));
 
-  it('should get selected short comment', () => {
+  it('should get selected short comment', fakeAsync(() => {
     component.selected = true;
     component._editable = true;
     component.fullComment = 'short comment';
 
     fixture.detectChanges();
+    tick();
+    fixture.detectChanges();
 
-    const expectedText = fixture.debugElement
-      .query(element => element.name === 'textarea').attributes['ng-reflect-model'];
+    const expectedText = nativeElement.querySelector('textarea').value;
     expect(expectedText.trim()).toBe('short comment');
-  });
+  }));
 
   it('should get unselected short comment', () => {
     component._editable = false;

@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.38",
+  "version": "4.2.38-CME-1008-dart-sass",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -78,11 +78,11 @@
   "dependencies": {
     "@angular-eslint/utils": "20.3.0",
     "@angular/animations": "20.3.26",
-    "@angular/cdk": "^17.3.8",
+    "@angular/cdk": "20.2.14",
     "@angular/common": "20.3.26",
     "@angular/core": "20.3.26",
     "@angular/forms": "20.3.26",
-    "@angular/material": "^17.3.8",
+    "@angular/material": "20.2.14",
     "@angular/platform-browser": "20.3.26",
     "@angular/platform-browser-dynamic": "20.3.26",
     "@angular/platform-server": "20.3.26",

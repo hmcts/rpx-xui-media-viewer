@@ -1,3 +1,5 @@
+@use "govuk-frontend/govuk/all" as *;
+
 /* mixin for multiline, credit: http://hackingui.com/front-end/a-pure-css-solution-for-multiline-text-truncation/ */
 @mixin multiLineEllipsis($lineHeight: 1.2em, $lineCount: 1, $bgColor: white){
   overflow: hidden;
@@ -33,11 +35,11 @@
 mv-confirm-action,
 mv-comments-summary {
   .dates {
+    overflow: hidden;
+    clear: both;
     * {
       font-size: 16px;
     }
-    overflow: hidden;
-    clear: both;
     .dates__from, .dates__to, .dates__tags {
       float: left;
     }

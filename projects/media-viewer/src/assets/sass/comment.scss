@@ -1,3 +1,5 @@
+@use "govuk-frontend/govuk/all" as *;
+
 mv-anno-comment {
   .aui-comment {
     width: 85%;
@@ -100,14 +102,18 @@ mv-anno-comment {
 
   .aui-comment__author {
     @include govuk-font($size: 19);
-    display: block;
-    font-weight: bold;
+    & {
+      display: block;
+      font-weight: bold;
+    }
   }
 
 
   .aui-comment__meta {
     @include govuk-font($size: 16);
-    color: $govuk-secondary-text-colour;
+    & {
+      color: $govuk-secondary-text-colour;
+    }
   }
 
   .aui-comment__footer {
