@@ -1,18 +1,17 @@
 import { Observable } from 'rxjs';
 import { HttpClient, HttpResponse } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { catchError, map } from 'rxjs/operators';
 import { BulkRedaction, Redaction } from './redaction.model';
 
 @Injectable()
 export class RedactionApiService {
+  private readonly httpClient = inject(HttpClient);
+
 
   private markupsApiUrl = '/api/markups';
   private redactApiUrl = '/api/redaction';
   private markupsSearchApiUrl = '/api/markups/search';
-  constructor(
-    private readonly httpClient: HttpClient
-  ) { }
 
   public getRedactions(documentId: string): Observable<HttpResponse<Redaction[]>> {
     const fixedUrl = `${this.markupsApiUrl}/${documentId}`;

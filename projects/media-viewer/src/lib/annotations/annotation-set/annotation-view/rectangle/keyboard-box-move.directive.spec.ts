@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { KeyboardBoxMoveDirective } from './keyboard-box-move.directive';
 
@@ -25,7 +25,10 @@ describe('KeyboardBoxMoveDirective', () => {
     });
 
     mockElementRef = new ElementRef(mockElement);
-    directive = new KeyboardBoxMoveDirective(mockElementRef);
+    directive = runInInjectionContext(
+      Injector.create({ providers: [{ provide: ElementRef, useValue: mockElementRef }] }),
+      () => new KeyboardBoxMoveDirective()
+    );
   });
 
   afterEach(() => {

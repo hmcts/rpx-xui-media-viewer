@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { map } from 'rxjs/operators';
 import { Observable } from 'rxjs';
@@ -6,10 +6,10 @@ import { IcpSession } from './icp.interfaces';
 
 @Injectable({ providedIn: 'root' })
 export class IcpSessionApiService {
+  private readonly httpClient = inject(HttpClient);
+
 
   public ICP_SESSION_API = '/icp/sessions';
-
-  constructor(private readonly httpClient: HttpClient) { }
 
   public loadSession(payload: { caseId: string, documentId: string }): Observable<any> {
     return this.httpClient

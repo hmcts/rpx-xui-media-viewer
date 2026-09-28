@@ -1,8 +1,12 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { fakeAsync, tick } from '@angular/core/testing';
 import { BehaviorSubject, of, Subscription } from 'rxjs';
 import { HighlightCreateDirective } from './highlight-create.directive';
+import { HighlightCreateService } from './highlight-create.service';
 import { SelectedAnnotation } from '../../../../store/actions/annotation.actions';
+import { ToolbarEventService } from '../../../../toolbar/toolbar-event.service';
+import { ViewerEventService } from '../../../../viewers/viewer-event.service';
 import any = jasmine.any;
 
 describe('HighlightCreateDirective', () => {
@@ -34,9 +38,19 @@ describe('HighlightCreateDirective', () => {
     };
   };
 
+  const createDirective = (element: HTMLElement) => runInInjectionContext(
+    Injector.create({ providers: [
+      { provide: ElementRef, useValue: new ElementRef<HTMLElement>(element) },
+      { provide: ToolbarEventService, useValue: toolbarEvents },
+      { provide: ViewerEventService, useValue: viewerEvents },
+      { provide: HighlightCreateService, useValue: highlightService },
+      { provide: Store, useValue: store }
+    ] }),
+    () => new HighlightCreateDirective()
+  );
+
   beforeEach(() => {
-    directive = new HighlightCreateDirective(new ElementRef<HTMLElement>(hostElement),
-      toolbarEvents, viewerEvents, highlightService, store);
+    directive = createDirective(hostElement);
   });
 
   it('should set allPages onInit', () => {
@@ -203,13 +217,7 @@ describe('HighlightCreateDirective', () => {
   describe('keyboard text selection', () => {
     it('should focus element without scrolling when highlight mode is enabled', fakeAsync(() => {
       const mockElement = document.createElement('div');
-      const newDirective = new HighlightCreateDirective(
-        new ElementRef<HTMLElement>(mockElement),
-        toolbarEvents,
-        viewerEvents,
-        highlightService,
-        store
-      );
+      const newDirective = createDirective(mockElement);
       spyOn(mockElement, 'focus');
 
       newDirective.ngOnInit();
@@ -225,13 +233,7 @@ describe('HighlightCreateDirective', () => {
       toolbarEvents.highlightModeSubject.next(false);
 
       const mockElement = document.createElement('div');
-      const newDirective = new HighlightCreateDirective(
-        new ElementRef<HTMLElement>(mockElement),
-        toolbarEvents,
-        viewerEvents,
-        highlightService,
-        store
-      );
+      const newDirective = createDirective(mockElement);
       spyOn(mockElement, 'focus');
 
       newDirective.ngOnInit();

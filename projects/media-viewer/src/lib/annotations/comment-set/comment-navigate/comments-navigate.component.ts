@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject } from '@angular/core';
 import { Rectangle } from '../../annotation-set/annotation-view/rectangle/rectangle.model';
 import { Annotation } from '../../annotation-set/annotation-view/annotation.model';
 import {Store} from '@ngrx/store';
@@ -13,14 +13,15 @@ import {ToolbarEventService} from '../../../toolbar/toolbar-event.service';
     standalone: false
 })
 export class CommentsNavigateComponent implements OnChanges {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  readonly toolbarEvents = inject(ToolbarEventService);
+
 
   @Input() public annotationList: Annotation[];
   @Input() autoSelect = false;
 
   navigationList: any[] = [];
   index = 0;
-
-  constructor(private store: Store<fromStore.AnnotationSetState>, public readonly toolbarEvents: ToolbarEventService) {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes.annotationList) {

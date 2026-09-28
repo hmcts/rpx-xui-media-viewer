@@ -1,14 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { SocketService } from './socket.service';
 import { IcpParticipant, IcpScreenUpdate, IcpSession } from './icp.interfaces';
 import { IcpEvents } from './icp.events';
 
 @Injectable({ providedIn: 'root' })
 export class IcpUpdateService {
+  private socket = inject(SocketService);
+
 
   session: IcpSession;
-
-  constructor(private socket: SocketService) { }
 
   private joinSessionSubscription: any;
 

@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { TooltipDismissDirective } from './tooltip-dismiss.directive';
 
 describe('TooltipDismissDirective', () => {
@@ -9,7 +9,10 @@ describe('TooltipDismissDirective', () => {
   beforeEach(() => {
     hostElement = document.createElement('div');
     elementRef = new ElementRef<HTMLElement>(hostElement);
-    directive = new TooltipDismissDirective(elementRef);
+    directive = runInInjectionContext(
+      Injector.create({ providers: [{ provide: ElementRef, useValue: elementRef }] }),
+      () => new TooltipDismissDirective()
+    );
   });
 
   describe('onEscapeDismissTooltip', () => {

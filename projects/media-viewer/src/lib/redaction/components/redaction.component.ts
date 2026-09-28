@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { v4 as uuid } from 'uuid';
@@ -23,6 +23,10 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
     standalone: false
 })
 export class RedactionComponent implements OnInit, OnDestroy {
+  private store = inject<Store<fromStore.State>>(Store);
+  private readonly viewerEvents = inject(ViewerEventService);
+  private toolbarEvents = inject(ToolbarEventService);
+
 
   @Input() zoom: number;
   @Input() rotate: number;
@@ -34,10 +38,6 @@ export class RedactionComponent implements OnInit, OnDestroy {
   documentId: string;
 
   private $subscription: Subscription;
-
-  constructor(private store: Store<fromStore.State>,
-    private readonly viewerEvents: ViewerEventService,
-    private toolbarEvents: ToolbarEventService) { }
 
   ngOnInit(): void {
     this.redactionsPerPage$ = this.store.pipe(select(fromSelectors.getRedactionsPerPage));

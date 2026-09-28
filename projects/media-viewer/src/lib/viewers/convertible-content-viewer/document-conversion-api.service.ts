@@ -1,14 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient, HttpResponse } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
 @Injectable()
 export class DocumentConversionApiService {
+  private readonly httpClient = inject(HttpClient);
+
 
   private documentConversionUrl = '/doc-assembly/convert';
-
-  constructor(private readonly httpClient: HttpClient) {}
 
   public convert(documentId): Observable<HttpResponse<Blob>> {
     return this.httpClient

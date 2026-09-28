@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import * as fromDocumentActions from '../../store/actions/document.actions';
 import { select, Store } from '@ngrx/store';
 import * as fromDocuments from '../../store/selectors/document.selectors';
@@ -16,18 +16,17 @@ import { Subscription } from 'rxjs';
     standalone: false
 })
 export class RotationPersistDirective implements OnInit, OnDestroy {
+  private el = inject(ElementRef);
+  private store = inject<Store<fromStore.DocumentState>>(Store);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  private toolbarEvents = inject(ToolbarEventService);
+
 
   documentId: string;
   rotation = 0;
   savedRotation = 0;
 
   $subscriptions: Subscription;
-
-  constructor(private el: ElementRef,
-    private store: Store<fromStore.DocumentState>,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    private toolbarEvents: ToolbarEventService) {
-  }
 
   ngOnInit() {
     this.$subscriptions = this.toolbarEvents.rotateSubject.pipe(distinctUntilChanged()).subscribe(rotation => this.onRotate(rotation));

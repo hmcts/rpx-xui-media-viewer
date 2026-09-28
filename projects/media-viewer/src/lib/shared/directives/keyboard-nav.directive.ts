@@ -1,13 +1,4 @@
-import {
-  Directive,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output
-} from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, OnInit, Output, inject } from '@angular/core';
 
 export type KeyboardNavOrientation = 'horizontal' | 'vertical';
 
@@ -16,6 +7,8 @@ export type KeyboardNavOrientation = 'horizontal' | 'vertical';
   standalone: false
 })
 export class KeyboardNavDirective implements OnInit, OnDestroy {
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
   @Input('mvKeyboardNav') orientation: KeyboardNavOrientation = 'horizontal';
   @Output() itemFocused = new EventEmitter<HTMLElement>();
   @Output() itemActivated = new EventEmitter<HTMLElement>();
@@ -24,8 +17,6 @@ export class KeyboardNavDirective implements OnInit, OnDestroy {
   private currentFocusIndex = -1;
   private mutationObserver: MutationObserver;
   private isUsingArrowKeys = false;
-
-  constructor(private elementRef: ElementRef<HTMLElement>) {}
 
   ngOnInit(): void {
     this.updateFocusableItems();

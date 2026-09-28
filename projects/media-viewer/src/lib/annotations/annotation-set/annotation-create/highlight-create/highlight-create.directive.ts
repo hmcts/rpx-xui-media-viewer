@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Store } from '@ngrx/store';
 import { debounceTime, filter, Subscription } from 'rxjs';
@@ -17,6 +17,12 @@ import { HtmlTemplatesHelper } from '../../../../shared/util/helpers/html-templa
     standalone: false
 })
 export class HighlightCreateDirective implements OnInit, OnDestroy {
+  private element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private toolbarEvents = inject(ToolbarEventService);
+  private viewerEvents = inject(ViewerEventService);
+  private highlightService = inject(HighlightCreateService);
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+
   pageHeight: number;
   pageWidth: number;
   zoom: number;
@@ -24,14 +30,6 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
   allPages: object;
 
   private $subscriptions: Subscription[] = [];
-
-  constructor(
-    private element: ElementRef<HTMLElement>,
-    private toolbarEvents: ToolbarEventService,
-    private viewerEvents: ViewerEventService,
-    private highlightService: HighlightCreateService,
-    private store: Store<fromStore.AnnotationSetState>
-  ) { }
 
   ngOnInit() {
     this.$subscriptions.push(this.store.select(fromDocument.getPages).subscribe((pages) => {

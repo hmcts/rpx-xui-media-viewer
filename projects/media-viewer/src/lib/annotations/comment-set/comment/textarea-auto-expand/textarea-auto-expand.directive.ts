@@ -1,13 +1,12 @@
-import { AfterContentChecked, Directive, ElementRef, HostListener } from '@angular/core';
+import { AfterContentChecked, Directive, ElementRef, HostListener, inject } from '@angular/core';
 
 @Directive({
     selector: '[mvTextAreaAutoExpand]',
     standalone: false
 })
 export class TextareaAutoExpandDirective implements AfterContentChecked {
+  private el = inject(ElementRef);
 
-  constructor(private el: ElementRef) {
-  }
 
   ngAfterContentChecked(): void {
     this.adjustHeight();

@@ -1,3 +1,4 @@
+import { Injector, runInInjectionContext } from '@angular/core';
 import { ToolbarEventService } from './toolbar-event.service';
 import { IcpEventService } from './icp-event.service';
 
@@ -8,7 +9,10 @@ import { IcpEventService } from './icp-event.service';
 
     beforeEach(() => {
       icpEventService = new IcpEventService();
-      service = new ToolbarEventService(icpEventService);
+      service = runInInjectionContext(
+        Injector.create({ providers: [{ provide: IcpEventService, useValue: icpEventService }] }),
+        () => new ToolbarEventService()
+      );
       service.drawModeSubject.next(false);
       service.highlightModeSubject.next(false);
     });
