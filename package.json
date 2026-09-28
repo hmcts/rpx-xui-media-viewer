@@ -187,7 +187,6 @@
     "karma-jasmine": "^5.0.0",
     "karma-jasmine-html-reporter": "^2.0.0",
     "ng-packagr": "20",
-    "ngrx-store-freeze": "^0.2.4",
     "node-html-parser": "^6.1.5",
     "odhin-reports-playwright": "patch:odhin-reports-playwright@npm%3A1.1.8#./.yarn/patches/odhin-reports-playwright-npm-1.1.8-a445ed88b7.patch",
     "playwright-core": "1.63.0",
