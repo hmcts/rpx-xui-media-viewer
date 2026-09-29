@@ -3,7 +3,7 @@
    ========================================================================== */
 
 @use "sass:math";
-@use "govuk-frontend/govuk/all" as *;
+@use "govuk-frontend/govuk/base" as *;
 
 $aui-page-width: 1220px;
 $aui-gutter: govuk-spacing(6);
