@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  Output,
-  SimpleChanges,
-  ViewChild
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { Rectangle } from './rectangle.model';
 import { Subscription } from 'rxjs';
 import { ToolbarEventService } from '../../../../toolbar/toolbar-event.service';
@@ -22,6 +11,9 @@ import { BoxMovementBounds } from './keyboard-box-move.directive';
     standalone: false
 })
 export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly highlightService = inject(HighlightCreateService);
+
 
   @Input() color: String;
   @Input() zoom: number;
@@ -63,10 +55,6 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
   get annoRect() {
     return this._annoRect;
   }
-
-
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-              private readonly highlightService: HighlightCreateService) {}
 
   ngOnChanges(changes: SimpleChanges) {
     if (changes.rotate) {

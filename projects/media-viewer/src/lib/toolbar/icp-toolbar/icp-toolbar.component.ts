@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { ToolbarEventService } from '../toolbar-event.service';
 import { select, Store } from '@ngrx/store';
 import * as fromIcpSelectors from '../../store/selectors/icp.selectors';
@@ -12,15 +12,15 @@ import { IcpEventService } from '../icp-event.service';
     standalone: false
 })
 export class IcpToolbarComponent implements OnInit, OnDestroy {
+  readonly toolbarEventService = inject(ToolbarEventService);
+  private store = inject<Store<IcpState>>(Store);
+  readonly icpEventService = inject(IcpEventService);
+
 
   presenterName: string;
   isPresenter: boolean;
 
   private $subscription: Subscription;
-
-  constructor(public readonly toolbarEventService: ToolbarEventService,
-              private store: Store<IcpState>, 
-              public readonly icpEventService:IcpEventService) {}
 
   ngOnInit() {
     this.$subscription = this.store.pipe(select(fromIcpSelectors.isPresenter))

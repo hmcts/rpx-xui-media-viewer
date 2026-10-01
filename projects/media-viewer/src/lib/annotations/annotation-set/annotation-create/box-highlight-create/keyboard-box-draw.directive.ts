@@ -1,4 +1,4 @@
-import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output, inject } from '@angular/core';
 
 export interface KeyboardBoxDrawEvent {
   startX: number;
@@ -18,6 +18,8 @@ export interface CursorPosition {
   standalone: false
 })
 export class KeyboardBoxDrawDirective implements OnDestroy {
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
 
   @Input() set enabled(value: boolean) {
     const wasEnabled = this._enabled;
@@ -60,7 +62,7 @@ export class KeyboardBoxDrawDirective implements OnDestroy {
   private currentHeight: number;
   private static lastInteractionWasKeyboard = false;
 
-  constructor(private elementRef: ElementRef<HTMLElement>) {
+  constructor() {
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', KeyboardBoxDrawDirective.onGlobalKeyDown, { capture: true });
       window.addEventListener('mousedown', KeyboardBoxDrawDirective.onGlobalMouseDown, { capture: true });

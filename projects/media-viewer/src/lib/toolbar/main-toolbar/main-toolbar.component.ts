@@ -1,15 +1,5 @@
 import { ConnectionPositionPair } from '@angular/cdk/overlay';
-import {
-  AfterViewInit,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  HostListener,
-  Input,
-  OnDestroy,
-  OnInit,
-  ViewChild
-} from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { ToolbarEventService } from '../toolbar-event.service';
@@ -25,6 +15,13 @@ import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.he
     standalone: false
 })
 export class MainToolbarComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly toolbarEvents = inject(ToolbarEventService);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  private readonly cdr = inject(ChangeDetectorRef);
+  private readonly numberHelper = inject(NumberHelperService);
+  private readonly icpEventService = inject(IcpEventService);
+  private readonly toolbarFocusService = inject(ToolbarFocusService);
+
 
   @Input() enableAnnotations = false;
   @Input() enableRedactions = false;
@@ -68,16 +65,6 @@ export class MainToolbarComponent implements OnInit, OnDestroy, AfterViewInit {
 
   allButtonsWidth = 0;
   widthRequiredForBtn: { [id: string]: number } = {};
-
-  public constructor(
-    public readonly toolbarEvents: ToolbarEventService,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    private readonly cdr: ChangeDetectorRef,
-    private readonly numberHelper: NumberHelperService,
-    private readonly icpEventService: IcpEventService,
-    private readonly toolbarFocusService: ToolbarFocusService
-  ) {
-  }
 
   public ngOnInit() {
     this.subscriptions.push(

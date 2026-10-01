@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, switchMap, withLatestFrom } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -11,10 +11,10 @@ import * as fromStore from '../reducers/reducers';
 
 @Injectable()
 export class BookmarksEffects {
+  private actions$ = inject(Actions);
+  private store = inject<Store<fromStore.AnnotationSetState | fromBookmarks.BookmarksState>>(Store);
+  private bookmarksApiService = inject(BookmarksApiService);
 
-  constructor(private actions$: Actions,
-              private store: Store<fromStore.AnnotationSetState|fromBookmarks.BookmarksState>,
-              private bookmarksApiService: BookmarksApiService) {}
 
   loadBookmarks$ = createEffect(() =>
     this.actions$.pipe(

@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { KeyboardBoxDrawDirective, KeyboardBoxDrawEvent, CursorPosition } from './keyboard-box-draw.directive';
 
 describe('KeyboardBoxDrawDirective', () => {
@@ -22,7 +22,10 @@ describe('KeyboardBoxDrawDirective', () => {
     });
 
     mockElementRef = new ElementRef(mockElement);
-    directive = new KeyboardBoxDrawDirective(mockElementRef);
+    directive = runInInjectionContext(
+      Injector.create({ providers: [{ provide: ElementRef, useValue: mockElementRef }] }),
+      () => new KeyboardBoxDrawDirective()
+    );
     (KeyboardBoxDrawDirective as any).lastInteractionWasKeyboard = false;
   });
 

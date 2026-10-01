@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { GrabNDragDirective } from './grab-n-drag.directive';
 
 describe('GrabNDragDirective', () => {
@@ -9,7 +9,10 @@ describe('GrabNDragDirective', () => {
   const event = { clientX: 50, clientY: 40, preventDefault: () => {} };
 
   beforeEach(() => {
-    directive = new GrabNDragDirective(new ElementRef<HTMLElement>(hostElement));
+    directive = runInInjectionContext(
+      Injector.create({ providers: [{ provide: ElementRef, useValue: new ElementRef<HTMLElement>(hostElement) }] }),
+      () => new GrabNDragDirective()
+    );
     directive.dragX = { scrollLeft: 0 } as Element;
   });
 

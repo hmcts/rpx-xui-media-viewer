@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, OnDestroy } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, OnDestroy, inject } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Annotation } from './annotation.model';
 import { Rectangle } from './rectangle/rectangle.model';
@@ -26,7 +26,10 @@ const FOCUSABLE_SELECTOR = [
     templateUrl: './annotation-view.component.html',
     standalone: false
 })
-export class AnnotationViewComponent implements OnDestroy {  // todo rename this to selection vew c
+export class AnnotationViewComponent implements OnDestroy {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  // todo rename this to selection vew c
 
   @Input() set annotation(value) {
     this.anno = { ...value };
@@ -61,10 +64,7 @@ export class AnnotationViewComponent implements OnDestroy {  // todo rename this
   private lastFocusedRectangle: HTMLElement | null = null;
   private nextTabTarget: HTMLElement | null = null;
 
-  constructor(
-    private readonly toolbarEvents: ToolbarEventService,
-    private store: Store<fromStore.AnnotationSetState>
-  ) {
+  constructor() {
     this.showToolbarSubject
       .pipe(observeOn(asyncScheduler))
       .subscribe(show => {

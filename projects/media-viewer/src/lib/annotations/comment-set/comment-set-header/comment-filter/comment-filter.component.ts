@@ -1,4 +1,4 @@
-import {Component, OnDestroy, OnInit, ViewEncapsulation} from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
 
 import {select, Store} from '@ngrx/store';
 import * as fromStore from '../../../../store/reducers/reducers';
@@ -16,15 +16,15 @@ import {auditTime, tap} from 'rxjs/operators';
     standalone: false
 })
 export class CommentFilterComponent implements OnInit, OnDestroy {
+  private store = inject<Store<fromStore.State>>(Store);
+  private fb = inject(UntypedFormBuilder);
+
   tagGroup: UntypedFormGroup;
   $subscriptions: Subscription;
   filter$: Observable<string[]>;
   allTags$: Observable<any>;
   searchValue: string;
   isPreview = false;
-  constructor(
-    private store: Store<fromStore.State>,
-    private fb: UntypedFormBuilder) {}
 
   ngOnInit(): void {
     this.tagGroup = this.fb.group({

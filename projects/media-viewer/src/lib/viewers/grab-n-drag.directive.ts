@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, Input } from '@angular/core';
+import { Directive, ElementRef, HostListener, Input, inject } from '@angular/core';
 
 
 @Directive({
@@ -6,15 +6,14 @@ import { Directive, ElementRef, HostListener, Input } from '@angular/core';
     standalone: false
 })
 export class GrabNDragDirective {
+  private el = inject(ElementRef);
+
 
   originalPosition: { left: number; top: number };
   private pointerDown = false;
 
   @Input() dragEnabled = false;
   @Input() dragX: Element;
-
-  constructor(private el: ElementRef) {
-  }
 
   @HostListener('pointerdown', ['$event'])
   onPointerDown(event: PointerEvent) {

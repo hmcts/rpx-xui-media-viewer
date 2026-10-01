@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 import { IcpParticipant, IcpState } from '../icp.interfaces';
@@ -12,6 +12,10 @@ import { IcpEventService } from '../../toolbar/icp-event.service';
     standalone: false
 })
 export class ParticipantsListComponent implements OnInit, OnDestroy {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private store = inject<Store<IcpState>>(Store);
+  private readonly icpEventService = inject(IcpEventService);
+
 
   subscription: Subscription;
   participants$: Observable<IcpParticipant[]>;
@@ -19,10 +23,6 @@ export class ParticipantsListComponent implements OnInit, OnDestroy {
   isPresenter$: Observable<boolean>;
 
   showParticipantsList = false;
-
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-              private store: Store<IcpState>,
-              private readonly icpEventService: IcpEventService) {}
 
   ngOnInit() {
     this.participants$ = this.store.pipe(select(fromSelectors.getParticipants));

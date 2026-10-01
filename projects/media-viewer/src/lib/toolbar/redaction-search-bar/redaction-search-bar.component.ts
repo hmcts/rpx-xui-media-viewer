@@ -1,7 +1,7 @@
 import { BulkRedaction, Redaction } from './../../redaction/services/redaction.model';
 import { SearchMode, SearchResultsCount, SearchType } from './../toolbar-event.service';
 import { RedactionSearch, RedactRectangle } from './redaction-search.model';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { ToolbarEventService } from '../toolbar-event.service';
@@ -22,6 +22,11 @@ import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.he
     standalone: false
 })
 export class RedactionSearchBarComponent implements OnInit, OnDestroy {
+  private store = inject<Store<fromStore.State>>(Store);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  readonly toolbarEvents = inject(ToolbarEventService);
+  readonly highlightService = inject(HighlightCreateService);
+
 
   @ViewChild('findInput', { static: true }) findInput: ElementRef<HTMLInputElement>;
 
@@ -49,14 +54,6 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
   private subscription: Subscription;
   private documentId: string;
   public advancedSearchVisible = false;
-
-
-  constructor(
-    private store: Store<fromStore.State>,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    public readonly toolbarEvents: ToolbarEventService,
-    public readonly highlightService: HighlightCreateService,
-  ) { }
 
   public ngOnInit(): void {
     this.subscription = this.toolbarEvents.redactionSerachSubject.subscribe((results: RedactionSearch) => this.redactAllSearched(results));

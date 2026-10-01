@@ -1,5 +1,5 @@
 import { Bookmark } from './../../../../store/models/bookmarks.interface';
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Subscription, from } from 'rxjs';
 
@@ -23,6 +23,8 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 })
 
 export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
+  private store = inject<Store<fromBookmarks.BookmarksState | AnnotationSetState>>(Store);
+
 
   @Input()
   set bookmarkNodes(value: Bookmark[]) {
@@ -77,8 +79,6 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
 
   private readonly _customSort = 'CUSTOM';
   private readonly _positionSort = 'POSITION';
-
-  constructor(private store: Store<fromBookmarks.BookmarksState | AnnotationSetState>) { }
 
   ngOnInit(): void {
     this.sortMode = this.customSort;

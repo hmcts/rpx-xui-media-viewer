@@ -1,13 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  Input, OnChanges,
-  OnDestroy,
-  OnInit,
-  QueryList, SimpleChanges,
-  ViewChild,
-  ViewChildren,
-} from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren, inject } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 
@@ -30,6 +21,11 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
     standalone: false
 })
 export class CommentSetComponent implements OnInit, OnDestroy, OnChanges {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly commentService = inject(CommentService);
+  private readonly renderService = inject(CommentSetRenderService);
+  private readonly toolbarEvents = inject(ToolbarEventService);
+
 
   @Input() annotationSet: AnnotationSet;
   @Input() zoom: number;
@@ -50,10 +46,7 @@ export class CommentSetComponent implements OnInit, OnDestroy, OnChanges {
 
   showCommentsPanel: boolean;
 
-  constructor(private store: Store<fromStore.AnnotationSetState>,
-              private readonly commentService: CommentService,
-              private readonly renderService: CommentSetRenderService,
-              private readonly toolbarEvents: ToolbarEventService) {
+  constructor() {
     this.clearSelection();
   }
 

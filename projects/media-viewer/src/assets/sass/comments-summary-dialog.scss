@@ -33,11 +33,11 @@
 mv-confirm-action,
 mv-comments-summary {
   .dates {
+    overflow: hidden;
+    clear: both;
     * {
       font-size: 16px;
     }
-    overflow: hidden;
-    clear: both;
     .dates__from, .dates__to, .dates__tags {
       float: left;
     }
