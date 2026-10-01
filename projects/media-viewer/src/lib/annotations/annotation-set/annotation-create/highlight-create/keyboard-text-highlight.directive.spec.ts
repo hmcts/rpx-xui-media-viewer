@@ -3,11 +3,10 @@ import { KeyboardTextHighlightDirective, KeyboardTextHighlightEvent, CursorPosit
 
 describe('KeyboardTextHighlightDirective', () => {
   let directive: KeyboardTextHighlightDirective;
-  let mockElementRef: ElementRef;
   let mockElement: HTMLElement;
 
-  const createDirective = () => runInInjectionContext(
-    Injector.create({ providers: [{ provide: ElementRef, useValue: mockElementRef }] }),
+  const createDirective = (element: HTMLElement) => runInInjectionContext(
+    Injector.create({ providers: [{ provide: ElementRef, useValue: new ElementRef<HTMLElement>(element) }] }),
     () => new KeyboardTextHighlightDirective()
   );
 
@@ -17,8 +16,7 @@ describe('KeyboardTextHighlightDirective', () => {
     Object.defineProperty(window, 'innerWidth', { value: 800, writable: true, configurable: true });
     Object.defineProperty(window, 'innerHeight', { value: 600, writable: true, configurable: true });
 
-    mockElementRef = new ElementRef(mockElement);
-    directive = createDirective();
+    directive = createDirective(mockElement);
   });
 
   afterEach(() => {
@@ -539,8 +537,7 @@ describe('KeyboardTextHighlightDirective', () => {
   describe('page number detection', () => {
     it('should return default page number when no page attribute found', () => {
       const elementWithoutPage = document.createElement('div');
-      const mockElementRef = new ElementRef(elementWithoutPage);
-      const directiveWithoutPage = createDirective();
+      const directiveWithoutPage = createDirective(elementWithoutPage);
 
       directiveWithoutPage.enabled = true;
       spyOn(directiveWithoutPage.selectionStarted, 'emit');
