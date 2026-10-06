@@ -283,7 +283,18 @@ describe('RectangleComponent', () => {
 
     component.ngAfterViewInit();
 
-    expect(focusSpy).toHaveBeenCalled();
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
+  });
+
+  it('should focus rectangle without scrolling when selected', () => {
+    const rectElement = document.createElement('div');
+    rectElement.tabIndex = 0;
+    const focusSpy = spyOn(rectElement, 'focus').and.callThrough();
+    (component as any).viewRect = new ElementRef(rectElement);
+
+    component.selected = true;
+
+    expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
   });
 
   function createPointerEvent(typeArg: string, screenX: number, screenY: number, clientX: number, clientY: number) {

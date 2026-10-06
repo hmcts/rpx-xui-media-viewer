@@ -84,7 +84,7 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
     setTimeout(() => this.updateMovementBounds(), 0);
 
     if (this._selected && this.viewRect) {
-      this.viewRect.nativeElement.focus();
+      this.focusWithoutScrolling();
     }
   }
 
@@ -97,7 +97,7 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
   set selected(selected: boolean) {
     this._selected = selected;
     if (this._selected && this.viewRect) {
-      this.viewRect.nativeElement.focus()
+      this.focusWithoutScrolling();
     }
   }
 
@@ -177,5 +177,13 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
 
     this.tabToToolbar.emit(event);
+  }
+
+  private focusWithoutScrolling(): void {
+    try {
+      this.viewRect.nativeElement.focus({ preventScroll: true });
+    } catch {
+      this.viewRect.nativeElement.focus();
+    }
   }
 }
