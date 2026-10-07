@@ -240,7 +240,7 @@ static LinkedHashMap<String, Object> secret(String secretName, String envVar) {
 
 timeout(time: 80, unit: 'MINUTES') {
 withPipeline(type, product, component) {
-  enableBuildCache()
+  // enableBuildCache()
   enableSlackNotifications(channel)
   overrideVaultEnvironments(vaultOverrides)
   loadVaultSecrets(secrets)
