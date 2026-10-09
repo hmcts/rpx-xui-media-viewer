@@ -245,6 +245,7 @@ describe('KeyboardBoxMoveDirective', () => {
       mockElement.focus();
 
       expect(document.activeElement).toBe(mockElement);
+      const focusSpy = spyOn(mockElement, 'focus').and.callThrough();
 
       const event = new KeyboardEvent('keydown', { key: 'ArrowRight' });
       directive.onKeyDown(event);
@@ -253,6 +254,7 @@ describe('KeyboardBoxMoveDirective', () => {
       tick(100); // wait for focus restoration
 
       expect(document.activeElement).toBe(mockElement);
+      expect(focusSpy).toHaveBeenCalledWith({ preventScroll: true });
 
       document.body.removeChild(mockElement);
     }));
