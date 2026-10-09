@@ -152,6 +152,14 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     this.toolbarEvents.openRedactionSearch.next({ isOpen: false, modeType: this.searchType });
   }
 
+  onSearchTextChange(value: string): void {
+    this.searchText = value;
+    if (!value?.trim()) {
+      this.resultCount = 0;
+      this.resultsText = '';
+    }
+  }
+
 
   private setSearchResultsCount(results: SearchResultsCount): void {
     this.resultCount = results.total;

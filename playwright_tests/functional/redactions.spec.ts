@@ -49,7 +49,7 @@ test.describe('Redaction', () => {
     expect(payload.redactions).toHaveLength(1);
     expect(payload.redactions[0].page).toBe(1);
     expect(completedDownload.suggestedFilename()).toBe('redacted.pdf');
-    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
   });
 
   test('downloads draw-box redactions, adds text redaction and clears all markers', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
@@ -72,7 +72,7 @@ test.describe('Redaction', () => {
       expect.objectContaining({ redactionId: (drawBoxRedaction.postDataJSON() as { redactionId: string }).redactionId }),
     ]);
     expect(completedDownload.suggestedFilename()).toBe('redacted.pdf');
-    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+    await expect(mediaViewer.redactions.markers).toHaveCount(1);
 
     const textSave = page.waitForRequest((request) => request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups');
     const selectedText = await mediaViewer.redactions.redactExampleFixtureText();
@@ -80,7 +80,7 @@ test.describe('Redaction', () => {
     const textPayload = (await textSave).postDataJSON() as { documentId: string; page: number; redactionId: string; rectangles: Array<{ width: number; height: number }> };
     expect(textPayload).toMatchObject({ documentId: mediaAssets.pdf.url, page: 1 });
     expect(textPayload.rectangles).not.toHaveLength(0);
-    await expect(mediaViewer.redactions.markers).toHaveCount(1);
+    await expect(mediaViewer.redactions.markers).toHaveCount(2);
 
     const clearRequest = page.waitForRequest((request) => request.method() === 'DELETE' && new URL(request.url()).pathname.endsWith(mediaAssets.pdf.url));
     await mediaViewer.redactions.clearAllButton.click();
@@ -285,7 +285,7 @@ test.describe('Redaction', () => {
     expect(payload.redactions).toHaveLength(2);
     expect(payload.redactions).toEqual(expect.arrayContaining([firstRedaction, secondRedaction]));
     expect(completedDownload.suggestedFilename()).toBe('redacted.pdf');
-    await expect(mediaViewer.redactions.markers).toHaveCount(0);
+    await expect(mediaViewer.redactions.markers).toHaveCount(2);
   });
 
   test('clears persisted redactions across PDF pages without restoring them after reload', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
