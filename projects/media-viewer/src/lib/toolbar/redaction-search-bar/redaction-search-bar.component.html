@@ -25,7 +25,7 @@
         placeholder="{{ titleText + ' from search...' | rpxTranslate }}"
         data-l10n-id="search_input"
         [ngModel]="searchText"
-        (ngModelChange)="searchText = $event"
+        (ngModelChange)="onSearchTextChange($event)"
         (keydown.escape)="onEscapeKeyPress($event)"
         (keydown.enter)="onEnterKeyPress($event)"
       />
@@ -44,7 +44,7 @@
           class="govuk-button govuk-!-margin-left-2 govuk-!-margin-bottom-0"
           data-module="govuk-button"
           (click)="search(false)"
-          [disabled]="redactAllInProgress || resultCount <= 0"
+          [disabled]="redactAllInProgress || resultCount <= 0 || !searchText?.trim()"
         >
           {{ titleText + " all" | rpxTranslate }}
         </button>
