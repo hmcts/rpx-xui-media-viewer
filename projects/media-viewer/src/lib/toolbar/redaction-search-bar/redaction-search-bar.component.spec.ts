@@ -161,60 +161,6 @@ describe('RedactionSearchBarComponent', () => {
     expect(store.dispatch).toHaveBeenCalledTimes(1);
   })));
 
-  it('should preserve rectangles for a search result spanning multiple lines', inject([Store], fakeAsync((store) => {
-    const redactionSearch: RedactionSearch = {
-      matchedIndex: 1,
-      matchesCount: 1,
-      page: 1
-    };
-    component.redactAll = true;
-
-    const htmlElement = jasmine.createSpyObj<HTMLElement>('HTMLElement', ['getBoundingClientRect'], { parentElement: null });
-    const htmlElement2 = jasmine.createSpyObj<HTMLElement>('HTMLElement', ['getBoundingClientRect'], { parentElement: htmlElement });
-    const beginElement = jasmine.createSpyObj<Element>('Element', ['getBoundingClientRect'], {
-      parentElement: htmlElement2,
-      classList: { contains: (className: string) => className === 'begin' } as any,
-      childNodes: [{}] as any
-    });
-    const endElement = jasmine.createSpyObj<Element>('Element', ['getBoundingClientRect'], {
-      parentElement: htmlElement2,
-      classList: { contains: (className: string) => className === 'end' } as any,
-      childNodes: [{}] as any
-    });
-    spyOn(document, 'getElementsByClassName').withArgs('highlight selected').and.returnValue([beginElement, endElement] as any);
-
-    const range = jasmine.createSpyObj<Range>('Range', ['setStart', 'setEnd', 'cloneRange', 'selectNodeContents']);
-    spyOn(document, 'createRange').and.returnValue(range);
-    const selection = jasmine.createSpyObj<Selection>('Selection', ['addRange', 'getRangeAt', 'removeAllRanges'],
-      { rangeCount: 1, isCollapsed: false });
-    const selectedRange = jasmine.createSpyObj<Range>('Range', ['cloneRange', 'getClientRects']);
-    selection.getRangeAt.and.returnValue(selectedRange);
-    selectedRange.cloneRange.and.returnValue(selectedRange);
-    selectedRange.getClientRects.and.returnValue([
-      { top: 80, left: 60, bottom: 100, right: 160 },
-      { top: 120, left: 60, bottom: 140, right: 60, width: 0, height: 20 },
-      { top: 160, left: 60, bottom: 180, right: 160 }
-    ] as any);
-    htmlElement.getBoundingClientRect.and.returnValue({ top: 0, left: 0 } as DOMRect);
-    spyOn(window, 'getSelection').and.returnValue(selection);
-
-    const rectangles = [
-      { x: 20, y: 50, height: 20, width: 100 },
-      { x: 20, y: 130, height: 20, width: 100 }
-    ];
-    spyOn(mockHighlightService as any, 'applyRotation').and.returnValues(...rectangles);
-    const dispatchSpy = spyOn(store, 'dispatch');
-
-    redactionSerachSubject.next(redactionSearch);
-    tick(100);
-
-    const action = dispatchSpy.calls.mostRecent().args[0] as any;
-    expect(range.setStart).toHaveBeenCalledWith(beginElement, 0);
-    expect(range.setEnd).toHaveBeenCalledWith(endElement, 1);
-    expect(action.payload.searchRedactions[0].rectangles)
-      .toEqual(rectangles.map(rectangle => jasmine.objectContaining(rectangle)));
-  })));
-
 
   it('should highlight all search text', inject([Store], fakeAsync((store) => {
     openRedactionSearch.next({ modeType: SearchType.Highlight, isOpen: true } as SearchMode);

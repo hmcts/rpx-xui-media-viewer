@@ -12,6 +12,7 @@ import * as fromDocument from '../../store/selectors/document.selectors';
 import * as fromRedactionActions from '../../store/actions/redaction.actions';
 import { v4 as uuid } from 'uuid';
 import { HighlightCreateService } from '../../annotations/annotation-set/annotation-create/highlight-create/highlight-create.service';
+import { some } from 'lodash';
 import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.helper';
 
 @Component({
@@ -239,10 +240,7 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     const selectedHighLightedElements = document.getElementsByClassName('highlight selected');
     if (selectedHighLightedElements && selectedHighLightedElements.length > 0) {
       const docRange = document.createRange();
-      const isMultiElementHighlight = Array.from(selectedHighLightedElements).some(element =>
-        element.classList?.contains('begin') || element.classList?.contains('end')
-      );
-      if (isMultiElementHighlight) {
+      if (some(selectedHighLightedElements, element => element.className === 'highlight begin selected' || element.className === 'highlight end selected')) {
         docRange.setStart(selectedHighLightedElements[0], 0);
         const endNode = selectedHighLightedElements[selectedHighLightedElements.length - 1];
         docRange.setEnd(endNode, endNode.childNodes.length);
@@ -261,15 +259,9 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
           const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(selectedHighLightedElements[0]?.parentElement?.parentElement);
           const selectionRectangles: Rectangle[] = [];
           for (let i = 0; i < clientRects.length; i++) {
-            if (clientRects[i].width <= 0 || clientRects[i].height <= 0) {
-              continue;
-            }
             const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
             const findSelecttionRectangle = selectionRectangles.find(
-              (rect) => rect.width === selectionRectangle.width
-                && rect.height === selectionRectangle.height
-                && rect.x === selectionRectangle.x
-                && rect.y === selectionRectangle.y
+              (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
             );
             if (!findSelecttionRectangle) {
               selectionRectangles.push(selectionRectangle);

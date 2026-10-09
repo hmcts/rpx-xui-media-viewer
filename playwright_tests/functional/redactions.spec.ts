@@ -155,33 +155,6 @@ test.describe('Redaction', () => {
     await expect(mediaViewer.redactions.markers).toHaveCount(searchResultCount);
   });
 
-  test('redacts every line of a multi-line PDF search result', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
-    await mediaViewer.goto();
-    await mediaViewer.enableRedactions();
-    await mediaViewer.loadDocument(mediaAssets.pdf.url, 'playwright-redaction-multi-line-search-case', mediaAssets.pdf.contentType);
-    await mediaViewer.openRedactions();
-    await mediaViewer.redactions.openSearch();
-    await mediaViewer.redactions.searchInput.fill(
-      'Trace-based Just-in-Time Type Specialization for Dynamic Languages'
-    );
-    await mediaViewer.redactions.searchButton.click();
-    await expect(mediaViewer.redactions.searchResults).toContainText('1 results founds');
-    expect(await page.locator('.textLayer .highlight.selected').count()).toBeGreaterThan(1);
-
-    const bulkSaveRequest = page.waitForRequest((request) =>
-      request.method() === 'POST' && new URL(request.url()).pathname === '/api/markups/search'
-    );
-    await mediaViewer.redactions.redactAllButton.click();
-    const payload = (await bulkSaveRequest).postDataJSON() as {
-      searchRedactions: Array<{ rectangles: Array<{ x: number; y: number; width: number; height: number }> }>;
-    };
-
-    expect(payload.searchRedactions).toHaveLength(1);
-    expect(payload.searchRedactions[0].rectangles.length).toBeGreaterThan(1);
-    expect(new Set(payload.searchRedactions[0].rectangles.map(rectangle => rectangle.y)).size).toBeGreaterThan(1);
-    await expect(mediaViewer.redactions.markers).toHaveCount(payload.searchRedactions[0].rectangles.length);
-  });
-
   test('redacts selected text and removes the persisted marker', { tag: ['@e2e-functional', '@feature-redaction'] }, async ({ mediaViewer, page }) => {
     await mediaViewer.goto();
     await mediaViewer.enableRedactions();
