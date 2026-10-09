@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.41",
+  "version": "4.2.40-exui-5307-rc1",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -95,7 +95,7 @@
     "@ngrx/store": "^20.1.0",
     "@ngrx/store-devtools": "^20",
     "@swimlane/ngx-datatable": "^23.0.1",
-    "axios": "^1.18.1",
+    "axios": "^1.20.0",
     "body-parser": "^2.3.0",
     "config": "^4.4.1",
     "core-js": "^3.49.0",
@@ -135,15 +135,16 @@
     "nanoid": "^3.3.11",
     "formidable": "^3.5.3",
     "form-data@^4.0.0": "4.0.4",
-    "form-data@~2.3.2": "2.5.5",
+    "form-data@~2.3.2": "2.5.6",
     "form-data@^2.5.0": "2.5.5",
-    "brace-expansion@^1.1.7": "1.1.18",
+    "brace-expansion@^1.1.7": "1.1.21",
     "brace-expansion@^2.0.1": "2.1.4",
     "tmp": "0.2.5",
     "jws": "^4.0.1",
     "qs": "6.16.0",
     "bn.js": "^5.2.3",
-    "immutable": "^5.1.9"
+    "immutable": "^5.1.9",
+    "axios@^0.24.0": "0.34.0"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "20.3.32",
@@ -172,7 +173,7 @@
     "codecov": "^3.7.1",
     "coveralls": "^3.0.3",
     "cross-env": "^7.0.3",
-    "eslint": "^9.39.4",
+    "eslint": "^9.39.5",
     "eslint-config-standard": "^17.0.0",
     "eslint-plugin-import": "^2.19.1",
     "eslint-plugin-n": "^17.0.0",
