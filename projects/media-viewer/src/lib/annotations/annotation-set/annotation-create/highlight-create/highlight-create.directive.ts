@@ -120,9 +120,9 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     this.setPageProperties(page);
 
     const range = selection.getRangeAt(0).cloneRange();
-    const clientRects = range.getClientRects();
+    const selectionRects = this.getSelectionRectangles(range);
 
-    if (!clientRects || clientRects.length === 0) {
+    if (!selectionRects || selectionRects.length === 0) {
       return [];
     }
 
@@ -138,7 +138,7 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
 
     this.removeEnhancedTextModeStyling(textLayerElement);
 
-    return this.processClientRects(clientRects, textLayer);
+    return this.processClientRects(selectionRects, textLayer);
   }
 
   @HostListener('mousedown', ['$event'])
@@ -164,14 +164,18 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
 
       if (selection.rangeCount && !selection.isCollapsed) {
         const range = selection.getRangeAt(0).cloneRange();
-        const clientRects = range.getClientRects();
+        const selectionRects = this.getSelectionRectangles(range);
 
-        if (clientRects) {
+        if (selectionRects) {
           const textLayer = localElement.closest(".textLayer") as HTMLElement;
-          return this.processClientRects(clientRects, textLayer);
+          return this.processClientRects(selectionRects, textLayer);
         }
       }
     }
+  }
+
+  private getSelectionRectangles(range: Range): DOMRect[] | DOMRectList {
+    return range.getClientRects();
   }
 
   private createTextRectangle(rect: any, parentRect: any): Rectangle {
@@ -215,14 +219,17 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     this.rotate = parseInt(this.allPages[page].scaleRotation.rotation, 10);
   }
 
-  private processClientRects(clientRects: DOMRectList, textLayer: HTMLElement): Rectangle[] {
+  private processClientRects(clientRects: ArrayLike<DOMRect>, textLayer: HTMLElement): Rectangle[] {
     const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(textLayer);
     const selectionRectangles: Rectangle[] = [];
 
     for (let i = 0; i < clientRects.length; i++) {
       const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
       const findSelectionRectangle = selectionRectangles.find(
-        (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
+        (rect) => rect.width === selectionRectangle.width
+          && rect.height === selectionRectangle.height
+          && rect.x === selectionRectangle.x
+          && rect.y === selectionRectangle.y
       );
       if (!findSelectionRectangle) {
         selectionRectangles.push(selectionRectangle);

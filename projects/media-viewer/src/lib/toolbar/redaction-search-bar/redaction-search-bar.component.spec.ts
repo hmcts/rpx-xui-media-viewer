@@ -103,6 +103,27 @@ describe('RedactionSearchBarComponent', () => {
     expect(component.redactElements).toEqual([]);
   }));
 
+  it('clears the results and disables the all-results button when the search input is emptied', fakeAsync(() => {
+    const input = nativeElement.querySelector('#search_input') as HTMLInputElement;
+    const redactAllButton = nativeElement.querySelector('#mvRedactAllBtn') as HTMLButtonElement;
+
+    input.value = 'example';
+    input.dispatchEvent(new Event('input'));
+    tick();
+    searchResultsCountSubject.next({ total: 2 } as SearchResultsCount);
+    fixture.detectChanges();
+    expect(redactAllButton.disabled).toBeFalse();
+    expect(component.resultsText).toContain('2 results');
+
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    tick();
+    fixture.detectChanges();
+    expect(redactAllButton.disabled).toBeTrue();
+    expect(component.resultCount).toBe(0);
+    expect(component.resultsText).toBe('');
+  }));
+
   it('should redact all search text', inject([Store], fakeAsync((store) => {
     const redactionSearch: RedactionSearch = {
       matchedIndex: 1,
