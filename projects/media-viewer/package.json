@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.40-cve-update",
+  "version": "4.2.42-cve-update",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
