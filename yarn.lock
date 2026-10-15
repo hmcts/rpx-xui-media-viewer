@@ -2953,14 +2953,14 @@ __metadata:
     "@typescript-eslint/utils": "npm:7.16.0"
     axe-core: "npm:^4.9.1"
     axe-html-reporter: "npm:^2.2.3"
-    axios: "npm:^1.18.1"
+    axios: "npm:^1.20.0"
     body-parser: "npm:^2.3.0"
     codecov: "npm:^3.7.1"
     config: "npm:^4.4.1"
     core-js: "npm:^3.49.0"
     coveralls: "npm:^3.0.3"
     cross-env: "npm:^7.0.3"
-    eslint: "npm:^9.39.4"
+    eslint: "npm:^9.39.5"
     eslint-config-standard: "npm:^17.0.0"
     eslint-plugin-import: "npm:^2.19.1"
     eslint-plugin-n: "npm:^17.0.0"
@@ -7233,16 +7233,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"axios@npm:^0.24.0":
-  version: 0.24.0
-  resolution: "axios@npm:0.24.0"
+"axios@npm:0.34.0":
+  version: 0.34.0
+  resolution: "axios@npm:0.34.0"
   dependencies:
-    follow-redirects: "npm:^1.14.4"
-  checksum: 10/4c5a7a5a45c909b4ce73fbf54b1fbc52a2290fc37cc51e64f8ef2ba8ac5f76a2e369a08ddfd7ec50317528d5aa55f5987cc56fb320923ef87e1b87f8ff05b5ba
+    follow-redirects: "npm:^1.15.4"
+    form-data: "npm:^4.0.4"
+    proxy-from-env: "npm:^1.1.0"
+  checksum: 10/ea12eb0dd038a574f9fac0b986f5157fbe210716e726accc0367bfbed6aa0eedb6ed4428cb693047c61919494f56466810d75ea46744cf89307469a17587e160
   languageName: node
   linkType: hard
 
-"axios@npm:^1.18.1":
+"axios@npm:^1.20.0":
   version: 1.20.0
   resolution: "axios@npm:1.20.0"
   dependencies:
@@ -7551,13 +7553,13 @@ __metadata:
   languageName: node
   linkType: hard
 
-"brace-expansion@npm:1.1.18":
-  version: 1.1.18
-  resolution: "brace-expansion@npm:1.1.18"
+"brace-expansion@npm:1.1.21":
+  version: 1.1.21
+  resolution: "brace-expansion@npm:1.1.21"
   dependencies:
     balanced-match: "npm:^1.0.0"
     concat-map: "npm:0.0.1"
-  checksum: 10/b55a3c03239b8d2127c7cbb3408c9ad3a556a8c303bf3064df78bfb7c093160fc8f6e0a32e42a850a78eba12f29ccf6ef997690b9acf945d242c56c61c4aa977
+  checksum: 10/6c0ed34107cb3bd3f44c01d90ec8c01baa3ed75b7755617e2e5797b5908bbf20b313edf575612b200a783b84c7d1826aec2f7a2f03de9905bbfae5dc3dea6a95
   languageName: node
   linkType: hard
 
@@ -9655,7 +9657,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"eslint@npm:^9.39.4":
+"eslint@npm:^9.39.5":
   version: 9.39.5
   resolution: "eslint@npm:9.39.5"
   dependencies:
@@ -10249,7 +10251,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.14.4, follow-redirects@npm:^1.16.0":
+"follow-redirects@npm:^1.0.0, follow-redirects@npm:^1.15.4, follow-redirects@npm:^1.16.0":
   version: 1.16.1
   resolution: "follow-redirects@npm:1.16.1"
   peerDependenciesMeta:
@@ -10285,21 +10287,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"form-data@npm:2.5.5":
-  version: 2.5.5
-  resolution: "form-data@npm:2.5.5"
+"form-data@npm:2.5.6":
+  version: 2.5.6
+  resolution: "form-data@npm:2.5.6"
   dependencies:
     asynckit: "npm:^0.4.0"
     combined-stream: "npm:^1.0.8"
     es-set-tostringtag: "npm:^2.1.0"
-    hasown: "npm:^2.0.2"
+    hasown: "npm:^2.0.4"
     mime-types: "npm:^2.1.35"
     safe-buffer: "npm:^5.2.1"
-  checksum: 10/4b6a8d07bb67089da41048e734215f68317a8e29dd5385a972bf5c458a023313c69d3b5d6b8baafbb7f808fa9881e0e2e030ffe61e096b3ddc894c516401271d
+  checksum: 10/7b2afddf638125b6d22936a1f642e88887b279504510e3f56be6dc90bea35cb8124fe6ecc75032e92264b5ebfbd183d0992307588c782eaa88d1bed76381ad6b
   languageName: node
   linkType: hard
 
-"form-data@npm:^4.0.5, form-data@npm:^4.0.6":
+"form-data@npm:^4.0.4, form-data@npm:^4.0.5, form-data@npm:^4.0.6":
   version: 4.0.6
   resolution: "form-data@npm:4.0.6"
   dependencies:
