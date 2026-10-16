@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Subscription } from 'rxjs';
 import { Rectangle } from '../../annotation-view/rectangle/rectangle.model';
@@ -13,6 +13,9 @@ import { KeyboardBoxDrawEvent, CursorPosition } from './keyboard-box-draw.direct
     standalone: false
 })
 export class BoxHighlightCreateComponent implements OnInit, OnDestroy {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly highlightService = inject(HighlightCreateService);
+
 
   @Input() page: number;
   @Input() pageHeight: number;
@@ -49,9 +52,6 @@ export class BoxHighlightCreateComponent implements OnInit, OnDestroy {
   showCursor = false;
 
   private subscriptions: Subscription[] = [];
-
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-    private readonly highlightService: HighlightCreateService) { }
 
   ngOnInit(): void {
     this.subscriptions = [

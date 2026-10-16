@@ -1,16 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnChanges,
-  OnDestroy,
-  OnInit,
-  Output,
-  SimpleChanges,
-  ViewChild,
-} from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { PrintService } from '../../print.service';
 import { AnnotationSet } from '../../annotations/annotation-set/annotation-set.model';
@@ -30,6 +18,13 @@ import { ViewerEventService } from '../viewer-event.service';
     standalone: false
 })
 export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly printService = inject(PrintService);
+  private readonly viewerUtilService = inject(ViewerUtilService);
+  readonly toolbarEvents = inject(ToolbarEventService);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  private viewerEvents = inject(ViewerEventService);
+
 
   @Input() url: string;
   @Input() downloadFileName: string;
@@ -58,15 +53,6 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   imageWidth: number;
   imageLeft: number;
   imageTop: number;
-
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    private readonly printService: PrintService,
-    private readonly viewerUtilService: ViewerUtilService,
-    public readonly toolbarEvents: ToolbarEventService,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    private viewerEvents: ViewerEventService
-  ) { }
 
   ngOnInit(): void {
     this.subscriptions.push(

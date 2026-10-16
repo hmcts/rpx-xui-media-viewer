@@ -1,6 +1,6 @@
 import 'pdfjs-dist/build/pdf.mjs';
 import * as pdfjsViewer from 'pdfjs-dist/web/pdf_viewer.mjs';
-import { ElementRef, Injectable } from '@angular/core';
+import { ElementRef, Injectable, inject } from '@angular/core';
 import { DocumentLoadProgress, PageEvent, PdfJsWrapper } from './pdf-js-wrapper';
 import { Subject } from 'rxjs';
 import { ToolbarEventService } from '../../../toolbar/toolbar-event.service';
@@ -9,12 +9,14 @@ import { PdfPosition } from '../../../store/reducers/document.reducer';
 
 @Injectable({ providedIn: 'root' })
 export class PdfJsWrapperFactory {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+
 
   private linkService: pdfjsViewer.PDFLinkService;
   private eventBus: pdfjsViewer.EventBus;
   private pdfJsWrapper: PdfJsWrapper;
 
-  constructor(private readonly toolbarEvents: ToolbarEventService) {
+  constructor() {
     this.linkService = new pdfjsViewer.PDFLinkService();
     this.eventBus = new pdfjsViewer.EventBus();
   }

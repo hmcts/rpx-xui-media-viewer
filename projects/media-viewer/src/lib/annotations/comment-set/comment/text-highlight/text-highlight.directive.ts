@@ -1,14 +1,14 @@
-import { AfterViewChecked, Directive, ElementRef, Input } from '@angular/core';
+import { AfterViewChecked, Directive, ElementRef, Input, inject } from '@angular/core';
 
 @Directive({
     selector: '[mvTextHighlight]',
     standalone: false
 })
 export class TextHighlightDirective implements AfterViewChecked {
+  private element = inject<ElementRef<HTMLElement>>(ElementRef);
+
 
   @Input() textToHighlight: string;
-
-  constructor(private element: ElementRef<HTMLElement>) {}
 
   ngAfterViewChecked(): void {
     if (this.textToHighlight) {

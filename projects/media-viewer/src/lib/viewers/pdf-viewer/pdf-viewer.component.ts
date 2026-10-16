@@ -1,16 +1,4 @@
-import {
-  AfterContentInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  Output,
-  SimpleChanges,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
+import { AfterContentInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { asyncScheduler, BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { debounceTime, filter, tap, throttleTime } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
@@ -43,6 +31,16 @@ import { HighlightCreateDirective } from '../../annotations/annotation-set/annot
     standalone: false
 })
 export class PdfViewerComponent implements AfterContentInit, OnChanges, OnDestroy {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private icpStore = inject<Store<IcpState>>(Store);
+  private readonly pdfJsWrapperFactory = inject(PdfJsWrapperFactory);
+  private readonly printService = inject(PrintService);
+  readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly viewerEvents = inject(ViewerEventService);
+  private icpService = inject(IcpService);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  private readonly icpEventService = inject(IcpEventService);
+
 
   @Output() mediaLoadStatus = new EventEmitter<ResponseType>();
   @Output() pdfViewerException = new EventEmitter<ViewerException>();
@@ -93,17 +91,9 @@ export class PdfViewerComponent implements AfterContentInit, OnChanges, OnDestro
   selectionEndCursorX: number;
   selectionEndCursorY: number;
 
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    private icpStore: Store<IcpState>,
-    private readonly pdfJsWrapperFactory: PdfJsWrapperFactory,
-    private readonly printService: PrintService,
-    public readonly toolbarEvents: ToolbarEventService,
-    private readonly viewerEvents: ViewerEventService,
-    private icpService: IcpService,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    private readonly icpEventService: IcpEventService
-  ) {
+  constructor() {
+    const toolbarEvents = this.toolbarEvents;
+
     this.highlightMode = toolbarEvents.highlightModeSubject.pipe(tap(() => {
       this.store.dispatch(new fromTagActions.ClearFilterTags());
     }));

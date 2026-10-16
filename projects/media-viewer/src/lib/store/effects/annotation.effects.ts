@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, concatMap, exhaustMap, map, switchMap, filter, delay } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -7,10 +7,9 @@ import * as annotationsActions from '../actions/annotation.actions';
 
 @Injectable()
 export class AnnotationEffects {
-  constructor(
-    private actions$: Actions,
-    private annotationApiService: AnnotationApiService,
-  ) { }
+  private actions$ = inject(Actions);
+  private annotationApiService = inject(AnnotationApiService);
+
 
   loadAnnotation$ = createEffect(() =>
     this.actions$.pipe(

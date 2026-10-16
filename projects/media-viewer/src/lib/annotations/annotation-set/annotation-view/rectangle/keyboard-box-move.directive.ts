@@ -1,4 +1,4 @@
-import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output, inject } from '@angular/core';
 import { Subject, Subscription } from 'rxjs';
 import { debounceTime } from 'rxjs/operators';
 
@@ -12,6 +12,8 @@ export interface BoxMovementBounds {
   standalone: false
 })
 export class KeyboardBoxMoveDirective implements OnDestroy {
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
 
   @Input() enabled = true;
   @Input() incrementSmall = 1;
@@ -25,7 +27,7 @@ export class KeyboardBoxMoveDirective implements OnDestroy {
   private moveSubscription: Subscription;
   private isMoving = false;
 
-  constructor(private elementRef: ElementRef<HTMLElement>) {
+  constructor() {
     this.moveSubscription = this.moveSubject
       .pipe(debounceTime(500))
       .subscribe(() => {

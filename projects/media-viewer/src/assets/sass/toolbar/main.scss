@@ -1,18 +1,18 @@
-@import "buttons";
-@import "side-bar";
-@import "search-bar";
-@import "sub-toolbar";
-@import "thumbnail";
-@import "dialog-overlay";
-@import "field-label";
-@import "loading-bar";
-@import "debugging";
-@import "text-selection";
-@import "media";
-@import "redaction-toolbar";
-@import "icp-buttons";
-@import "icp-toolbar";
-@import "main-toolbar";
+@use "buttons";
+@use "side-bar";
+@use "search-bar";
+@use "sub-toolbar";
+@use "thumbnail";
+@use "dialog-overlay";
+@use "field-label";
+@use "loading-bar";
+@use "debugging";
+@use "text-selection";
+@use "media";
+@use "redaction-toolbar";
+@use "icp-buttons";
+@use "icp-toolbar";
+@use "main-toolbar";
 
 .hidden {
   display: none !important;

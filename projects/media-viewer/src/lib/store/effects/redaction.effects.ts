@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, switchMap, tap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -9,11 +9,10 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 
 @Injectable()
 export class RedactionEffects {
-  constructor(
-    private actions$: Actions,
-    private redactionApiService: RedactionApiService,
-    private toolbarEvents: ToolbarEventService
-  ) { }
+  private actions$ = inject(Actions);
+  private redactionApiService = inject(RedactionApiService);
+  private toolbarEvents = inject(ToolbarEventService);
+
 
   loadRedactions$ = createEffect(() =>
     this.actions$.pipe(
