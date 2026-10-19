@@ -1,5 +1,5 @@
 import {Bookmark, BookmarksPerPage} from '../../viewers/pdf-viewer/side-bar/bookmarks/bookmarks.interfaces';
-import {Component, Input, OnInit} from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import * as fromStore from '../../store/reducers/reducers';
 import * as fromSelectors from '../../store/selectors/bookmark.selectors';
@@ -11,14 +11,14 @@ import { Observable } from 'rxjs';
     standalone: false
 })
 export class BookmarkIconsComponent implements OnInit {
+  private store = inject<Store<fromStore.State>>(Store);
+
 
   @Input() zoom: number;
   @Input() rotate: number;
   bookmarksPerPage$: Observable<BookmarksPerPage[]>;
   bookmarks: Bookmark[];
   documentId: string;
-
-  constructor(private store: Store<fromStore.State>) {}
 
   ngOnInit(): void {
     this.bookmarksPerPage$ = this.store.pipe(select(fromSelectors.getBookmarksPerPage));

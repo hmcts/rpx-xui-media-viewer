@@ -495,14 +495,14 @@ Add these styles to your component.scss if you need them.
 If you're writing your own toolbar styles then do not import those
 
 ```
-// Import GOV.UK Frontend
-@import "~govuk-frontend/govuk/all";
-// Import Media Viewer Styles
-@import "~media-viewer/src/assets/all"; // use this to import all the styles 
+// Load GOV.UK Frontend
+@use "govuk-frontend/govuk/all" as *;
+// Load Media Viewer Styles
+@use "media-viewer/src/assets/all"; // use this to load all the styles
 ```
 Alternatively, it is possible to import file by file as required from ```assets/sass``` directory 
 
-eg. ```~media-viewer/assets/sass/toolbar/main```
+eg. ```media-viewer/assets/sass/toolbar/main```
 
 ## Customisations
 ### Toolbar

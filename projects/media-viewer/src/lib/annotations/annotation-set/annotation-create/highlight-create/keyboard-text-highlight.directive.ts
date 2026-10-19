@@ -1,4 +1,4 @@
-import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output } from '@angular/core';
+import { Directive, ElementRef, EventEmitter, HostListener, Input, OnDestroy, Output, inject } from '@angular/core';
 
 export interface KeyboardTextHighlightEvent {
   page: number;
@@ -19,6 +19,8 @@ export interface CursorPosition {
   standalone: false
 })
 export class KeyboardTextHighlightDirective implements OnDestroy {
+  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+
 
   @Input() set enabled(value: boolean) {
     const wasEnabled = this._enabled;
@@ -53,7 +55,7 @@ export class KeyboardTextHighlightDirective implements OnDestroy {
   private lastValidEndOffset: number = 0;
   private static lastInteractionWasKeyboard = false;
 
-  constructor(private elementRef: ElementRef<HTMLElement>) {
+  constructor() {
     if (typeof window !== 'undefined') {
       window.addEventListener('keydown', KeyboardTextHighlightDirective.onGlobalKeyDown, { capture: true });
       window.addEventListener('mousedown', KeyboardTextHighlightDirective.onGlobalMouseDown, { capture: true });

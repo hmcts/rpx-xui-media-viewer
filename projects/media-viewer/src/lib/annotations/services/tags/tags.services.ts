@@ -1,14 +1,14 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { TagsModel } from '../../models/tags.model';
 
 @Injectable()
 export class TagsServices {
+  private http = inject(HttpClient);
+
 
   public tagItems: {[id: string]: TagsModel[]};
-
-  constructor(private http: HttpClient) {}
 
   public getAllTags(createdBy: string): Observable<TagsModel[]> {
     const url = `/em-anno/tags/${createdBy}`;
