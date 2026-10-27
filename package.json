@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.45",
+  "version": "4.2.46-exceljs-update",
   "scripts": {
     "cve": "yarn audit --groups dependencies --json | grep auditAdvisory > yarn-audit-known-issues",
     "cve:check": "bash -c 'if diff <(yarn npm audit --recursive --environment production --json) yarn-audit-known-issues > /dev/null; then true; else exit 1; fi'",
@@ -111,7 +111,7 @@
     "rxjs": "^7.8.2",
     "sass": "^1.102.0",
     "socket.io-client": "^4.8.3",
-    "uuid": "^11.1.1",
+    "uuid": "^14.0.3",
     "zone.js": "0.16.2"
   },
   "resolutions": {
