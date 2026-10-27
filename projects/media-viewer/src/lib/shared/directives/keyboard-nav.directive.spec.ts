@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { KeyboardNavDirective } from './keyboard-nav.directive';
 
 describe('KeyboardNavDirective', () => {
@@ -25,7 +25,10 @@ describe('KeyboardNavDirective', () => {
     hostElement.appendChild(button3);
 
     elementRef = new ElementRef<HTMLElement>(hostElement);
-    directive = new KeyboardNavDirective(elementRef);
+    directive = runInInjectionContext(
+      Injector.create({ providers: [{ provide: ElementRef, useValue: elementRef }] }),
+      () => new KeyboardNavDirective()
+    );
   });
 
   afterEach(() => {

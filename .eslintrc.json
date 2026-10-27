@@ -37,7 +37,7 @@
           }
         ],
         "@typescript-eslint/no-require-imports": "off",
-        "@angular-eslint/prefer-inject": "off",
+        "@angular-eslint/prefer-inject": "error",
         "@angular-eslint/prefer-standalone": "off"
       }
     },

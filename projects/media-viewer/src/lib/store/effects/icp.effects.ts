@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
 import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { of } from 'rxjs';
@@ -9,10 +9,10 @@ import { IcpSession } from '../../icp/icp.interfaces';
 
 @Injectable()
 export class IcpEffects {
+  private actions$ = inject(Actions);
+  private icpApiService = inject(IcpSessionApiService);
+  private icpUpdateService = inject(IcpUpdateService);
 
-  constructor(private actions$: Actions,
-    private icpApiService: IcpSessionApiService,
-    private icpUpdateService: IcpUpdateService) { }
 
   loadIcpSession$ = createEffect(() =>
     this.actions$.pipe(

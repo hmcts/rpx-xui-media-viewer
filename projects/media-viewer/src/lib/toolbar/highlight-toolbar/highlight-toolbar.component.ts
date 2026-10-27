@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { SearchMode, SearchType, ToolbarEventService } from '../toolbar-event.service';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { ToolbarFocusService } from '../toolbar-focus.service';
@@ -14,14 +14,13 @@ import * as fromRedactSelectors from '../../store/selectors/redaction.selectors'
     standalone: false
 })
 export class HighlightToolbarComponent implements OnInit, OnDestroy {
+  readonly toolbarEventService = inject(ToolbarEventService);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  private readonly toolbarFocusService = inject(ToolbarFocusService);
+
 
   private subscriptions: Subscription[] = [];
   redactionAllInProgress: boolean;
-
-  constructor(public readonly toolbarEventService: ToolbarEventService,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    private readonly toolbarFocusService: ToolbarFocusService
-  ) { }
 
   ngOnInit(): void {
     this.subscriptions.push(this.toolbarEventService.redactAllInProgressSubject.subscribe(inprogress => {

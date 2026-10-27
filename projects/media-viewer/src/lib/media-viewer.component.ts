@@ -1,18 +1,4 @@
-import {
-  AfterContentInit, AfterViewChecked,
-  ChangeDetectorRef,
-  Component,
-  ElementRef,
-  EventEmitter,
-  HostListener,
-  Input,
-  OnChanges,
-  OnDestroy,
-  Output,
-  SimpleChanges,
-  ViewChild,
-  ViewEncapsulation
-} from '@angular/core';
+import { AfterContentInit, AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject } from '@angular/core';
 import { delay, filter, Observable, Subscription, take } from 'rxjs';
 import {
   defaultImageOptions, defaultMultimediaOptions,
@@ -61,6 +47,15 @@ enum ConvertibleContentTypes {
     standalone: false
 })
 export class MediaViewerComponent implements OnChanges, OnDestroy, AfterContentInit, AfterViewChecked {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly api = inject(AnnotationApiService);
+  private readonly commentService = inject(CommentService);
+  private elRef = inject(ElementRef);
+  private cdr = inject(ChangeDetectorRef);
+  icpEventService = inject(IcpEventService);
+
 
   @ViewChild('viewerRef', {static: false}) viewerRef: ElementRef;
 
@@ -109,16 +104,9 @@ export class MediaViewerComponent implements OnChanges, OnDestroy, AfterContentI
   private prevOffset: number;
   private currentRegionIndex = -1;
 
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    public readonly toolbarEvents: ToolbarEventService,
-    private readonly api: AnnotationApiService,
-    private readonly commentService: CommentService,
-    private elRef: ElementRef,
-    private cdr: ChangeDetectorRef,
-    public icpEventService: IcpEventService
-  ) {
+  constructor() {
+    const api = this.api;
+
     if (this.annotationApiUrl) {
       api.annotationApiUrl = this.annotationApiUrl;
     }

@@ -1,4 +1,4 @@
-import { Component, Input, OnInit } from '@angular/core';
+import { Component, Input, OnInit, inject } from '@angular/core';
 import { Annotation } from './annotation-view/annotation.model';
 import { Observable } from 'rxjs';
 import { SelectionAnnotation } from '../models/event-select.model';
@@ -14,6 +14,9 @@ import * as fromSelectors from '../../store/selectors/annotation.selectors';
     standalone: false
 })
 export class AnnotationSetComponent implements OnInit {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly commentService = inject(CommentService);
+
 
   @Input() page: number;
   @Input() annotations: Annotation[] = [];
@@ -23,11 +26,6 @@ export class AnnotationSetComponent implements OnInit {
   @Input() pageWidth: number;
 
   selectedAnnotation$: Observable<SelectionAnnotation>;
-
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    private readonly commentService: CommentService
-  ) {}
 
   ngOnInit(): void {
     this.selectedAnnotation$ = this.store.pipe(select(fromSelectors.getSelectedAnnotation));
