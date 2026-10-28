@@ -125,7 +125,11 @@ export class KeyboardBoxMoveDirective implements OnDestroy {
 
     if (wasFocused) {
       setTimeout(() => {
-        element.focus();
+        try {
+          element.focus({ preventScroll: true });
+        } catch {
+          element.focus();
+        }
       }, 50);
     }
   }
