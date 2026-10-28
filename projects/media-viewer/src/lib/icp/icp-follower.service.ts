@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ToolbarEventService } from '../toolbar/toolbar-event.service';
 import { select, Store } from '@ngrx/store';
 import { Subscription } from 'rxjs';
@@ -10,15 +10,15 @@ import * as fromDocSelectors from '../store/selectors/document.selectors';
 
 @Injectable({ providedIn: 'root' })
 export class IcpFollowerService {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly viewerEvents = inject(ViewerEventService);
+  private readonly socketService = inject(IcpUpdateService);
+  private store = inject<Store<IcpState>>(Store);
+
 
   session: IcpSession;
   private previousRotation: number|null = null;
   $subscription: Subscription;
-
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-    private readonly viewerEvents: ViewerEventService,
-    private readonly socketService: IcpUpdateService,
-    private store: Store<IcpState>) { }
 
 
   update(isFollower: boolean) {

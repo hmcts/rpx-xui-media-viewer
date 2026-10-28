@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
@@ -21,6 +21,11 @@ import { CtxToolbarComponent } from '../ctx-toolbar/ctx-toolbar.component';
     standalone: false
 })
 export class MetadataLayerComponent implements OnInit, OnDestroy {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly highlightService = inject(HighlightCreateService);
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly viewerEvents = inject(ViewerEventService);
+
 
   @Input() zoom: number;
   @Input() rotate: number;
@@ -35,12 +40,6 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
   rectangles: Rectangle[];
 
   private $subscriptions: Subscription;
-
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    private readonly highlightService: HighlightCreateService,
-    private readonly toolbarEvents: ToolbarEventService,
-    private readonly viewerEvents: ViewerEventService) { }
 
   ngOnInit(): void {
     this.$subscriptions = this.store.pipe(select(fromDocument.getPages))

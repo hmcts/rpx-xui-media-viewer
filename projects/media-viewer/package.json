@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.40-exui-4316-rc2",
+  "version": "4.2.45-exui-4316-rc2",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
@@ -27,7 +27,7 @@
   },
   "peerDependencies": {
     "@angular/animations": "^20.0.0",
-    "@angular/cdk": "^17.3.8",
+    "@angular/cdk": "^20.0.0",
     "@angular/common": "^20.0.0",
     "@angular/core": "^20.0.0",
     "@angular/forms": "^20.0.0",

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation, inject } from '@angular/core';
 import { ResponseType, ViewerException } from '../viewer-exception.model';
 import { select, Store } from '@ngrx/store';
 import * as fromStore from '../../store/reducers/document.reducer';
@@ -15,6 +15,8 @@ import { filter } from 'rxjs/operators';
     standalone: false
 })
 export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnChanges {
+  private store = inject<Store<fromStore.DocumentState>>(Store);
+
 
   @Input() originalUrl;
   @Input() downloadFileName: string;
@@ -32,9 +34,6 @@ export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnC
 
   private $subscription: Subscription;
   convertedUrl: string;
-
-  constructor(private store: Store<fromStore.DocumentState>) {
-  }
 
   ngOnInit(): void {
     this.$subscription = this.store.pipe(select(fromSelectors.getConvertedDocument), filter(value => !!value))
