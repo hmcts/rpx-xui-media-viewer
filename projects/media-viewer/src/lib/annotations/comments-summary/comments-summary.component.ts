@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, OnInit, OnDestroy } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -16,6 +16,11 @@ import * as fromTagSelectors from '../../store/selectors/tag.selectors';
     standalone: false
 })
 export class CommentsSummaryComponent implements OnInit, OnDestroy {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly printService = inject(PrintService);
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private fb = inject(FormBuilder);
+
 
   @Input() title: string;
   @Input() contentType: string;
@@ -29,13 +34,6 @@ export class CommentsSummaryComponent implements OnInit, OnDestroy {
   hasFilter = false;
   fromFilterValid: boolean = true;
   toFilterValid: boolean = true;
-
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    private readonly printService: PrintService,
-    private readonly toolbarEvents: ToolbarEventService,
-    private fb: FormBuilder
-  ) { }
 
   ngOnInit(): void {
     this.filtersFg = this.fb.group({

@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, OnDestroy, AfterViewInit } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, OnDestroy, AfterViewInit, inject } from '@angular/core';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { SearchResultsCount, ToolbarEventService } from '../toolbar-event.service';
 import { Subscription } from 'rxjs';
@@ -9,6 +9,9 @@ import { Subscription } from 'rxjs';
     standalone: false
 })
 export class SearchBarComponent implements OnInit, OnDestroy, AfterViewInit {
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  readonly toolbarEvents = inject(ToolbarEventService);
+
 
   @ViewChild('findInput', { static: true }) findInput: ElementRef<HTMLInputElement>;
   @ViewChild('findNext', { static: false }) findNext: ElementRef<HTMLAnchorElement>;
@@ -23,11 +26,6 @@ export class SearchBarComponent implements OnInit, OnDestroy, AfterViewInit {
   private subscriptions: Subscription[] = [];
 
   public advancedSearchVisible = false;
-
-  constructor(
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    public readonly toolbarEvents: ToolbarEventService
-  ) { }
 
   public ngOnInit(): void {
     this.subscriptions.push(

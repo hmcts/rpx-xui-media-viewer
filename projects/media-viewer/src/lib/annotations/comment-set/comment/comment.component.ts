@@ -1,14 +1,4 @@
-import {
-  AfterContentInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnDestroy,
-  OnInit,
-  Output,
-  ViewChild
-} from '@angular/core';
+import { AfterContentInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
 import {Comment} from './comment.model';
 import {User} from '../../models/user.model';
 import {Rectangle} from '../../annotation-set/annotation-view/rectangle/rectangle.model';
@@ -31,6 +21,10 @@ import { HtmlTemplatesHelper } from '../../../shared/util/helpers/html-templates
     standalone: false
 })
 export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly commentService = inject(CommentService);
+  private tagsServices = inject(TagsServices);
+
 
   CHAR_LIMIT = 5000;
   lastUpdate: string;
@@ -68,12 +62,6 @@ export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {
   @ViewChild('editableComment', {static: false}) editableComment: ElementRef<HTMLElement>;
 
   private subscriptions: Subscription;
-
-  constructor(
-    private store: Store<fromStore.AnnotationSetState>,
-    private readonly commentService: CommentService,
-    private tagsServices: TagsServices
-  ) {}
 
 
   ngOnInit(): void {

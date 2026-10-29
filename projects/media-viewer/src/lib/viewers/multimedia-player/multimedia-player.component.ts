@@ -1,15 +1,4 @@
-import {
-  Component,
-  ElementRef,
-  Input,
-  OnInit,
-  ViewChild,
-  OnDestroy,
-  Output,
-  EventEmitter,
-  OnChanges,
-  SimpleChanges
-} from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild, OnDestroy, Output, EventEmitter, OnChanges, SimpleChanges, inject } from '@angular/core';
 import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 import { Subscription } from 'rxjs';
 import { ResponseType } from '../viewer-exception.model';
@@ -20,6 +9,8 @@ import { ResponseType } from '../viewer-exception.model';
     standalone: false
 })
 export class MultimediaPlayerComponent implements OnInit, OnChanges, OnDestroy {
+  readonly toolbarEvents = inject(ToolbarEventService);
+
 
   @Input() url: string;
   @Input() downloadFileName: string;
@@ -33,10 +24,6 @@ export class MultimediaPlayerComponent implements OnInit, OnChanges, OnDestroy {
   playbackMsg = 'loading';
 
   private subscription: Subscription;
-
-  constructor(
-    public readonly toolbarEvents: ToolbarEventService,
-  ) {}
 
   public ngOnInit(): void {
     this.subscription = this.toolbarEvents.downloadSubject

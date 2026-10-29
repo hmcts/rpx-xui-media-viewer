@@ -1,4 +1,4 @@
-import {Component, Input, ViewEncapsulation} from '@angular/core';
+import { Component, Input, ViewEncapsulation, inject } from '@angular/core';
 import {TagsModel} from '../models/tags.model';
 import {TagsServices} from '../services/tags/tags.services';
 import {UntypedFormControl} from '@angular/forms';
@@ -11,6 +11,8 @@ import {Observable} from 'rxjs';
     standalone: false
 })
 export class TagsComponent {
+  private tagsServices = inject(TagsServices);
+
   @Input() tagItems: TagsModel[];
   @Input() userId: string;
   @Input() editable: boolean;
@@ -21,8 +23,6 @@ export class TagsComponent {
     'minLength': 'Minimum of 2 characters',
     'maxLength20': 'Maximum of 20 characters'
   };
-
-  constructor(private tagsServices: TagsServices) {}
 
   onUpdateTags(value) {
     this.tagsServices.updateTagItems(value, this.annoId);
