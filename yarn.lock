@@ -3080,7 +3080,7 @@ __metadata:
     pdfjs-dist: "npm:^4.10.38"
     playwright-core: "npm:1.63.0"
     puppeteer: "npm:^24.42.0"
-    rpx-xui-translation: "npm:1.2.18-ts-node-update"
+    rpx-xui-translation: "npm:1.2.18"
     rxjs: "npm:^7.8.2"
     sass: "npm:^1.102.0"
     socket.io-client: "npm:^4.8.3"
@@ -14769,9 +14769,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"rpx-xui-translation@npm:1.2.18-ts-node-update":
-  version: 1.2.18-ts-node-update
-  resolution: "rpx-xui-translation@npm:1.2.18-ts-node-update"
+"rpx-xui-translation@npm:1.2.18":
+  version: 1.2.18
+  resolution: "rpx-xui-translation@npm:1.2.18"
   dependencies:
     dexie: "npm:^4.4.4"
     luxon: "npm:^2.5.2"
@@ -14780,7 +14780,7 @@ __metadata:
     "@angular/common": ^20.3.27
     "@angular/core": ^20.3.27
     rxjs: ^7.8.0
-  checksum: 10/8a35895b2db99ec231f6cedf97343b1e25c8a47b27446376c88c243726d11edb183a5cc374f23711fe9591cd236ea97d4863603a4a7a47c609ed43866608a140
+  checksum: 10/a1ab0ed0d989d68f78d319db1f851ca2fe283cf3aa5273453dad210a2509f9cbb30b5dcde06fb49b192322085aa5c78d17d7b618aa29731572814afd0cb4a5ac
   languageName: node
   linkType: hard
 
