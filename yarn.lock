@@ -12421,11 +12421,11 @@ __metadata:
   linkType: hard
 
 "moment-timezone@npm:^0.6.2":
-  version: 0.6.5
-  resolution: "moment-timezone@npm:0.6.5"
+  version: 0.6.6
+  resolution: "moment-timezone@npm:0.6.6"
   dependencies:
     moment: "npm:^2.29.4"
-  checksum: 10/2ab437fa7ac3468eb8eaef968f5c3896ec429b8b9aa4b04cba1d36c368988f684afb7a0f0450621667916705608cf0e898050bb77a17438bd1afb5a7662d129e
+  checksum: 10/ae1407f23e54c7a2177c0ee58185000de965e758be027deebed3de2e62ff8e73692acb44aa9078449e61f06f814767c24de7bb5dfb0cea4108e991b1169b64ae
   languageName: node
   linkType: hard
 
