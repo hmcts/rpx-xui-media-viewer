@@ -3037,7 +3037,7 @@ __metadata:
     "@playwright/test": "npm:1.63.0"
     "@swimlane/ngx-datatable": "npm:^23.0.1"
     "@types/jasmine": "npm:~5.1.0"
-    "@types/lodash": "npm:4.17.10"
+    "@types/lodash": "npm:4.17.27"
     "@types/node": "npm:^24.0.0"
     "@typescript-eslint/eslint-plugin": "npm:^8.66.0"
     "@typescript-eslint/parser": "npm:^8.66.0"
@@ -5534,10 +5534,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/lodash@npm:4.17.10":
-  version: 4.17.10
-  resolution: "@types/lodash@npm:4.17.10"
-  checksum: 10/10fe24a93adc6048cb23e4135c1ed1d52cc39033682e6513f4f51b74a9af6d7a24fbea92203c22dc4e01e35f1ab3aa0fd0a2b487e8a4a2bbdf1fc05970094066
+"@types/lodash@npm:4.17.27":
+  version: 4.17.27
+  resolution: "@types/lodash@npm:4.17.27"
+  checksum: 10/ae02ef86268664e5a024fd1a7d907b676fe7cd9b58b52bdddc7c42c7ffb3d05e869f6bd13e3e6cbb4001cac1d072f5e2a6e5deed2ef7dc62d7853fc735a077be
   languageName: node
   linkType: hard
 
