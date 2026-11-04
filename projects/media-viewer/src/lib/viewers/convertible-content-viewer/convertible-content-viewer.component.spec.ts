@@ -71,6 +71,17 @@ describe('ConvertibleContentViewerComponent', () => {
       expect(store.dispatch).toHaveBeenCalledWith(new Convert('111'));
     }));
 
+  ['documents', 'documentsv2'].forEach(route => {
+    it(`converts only the document ID from a ${route} URL with query and fragment`,
+      inject([Store], (store: Store<{}>) => {
+        spyOn(store, 'dispatch');
+        component.originalUrl = `/${route}/111/binary?caseId=case-123#viewer`;
+        component.ngOnChanges({ originalUrl: new SimpleChange(null, component.originalUrl, true) });
+
+        expect(store.dispatch).toHaveBeenCalledWith(new Convert('111'));
+      }));
+  });
+
   it('should emit viewerException', fakeAsync(() => {
     spyOn(component.viewerException, 'emit');
     component.onLoadException(new ViewerException());
