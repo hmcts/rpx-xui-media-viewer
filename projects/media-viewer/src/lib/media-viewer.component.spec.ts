@@ -152,6 +152,15 @@ describe('MediaViewerComponent', () => {
     expect(component.documentId).toEqual('test-url');
   });
 
+  ['documents', 'documentsv2'].forEach(route => {
+    it(`uses only the document ID from a ${route} URL with query and fragment`, () => {
+      component.url = `/${route}/test-url/binary?caseId=case-123#viewer`;
+      component.ngOnChanges({ url: new SimpleChange(null, component.url, true) });
+
+      expect(component.documentId).toEqual('test-url');
+    });
+  });
+
   it('should not set annotations$ when annotations disabled', () => {
     component.contentType = 'pdf';
     component.annotationSet$ = null;

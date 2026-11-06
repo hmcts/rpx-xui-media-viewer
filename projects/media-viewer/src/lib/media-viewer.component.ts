@@ -241,6 +241,7 @@ export class MediaViewerComponent implements OnChanges, OnDestroy, AfterContentI
 
   // If secure mode is enabled (which adds "documentsv2" to the documentId), get rid of it
   private extractDMStoreDocId(url: string): string {
+    url = url.split(/[?#]/)[0];
     url = url.includes('/documents/') ? url.split('/documents/')[1] : url;
     url = url.includes('/documentsv2/') ? url.split('/documentsv2/')[1] : url;
     return url.replace('/binary', '');
