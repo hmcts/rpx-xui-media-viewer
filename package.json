@@ -76,7 +76,7 @@
     "test:crossbrowser": "yarn test:playwright:crossbrowser"
   },
   "dependencies": {
-    "@angular-eslint/utils": "20.3.0",
+    "@angular-eslint/utils": "20.7.0",
     "@angular/animations": "20.3.31",
     "@angular/cdk": "20.2.14",
     "@angular/common": "20.3.31",
@@ -111,8 +111,8 @@
     "rxjs": "^7.8.2",
     "sass": "^1.102.0",
     "socket.io-client": "^4.8.3",
-    "uuid": "^11.1.1",
-    "zone.js": "0.16.2"
+    "uuid": "^14.0.3",
+    "zone.js": "0.16.3"
   },
   "resolutions": {
     "glob-parent": "^6.0.0",
@@ -139,7 +139,7 @@
     "form-data@^2.5.0": "2.5.6",
     "brace-expansion@^1.1.7": "1.1.21",
     "brace-expansion@^2.0.1": "2.1.4",
-    "tmp": "0.2.5",
+    "tmp": "0.2.7",
     "jws": "^4.0.1",
     "qs": "6.16.0",
     "bn.js": "^5.2.3",
@@ -149,11 +149,11 @@
   "devDependencies": {
     "@angular-devkit/build-angular": "20.3.32",
     "@angular-devkit/core": "20.3.32",
-    "@angular-eslint/builder": "20.3.0",
-    "@angular-eslint/eslint-plugin": "20.3.0",
-    "@angular-eslint/eslint-plugin-template": "20.3.0",
-    "@angular-eslint/schematics": "20.3.0",
-    "@angular-eslint/template-parser": "20.3.0",
+    "@angular-eslint/builder": "20.7.0",
+    "@angular-eslint/eslint-plugin": "20.7.0",
+    "@angular-eslint/eslint-plugin-template": "20.7.0",
+    "@angular-eslint/schematics": "20.7.0",
+    "@angular-eslint/template-parser": "20.7.0",
     "@angular/cli": "20.3.32",
     "@angular/compiler": "20.3.31",
     "@angular/compiler-cli": "20.3.31",
@@ -168,7 +168,7 @@
     "@typescript-eslint/parser": "^8.66.0",
     "@typescript-eslint/types": "^8.66.0",
     "@typescript-eslint/utils": "^8.66.0",
-    "angular-eslint": "22.5.0",
+    "angular-eslint": "22.6.0",
     "axe-core": "^4.9.1",
     "axe-html-reporter": "^2.2.3",
     "codecov": "^3.7.1",
