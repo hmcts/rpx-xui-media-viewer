@@ -31,4 +31,14 @@ describe('bookmarks-store-utils', () => {
     expect(children).toEqual(['id2', 'id3']);
   });
 
+  it('should reject cyclic previous references instead of looping indefinitely', () => {
+    const entities = { id1: { ...bookmark1, previous: 'id2' }, id2: bookmark2 };
+    expect(() => generateBookmarkNodes(entities)).toThrowError('Cannot order bookmarks with cyclic previous references');
+  });
+
+  it('should reject a self-referencing bookmark after indexing valid bookmarks', () => {
+    const entities = { id1: bookmark1, id2: { ...bookmark2, previous: 'id2' } };
+    expect(() => generateBookmarkNodes(entities)).toThrowError('Cannot order bookmarks with cyclic previous references');
+  });
+
 });

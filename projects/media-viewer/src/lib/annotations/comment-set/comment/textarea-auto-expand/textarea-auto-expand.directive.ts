@@ -5,7 +5,7 @@ import { AfterContentChecked, Directive, ElementRef, HostListener, inject } from
     standalone: false
 })
 export class TextareaAutoExpandDirective implements AfterContentChecked {
-  private el = inject(ElementRef);
+  private readonly el = inject(ElementRef);
 
 
   ngAfterContentChecked(): void {

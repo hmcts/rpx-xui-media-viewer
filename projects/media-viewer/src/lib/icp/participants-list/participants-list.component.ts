@@ -13,7 +13,7 @@ import { IcpEventService } from '../../toolbar/icp-event.service';
 })
 export class ParticipantsListComponent implements OnInit, OnDestroy {
   private readonly toolbarEvents = inject(ToolbarEventService);
-  private store = inject<Store<IcpState>>(Store);
+  private readonly store = inject<Store<IcpState>>(Store);
   private readonly icpEventService = inject(IcpEventService);
 
 

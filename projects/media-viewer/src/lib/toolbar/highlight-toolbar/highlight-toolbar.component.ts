@@ -10,7 +10,6 @@ import * as fromRedactSelectors from '../../store/selectors/redaction.selectors'
 @Component({
     selector: 'mv-highlight-toolbar',
     templateUrl: './highlight-toolbar.component.html',
-    styleUrls: ['./highlight-toolbar.component.scss'],
     standalone: false
 })
 export class HighlightToolbarComponent implements OnInit, OnDestroy {
@@ -19,7 +18,7 @@ export class HighlightToolbarComponent implements OnInit, OnDestroy {
   private readonly toolbarFocusService = inject(ToolbarFocusService);
 
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   redactionAllInProgress: boolean;
 
   ngOnInit(): void {

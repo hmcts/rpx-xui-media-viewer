@@ -23,7 +23,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 })
 
 export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
-  private store = inject<Store<fromBookmarks.BookmarksState | AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromBookmarks.BookmarksState | AnnotationSetState>>(Store);
 
 
   @Input()
@@ -263,45 +263,7 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
     if (this.isToNodeChildOfFromNode(fromNode?.children, toNode)) return;
 
     if (this.dragNodeInsertToParent) {
-
-      const indexOfParent = toNodeSiblings.findIndex(element => element.id === toNode.id);
-      const parentNode = toNodeSiblings[indexOfParent];
-      const firstChild = parentNode?.children && parentNode?.children.length > 0 ? parentNode.children[0] : null;
-      let movedBookmarksWithParent = [{ ...fromNode, parent: parentNode.id, previous: null }];
-
-      if (firstChild) {
-        movedBookmarksWithParent = [...movedBookmarksWithParent, { ...firstChild, previous: fromNode.id }];
-      }
-
-      let fromNodeSibling = this.getSiblingFromAllSibliings(fromNodeSiblings, fromIndex + 1);
-      const nextFromindexforParent = fromIndex + 1;
-      fromNodeSibling = fromNodeSibling && fromNodeSibling.id === fromNode.previous ? this.getSiblingFromAllSibliings(fromNodeSiblings, nextFromindexforParent + 1) : fromNodeSibling;
-
-      if (fromNodeSibling && fromNodeSibling.id !== parentNode.id) {
-        movedBookmarksWithParent = [...movedBookmarksWithParent, { ...fromNodeSibling, previous: fromNode.previous }];
-      }
-
-      let previousSiblingForParentIndex = toIndex - 1;
-      let parentNodeSibling = this.getSiblingFromAllSibliings(toNodeSiblings, previousSiblingForParentIndex);
-
-      if (parentNodeSibling && parentNodeSibling.id == fromNode.id) {
-        previousSiblingForParentIndex = previousSiblingForParentIndex - 1;
-        if (previousSiblingForParentIndex >= 0) {
-          parentNodeSibling = this.getSiblingFromAllSibliings(toNodeSiblings, previousSiblingForParentIndex);
-        }
-        else {
-          parentNodeSibling = null;
-        }
-      }
-
-      movedBookmarksWithParent = [...movedBookmarksWithParent, { ...parentNode, previous: parentNodeSibling?.id }];
-
-      const hasParentDups = (movedBookmarksWithParent as Bookmark[]).map(x => x.id).some(function (value, index, array) {                            // .some will break as soon as duplicate found (no need to itterate over all array)
-        return array.indexOf(value) !== array.lastIndexOf(value);   // comparing first and last indexes of the same value
-      })
-      if (hasParentDups || movedBookmarksWithParent && movedBookmarksWithParent.length <= 1) return;
-
-      this.store.dispatch(new MoveBookmark(movedBookmarksWithParent));
+      this.moveBookmarkIntoParent({ toNode, toNodeSiblings, toIndex, fromNode, fromNodeSiblings, fromIndex });
       return;
     }
 
@@ -336,6 +298,55 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
     if (hasDups || movedBookmarks && movedBookmarks.length <= 1) return;
 
     this.store.dispatch(new MoveBookmark(movedBookmarks));
+  }
+
+  private moveBookmarkIntoParent({ toNode, toNodeSiblings, toIndex, fromNode, fromNodeSiblings, fromIndex }: {
+    toNode: Bookmark;
+    toNodeSiblings: Bookmark[];
+    toIndex: number;
+    fromNode: Bookmark;
+    fromNodeSiblings: Bookmark[];
+    fromIndex: number;
+  }): void {
+
+    const indexOfParent = toNodeSiblings.findIndex(element => element.id === toNode.id);
+    const parentNode = toNodeSiblings[indexOfParent];
+    const firstChild = parentNode?.children && parentNode?.children.length > 0 ? parentNode.children[0] : null;
+    let movedBookmarksWithParent = [{ ...fromNode, parent: parentNode.id, previous: null }];
+
+    if (firstChild) {
+      movedBookmarksWithParent = [...movedBookmarksWithParent, { ...firstChild, previous: fromNode.id }];
+    }
+
+    let fromNodeSibling = this.getSiblingFromAllSibliings(fromNodeSiblings, fromIndex + 1);
+    const nextFromindexforParent = fromIndex + 1;
+    fromNodeSibling = fromNodeSibling && fromNodeSibling.id === fromNode.previous ? this.getSiblingFromAllSibliings(fromNodeSiblings, nextFromindexforParent + 1) : fromNodeSibling;
+
+    if (fromNodeSibling && fromNodeSibling.id !== parentNode.id) {
+      movedBookmarksWithParent = [...movedBookmarksWithParent, { ...fromNodeSibling, previous: fromNode.previous }];
+    }
+
+    let previousSiblingForParentIndex = toIndex - 1;
+    let parentNodeSibling = this.getSiblingFromAllSibliings(toNodeSiblings, previousSiblingForParentIndex);
+
+    if (parentNodeSibling && parentNodeSibling.id == fromNode.id) {
+      previousSiblingForParentIndex = previousSiblingForParentIndex - 1;
+      if (previousSiblingForParentIndex >= 0) {
+        parentNodeSibling = this.getSiblingFromAllSibliings(toNodeSiblings, previousSiblingForParentIndex);
+      }
+      else {
+        parentNodeSibling = null;
+      }
+    }
+
+    movedBookmarksWithParent = [...movedBookmarksWithParent, { ...parentNode, previous: parentNodeSibling?.id }];
+
+    const hasParentDups = (movedBookmarksWithParent as Bookmark[]).map(x => x.id).some(function (value, index, array) {                            // .some will break as soon as duplicate found (no need to itterate over all array)
+      return array.indexOf(value) !== array.lastIndexOf(value);   // comparing first and last indexes of the same value
+    })
+    if (hasParentDups || movedBookmarksWithParent && movedBookmarksWithParent.length <= 1) return;
+
+    this.store.dispatch(new MoveBookmark(movedBookmarksWithParent));
   }
 
   private getSiblingFromAllSibliings(sibling: Bookmark[], index) {

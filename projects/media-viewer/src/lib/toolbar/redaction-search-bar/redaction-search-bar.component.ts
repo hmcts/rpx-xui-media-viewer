@@ -22,7 +22,7 @@ import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.he
     standalone: false
 })
 export class RedactionSearchBarComponent implements OnInit, OnDestroy {
-  private store = inject<Store<fromStore.State>>(Store);
+  private readonly store = inject<Store<fromStore.State>>(Store);
   readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
   readonly toolbarEvents = inject(ToolbarEventService);
   readonly highlightService = inject(HighlightCreateService);
@@ -167,12 +167,11 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
   }
 
   private redactAllSearched(results: RedactionSearch): void {
-    const $this = this;
     const intervalId = setInterval(() => {
       const highlightElement = document.getElementsByClassName('highlight selected');
       if (highlightElement && highlightElement.length > 0) {
         clearInterval(intervalId);
-        $this.redactAllSearchedTick(results);
+        this.redactAllSearchedTick(results);
       }
     }, 100);
   }
@@ -235,40 +234,41 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     this.zoom = parseFloat(this.allPages[page].scaleRotation.scale);
     this.rotate = parseInt(this.allPages[page].scaleRotation.rotation, 10);
     const selectedHighLightedElements = document.getElementsByClassName('highlight selected');
-    if (selectedHighLightedElements && selectedHighLightedElements.length > 0) {
-      const docRange = document.createRange();
-      if (some(selectedHighLightedElements, element => element.className === 'highlight begin selected' || element.className === 'highlight end selected')) {
-        docRange.setStart(selectedHighLightedElements[0], 0);
-        const endNode = selectedHighLightedElements[selectedHighLightedElements.length - 1];
-        docRange.setEnd(endNode, endNode.childNodes.length);
-      }
-      else {
-        docRange.selectNodeContents(selectedHighLightedElements[0] as HTMLElement);
-      }
-      const selection = window.getSelection();
-      selection?.removeAllRanges();
-      selection?.addRange(docRange);
-      if (selection.rangeCount && !selection.isCollapsed) {
-        const range = selection.getRangeAt(0).cloneRange();
-        const clientRects = range.getClientRects();
-
-        if (clientRects) {
-          const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(selectedHighLightedElements[0]?.parentElement?.parentElement);
-          const selectionRectangles: Rectangle[] = [];
-          for (let i = 0; i < clientRects.length; i++) {
-            const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
-            const findSelecttionRectangle = selectionRectangles.find(
-              (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
-            );
-            if (!findSelecttionRectangle) {
-              selectionRectangles.push(selectionRectangle);
-            }
-          }
-
-          return selectionRectangles;
-        }
+    if (!selectedHighLightedElements?.length) {
+      return;
+    }
+    const docRange = this.getHighlightRange(selectedHighLightedElements);
+    const selection = window.getSelection();
+    selection?.removeAllRanges();
+    selection?.addRange(docRange);
+    if (!selection?.rangeCount || selection.isCollapsed) {
+      return;
+    }
+    const clientRects = selection.getRangeAt(0).cloneRange().getClientRects();
+    if (!clientRects) {
+      return;
+    }
+    const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(selectedHighLightedElements[0]?.parentElement?.parentElement);
+    const selectionRectangles: Rectangle[] = [];
+    for (let i = 0; i < clientRects.length; i++) {
+      const rectangle = this.createTextRectangle(clientRects[i], parentRect);
+      if (!selectionRectangles.some(rect => rect.width === rectangle.width && rect.x === rectangle.x)) {
+        selectionRectangles.push(rectangle);
       }
     }
+    return selectionRectangles;
+  }
+
+  private getHighlightRange(elements: HTMLCollectionOf<Element>): Range {
+    const range = document.createRange();
+    if (some(elements, element => element.className === 'highlight begin selected' || element.className === 'highlight end selected')) {
+      range.setStart(elements[0], 0);
+      const endNode = elements[elements.length - 1];
+      range.setEnd(endNode, endNode.childNodes.length);
+    } else {
+      range.selectNodeContents(elements[0]);
+    }
+    return range;
   }
 
   private createTextRectangle(rect: DOMRect, parentRect: any): Rectangle {
@@ -277,16 +277,7 @@ export class RedactionSearchBarComponent implements OnInit, OnDestroy {
     const top = rect.top - parentRect.top;
     const left = rect.left - parentRect.left;
 
-    let rectangle = this.highlightService.applyRotation(
-      this.pageHeight,
-      this.pageWidth,
-      height,
-      width,
-      top,
-      left,
-      this.rotate,
-      this.zoom
-    );
+    let rectangle = this.highlightService.applyRotation({ pageHeight: this.pageHeight, pageWidth: this.pageWidth, offsetHeight: height, offsetWidth: width, offsetTop: top, offsetLeft: left, rotate: this.rotate, zoom: this.zoom });
     rectangle = { id: uuid(), ...rectangle };
 
     return rectangle as Rectangle;

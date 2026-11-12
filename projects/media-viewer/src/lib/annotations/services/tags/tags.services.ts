@@ -5,7 +5,7 @@ import { TagsModel } from '../../models/tags.model';
 
 @Injectable()
 export class TagsServices {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
 
   public tagItems: {[id: string]: TagsModel[]};
@@ -34,7 +34,7 @@ export class TagsServices {
     };
   }
 
-  private snakeCase = string => {
+  private readonly snakeCase = string => {
     // transform string_to_snake_case
     return string.replace(/ +/g, ' ')  // find space
       .split(/ |\B(?=[A-Z])/) // split it into array

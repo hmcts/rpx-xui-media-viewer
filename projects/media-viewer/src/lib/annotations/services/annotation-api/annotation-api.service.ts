@@ -14,8 +14,8 @@ export class AnnotationApiService {
 
   public annotationApiUrl = '/em-anno';
 
-  private annotationSetBaseUrl = '/annotation-sets';
-  private annotationBaseUrl = '/annotations';
+  private readonly annotationSetBaseUrl = '/annotation-sets';
+  private readonly annotationBaseUrl = '/annotations';
 
   public getAnnotationSet(documentId: string): Observable<any> { // todo add model
     const fixedUrl = `${this.annotationSetsFullUrl}/filter?documentId=${documentId}`;
@@ -48,7 +48,7 @@ export class AnnotationApiService {
   }
 
   private extractComments(annotations: Annotation[]) {
-    return [].concat(...annotations.map(a => a.comments));
+    return annotations.map(a => a.comments).flat();
   }
 
   public deleteAnnotation(annotationId: string): Observable<null> {

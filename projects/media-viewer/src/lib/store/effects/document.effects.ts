@@ -9,9 +9,9 @@ import * as documentActions from '../actions/document.actions';
 
 @Injectable()
 export class DocumentEffects {
-  private actions$ = inject(Actions);
-  private documentConversionService = inject(DocumentConversionApiService);
-  private rotationApiService = inject(RotationApiService);
+  private readonly actions$ = inject(Actions);
+  private readonly documentConversionService = inject(DocumentConversionApiService);
+  private readonly rotationApiService = inject(RotationApiService);
 
 
   convert$ = createEffect(() =>

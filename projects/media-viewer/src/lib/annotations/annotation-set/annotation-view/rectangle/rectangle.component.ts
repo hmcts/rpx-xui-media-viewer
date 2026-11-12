@@ -31,7 +31,7 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
 
   @ViewChild('rectElement', {static: false}) viewRect: ElementRef;
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   _selected: boolean;
   enableGrabNDrag = false;
 
@@ -105,7 +105,7 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
     const { offsetHeight, offsetWidth, offsetTop, offsetLeft } = viewRect;
     if (this.hasRectangleChanged(viewRect)) {
       let rectangle = this.highlightService
-        .applyRotation(this.pageHeight, this.pageWidth, offsetHeight, offsetWidth, offsetTop, offsetLeft, this.rotate, this.zoom);
+        .applyRotation({ pageHeight: this.pageHeight, pageWidth: this.pageWidth, offsetHeight, offsetWidth, offsetTop, offsetLeft, rotate: this.rotate, zoom: this.zoom });
       rectangle = { ...this.annoRect, ...rectangle };
       this.updateEvent.emit({ ...rectangle });
     }

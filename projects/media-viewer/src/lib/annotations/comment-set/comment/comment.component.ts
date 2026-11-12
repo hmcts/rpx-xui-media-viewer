@@ -21,9 +21,9 @@ import { HtmlTemplatesHelper } from '../../../shared/util/helpers/html-templates
     standalone: false
 })
 export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly commentService = inject(CommentService);
-  private tagsServices = inject(TagsServices);
+  private readonly tagsServices = inject(TagsServices);
 
 
   CHAR_LIMIT = 5000;

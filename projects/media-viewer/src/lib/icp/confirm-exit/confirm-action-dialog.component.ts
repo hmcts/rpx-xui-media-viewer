@@ -7,7 +7,7 @@ import { IcpEventService } from '../../toolbar/icp-event.service';
     standalone: false
 })
 export class ConfirmActionDialogComponent implements AfterViewInit {
-  private icpEventService = inject(IcpEventService);
+  private readonly icpEventService = inject(IcpEventService);
 
   @ViewChild('modalContainer') modalContainer: ElementRef;
 

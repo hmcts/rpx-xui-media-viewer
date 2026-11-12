@@ -1,7 +1,6 @@
 import { RpxTranslationModule } from 'rpx-xui-translation';
 import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
 import { RouterTestingModule } from '@angular/router/testing';
-import { By } from '@angular/platform-browser';
 import { Store, StoreModule } from '@ngrx/store';
 import { Subject } from 'rxjs';
 
@@ -84,7 +83,7 @@ describe('MediaViewerComponent', () => {
       fixture.detectChanges();
 
       expect(toolbarButtons.setup).toHaveBeenCalled();
-      expect(fixture.debugElement.query(By.css('.print')));
+      expect(toolbarButtons.showPrint).toBeTrue();
     })
   );
 

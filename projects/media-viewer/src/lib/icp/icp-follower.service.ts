@@ -13,21 +13,13 @@ export class IcpFollowerService {
   private readonly toolbarEvents = inject(ToolbarEventService);
   private readonly viewerEvents = inject(ViewerEventService);
   private readonly socketService = inject(IcpUpdateService);
-  private store = inject<Store<IcpState>>(Store);
+  private readonly store = inject<Store<IcpState>>(Store);
 
 
   session: IcpSession;
-  private previousRotation: number|null = null;
+  private readonly previousRotation: number|null = null;
   $subscription: Subscription;
 
-
-  update(isFollower: boolean) {
-    if (isFollower) {
-      this.subscribe();
-    } else {
-      this.unsubscribe();
-    }
-  }
 
   subscribe() {
     if (!this.$subscription) {

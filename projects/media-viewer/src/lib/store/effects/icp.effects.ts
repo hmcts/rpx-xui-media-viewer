@@ -9,9 +9,9 @@ import { IcpSession } from '../../icp/icp.interfaces';
 
 @Injectable()
 export class IcpEffects {
-  private actions$ = inject(Actions);
-  private icpApiService = inject(IcpSessionApiService);
-  private icpUpdateService = inject(IcpUpdateService);
+  private readonly actions$ = inject(Actions);
+  private readonly icpApiService = inject(IcpSessionApiService);
+  private readonly icpUpdateService = inject(IcpUpdateService);
 
 
   loadIcpSession$ = createEffect(() =>

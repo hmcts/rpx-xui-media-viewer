@@ -14,7 +14,7 @@ import * as fromSelectors from '../../store/selectors/annotation.selectors';
     standalone: false
 })
 export class AnnotationSetComponent implements OnInit {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly commentService = inject(CommentService);
 
 

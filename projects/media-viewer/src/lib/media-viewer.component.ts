@@ -47,13 +47,13 @@ enum ConvertibleContentTypes {
     standalone: false
 })
 export class MediaViewerComponent implements OnChanges, OnDestroy, AfterContentInit, AfterViewChecked {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
   readonly toolbarEvents = inject(ToolbarEventService);
   private readonly api = inject(AnnotationApiService);
   private readonly commentService = inject(CommentService);
-  private elRef = inject(ElementRef);
-  private cdr = inject(ChangeDetectorRef);
+  private readonly elRef = inject(ElementRef);
+  private readonly cdr = inject(ChangeDetectorRef);
   icpEventService = inject(IcpEventService);
 
 
@@ -188,7 +188,7 @@ export class MediaViewerComponent implements OnChanges, OnDestroy, AfterContentI
   }
 
   isSupported(): boolean {
-    const supportedTypes = Object.assign({}, MultimediaContentTypes, ConvertibleContentTypes, CoreContentTypes);
+    const supportedTypes = { ...MultimediaContentTypes, ...ConvertibleContentTypes, ...CoreContentTypes };
     return this.contentType !== null && Object.keys(supportedTypes).includes(this.contentType.toUpperCase());
   }
 

@@ -52,7 +52,7 @@ export class CommentSetRenderService {
   }
 
   private height(element: any) {
-    return HtmlTemplatesHelper.getAdjustedBoundingRect(element.form.nativeElement)?.height | 0;
+    return Math.trunc(HtmlTemplatesHelper.getAdjustedBoundingRect(element.form.nativeElement)?.height ?? 0);
   }
 
   private difference(a: number, b: number): number { return Math.abs(a - b); }

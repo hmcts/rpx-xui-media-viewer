@@ -42,6 +42,10 @@ export const initialDocumentState: DocumentState = {
   loaded: false
 };
 
+function roundDown(value: number, step: number): number {
+  return Math.floor(value / step) * step;
+}
+
 export function docReducer (state = initialDocumentState,
                             action: fromActions.DocumentActions): DocumentState {
 
@@ -139,9 +143,6 @@ export function docReducer (state = initialDocumentState,
         const scaleRoundY = scaleRoundYMatch ? parseFloat(scaleRoundYMatch[1]) : 1;
         const baseWidth = widthMatch ? parseFloat(widthMatch[1]) : undefined;
         const baseHeight = heightMatch ? parseFloat(heightMatch[1]) : undefined;
-        function roundDown(value: number, step: number): number {
-          return Math.floor(value / step) * step;
-        }
         const computedWidth = baseWidth !== undefined
           ? roundDown(scaleFactor * baseWidth, scaleRoundX)
           : page.div['clientWidth'];

@@ -18,8 +18,8 @@ import { BookmarksComponent } from './bookmarks/bookmarks.component';
     standalone: false
 })
 export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
-  private viewerEvents = inject(ViewerEventService);
-  private store = inject<Store<BookmarksState>>(Store);
+  private readonly viewerEvents = inject(ViewerEventService);
+  private readonly store = inject<Store<BookmarksState>>(Store);
   private readonly toolbarEvents = inject(ToolbarEventService);
 
 
@@ -38,7 +38,7 @@ export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
   scrollTop: any;
   sidebarOpen: any;
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   @ViewChild('sidebar') sidebarDiv;
 
   ngOnInit(): void {

@@ -21,7 +21,7 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
     standalone: false
 })
 export class CommentSetComponent implements OnInit, OnDestroy, OnChanges {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly commentService = inject(CommentService);
   private readonly renderService = inject(CommentSetRenderService);
   private readonly toolbarEvents = inject(ToolbarEventService);
@@ -36,7 +36,7 @@ export class CommentSetComponent implements OnInit, OnDestroy, OnChanges {
 
   comments: Comment[];
   tags: TagsModel[];
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   public comments$: Observable<Annotation[]>;
   public annoEntities$: Observable<{ [id: string]: Annotation }>;
 

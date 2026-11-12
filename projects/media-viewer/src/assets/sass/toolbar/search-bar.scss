@@ -14,12 +14,35 @@
   button {
     float: right;
   }
-  span {
+  span, output {
     @include govuk-font($size: 16);
     & {
       color: $govuk-secondary-text-colour;
       min-width: 110px;
     }
+  }
+}
+
+.searchbar .searchbar-link-button {
+  float: none;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  @include govuk-typography-common;
+  color: $govuk-link-colour;
+  cursor: pointer;
+
+  &:hover {
+    color: $govuk-link-hover-colour;
+  }
+
+  &:active {
+    color: $govuk-link-active-colour;
+  }
+
+  &:focus {
+    @include govuk-focused-text;
   }
 }
 

@@ -59,7 +59,7 @@ describe('Icp Presenter Service', () => {
   it('should call subscribe if client is presenter', () => {
     spyOn(presenterService, 'subscribe');
 
-    presenterService.update(true);
+    presenterService.subscribe();
 
     expect(presenterService.subscribe).toHaveBeenCalled();
   });
@@ -67,7 +67,7 @@ describe('Icp Presenter Service', () => {
   it('should call unsubscribe if client is not presenter', () => {
     spyOn(presenterService, 'unsubscribe');
 
-    presenterService.update(false);
+    presenterService.unsubscribe();
 
     expect(presenterService.unsubscribe).toHaveBeenCalled();
   });

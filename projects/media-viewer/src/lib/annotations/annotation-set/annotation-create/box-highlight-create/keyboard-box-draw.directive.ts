@@ -18,7 +18,7 @@ export interface CursorPosition {
   standalone: false
 })
 export class KeyboardBoxDrawDirective implements OnDestroy {
-  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
 
   @Input() set enabled(value: boolean) {
@@ -100,14 +100,7 @@ export class KeyboardBoxDrawDirective implements OnDestroy {
     }
 
     if (event.key === 'Tab') {
-      if (this.isDrawing) {
-        this.cancelDrawing();
-      } else {
-        if (this.showCursor) {
-          this.hideCursor();
-        }
-        this.drawingCancelled.emit();
-      }
+      this.cancelInteraction();
       return;
     }
 
@@ -131,14 +124,7 @@ export class KeyboardBoxDrawDirective implements OnDestroy {
       event.preventDefault();
       event.stopPropagation();
 
-      if (this.isDrawing) {
-        this.cancelDrawing();
-      } else {
-        if (this.showCursor) {
-          this.hideCursor();
-        }
-        this.drawingCancelled.emit();
-      }
+      this.cancelInteraction();
       return;
     }
 
@@ -156,6 +142,17 @@ export class KeyboardBoxDrawDirective implements OnDestroy {
 
     event.preventDefault();
     event.stopPropagation();
+  }
+
+  private cancelInteraction(): void {
+    if (this.isDrawing) {
+      this.cancelDrawing();
+      return;
+    }
+    if (this.showCursor) {
+      this.hideCursor();
+    }
+    this.drawingCancelled.emit();
   }
 
   @HostListener('blur')
@@ -237,17 +234,19 @@ export class KeyboardBoxDrawDirective implements OnDestroy {
     const rect = this.elementRef.nativeElement.getBoundingClientRect();
 
     switch (event.key) {
-      case 'ArrowRight':
+      case 'ArrowRight': {
         const maxWidth = rect.width - this.drawStartX;
         this.currentWidth = Math.min(maxWidth, this.currentWidth + increment);
         break;
+      }
       case 'ArrowLeft':
         this.currentWidth = Math.max(this.minBoxSize, this.currentWidth - increment);
         break;
-      case 'ArrowDown':
+      case 'ArrowDown': {
         const maxHeight = rect.height - this.drawStartY;
         this.currentHeight = Math.min(maxHeight, this.currentHeight + increment);
         break;
+      }
       case 'ArrowUp':
         this.currentHeight = Math.max(this.minBoxSize, this.currentHeight - increment);
         break;

@@ -16,10 +16,10 @@ import { Subscription } from 'rxjs';
     standalone: false
 })
 export class RotationPersistDirective implements OnInit, OnDestroy {
-  private el = inject(ElementRef);
-  private store = inject<Store<fromStore.DocumentState>>(Store);
+  private readonly el = inject(ElementRef);
+  private readonly store = inject<Store<fromStore.DocumentState>>(Store);
   readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
-  private toolbarEvents = inject(ToolbarEventService);
+  private readonly toolbarEvents = inject(ToolbarEventService);
 
 
   documentId: string;

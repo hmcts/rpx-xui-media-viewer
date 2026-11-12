@@ -20,7 +20,7 @@ export class IcpService implements OnDestroy {
   private readonly socketService = inject(IcpUpdateService);
   private readonly presenterSubscriptions = inject(IcpPresenterService);
   private readonly followerSubscriptions = inject(IcpFollowerService);
-  private store = inject<Store<IcpState>>(Store);
+  private readonly store = inject<Store<IcpState>>(Store);
   private readonly icpEventService = inject(IcpEventService);
 
 
@@ -66,8 +66,13 @@ export class IcpService implements OnDestroy {
     this.sessionSubscription.add(this.store.pipe(select(fromIcpSelectors.getClient)).subscribe(client => this.client = client));
     this.sessionSubscription.add(this.store.pipe(select(fromIcpSelectors.isPresenter)).subscribe(isPresenter => {
       this.isPresenter = isPresenter;
-      this.presenterSubscriptions.update(isPresenter);
-      this.followerSubscriptions.update(!isPresenter);
+      if (isPresenter) {
+        this.followerSubscriptions.unsubscribe();
+        this.presenterSubscriptions.subscribe();
+      } else {
+        this.presenterSubscriptions.unsubscribe();
+        this.followerSubscriptions.subscribe();
+      }
     }));
     this.sessionSubscription.add(this.socketService.clientDisconnected().subscribe(cli => this.clientDisconnected(cli)));
     this.sessionSubscription.add(this.socketService.presenterUpdated().subscribe(pres => {
@@ -79,8 +84,8 @@ export class IcpService implements OnDestroy {
   }
 
   unsubscribeSession() {
-    this.presenterSubscriptions.update(false);
-    this.followerSubscriptions.update(false);
+    this.presenterSubscriptions.unsubscribe();
+    this.followerSubscriptions.unsubscribe();
     this.sessionSubscription.unsubscribe();
   }
 

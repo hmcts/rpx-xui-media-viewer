@@ -104,49 +104,38 @@ export class StoreUtils {
       const tagFilterApplied = Object.keys(filters.tagFilters)
         .filter(key => filters.tagFilters[key] === true).length;
       const dateFilterApplied = (filters.dateRangeFrom || filters.dateRangeTo);
-      const filteredComments = comments.filter(comment => {
-        let hasTagFilter = false;
-        let hasDateFilter = false;
-        // check tags
-        if (filters.hasOwnProperty('tagFilters')) {
-          Object.keys(filters.tagFilters).forEach(filter => {
-            const label = filters.tagFilters[filter];
-            if (label) {
-              return comment.tags.forEach(tag => {
-                if (tag.name === filter && !hasTagFilter) {
-                  hasTagFilter = true;
-                }
-              });
-            }});
-        }
-        // check for dates
-        if (dateFilterApplied) {
-          const commentDate = moment(comment.lastModifiedDate);
-          const dateFrom =  filters.dateRangeFrom !== null ? moment(filters.dateRangeFrom) : undefined;
-          const dateTo = filters.dateRangeTo !== null ? moment(filters.dateRangeTo) : undefined;
-
-          if (dateTo && dateFrom) {
-            if (commentDate > dateFrom && commentDate < dateTo) {
-              hasDateFilter = true;
-            }
-          }
-          if (dateTo && !dateFrom) {
-            if (commentDate <= dateTo) {
-              hasDateFilter = true;
-            }
-          }
-          if (dateFrom && !dateTo) {
-            if (commentDate > dateFrom) {
-              hasDateFilter = true;
-            }
-          }
-        }
-
-        return (hasTagFilter || hasDateFilter);
-      });
+      const filteredComments = comments.filter(comment =>
+        this.matchesCommentTags(comment, filters) || this.matchesCommentDate(comment, filters)
+      );
       return (tagFilterApplied || dateFilterApplied) ? filteredComments : comments;
     } else {
       return comments;
     }
   }
+
+  private static matchesCommentTags(comment: Comment, filters: Filters): boolean {
+    if (!Object.prototype.hasOwnProperty.call(filters, 'tagFilters')) {
+      return false;
+    }
+    return Object.keys(filters.tagFilters).some(filter =>
+      filters.tagFilters[filter] && comment.tags.some(tag => tag.name === filter)
+    );
+  }
+
+  private static matchesCommentDate(comment: Comment, filters: Filters): boolean {
+    if (!(filters.dateRangeFrom || filters.dateRangeTo)) {
+      return false;
+    }
+    const commentDate = moment(comment.lastModifiedDate);
+    const dateFrom = filters.dateRangeFrom !== null ? moment(filters.dateRangeFrom) : undefined;
+    const dateTo = filters.dateRangeTo !== null ? moment(filters.dateRangeTo) : undefined;
+    if (dateTo && dateFrom) {
+      return commentDate > dateFrom && commentDate < dateTo;
+    }
+    if (dateTo) {
+      return commentDate <= dateTo;
+    }
+    return !!dateFrom && commentDate > dateFrom;
+  }
+
 }

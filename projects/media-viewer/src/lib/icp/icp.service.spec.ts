@@ -19,8 +19,8 @@ describe('Icp Service', () => {
   let presenterService: IcpPresenterService;
   let followerService: IcpFollowerService;
   const mockParticipantService = {
-    update: () => {
-    }
+    subscribe: () => {},
+    unsubscribe: () => {}
   } as any;
   const mockUpdateService = {
     clientDisconnected: () => of('client'),
@@ -53,8 +53,8 @@ describe('Icp Service', () => {
       providers: [IcpService,
         SocketService,
         { provide: IcpUpdateService, useValue: mockUpdateService },
-        { provide: IcpPresenterService, useValue: mockParticipantService },
-        { provide: IcpFollowerService, useValue: mockParticipantService },
+        { provide: IcpPresenterService, useValue: { ...mockParticipantService } },
+        { provide: IcpFollowerService, useValue: { ...mockParticipantService } },
       ]
     });
     service = TestBed.inject(IcpService);
@@ -119,7 +119,8 @@ describe('Icp Service', () => {
       spyOn(service, 'becomePresenter');
       spyOn(service, 'stopPresenting');
       spyOn(service, 'leavePresentation');
-      spyOn(presenterService, 'update');
+      spyOn(presenterService, 'subscribe');
+      spyOn(followerService, 'unsubscribe');
       spyOn(service, 'clientDisconnected');
 
       service.setUpSessionSubscriptions();
@@ -137,8 +138,8 @@ describe('Icp Service', () => {
       expect(service.presenter).toEqual(participant);
       expect(service.client).toEqual(participant);
       expect(service.isPresenter).toEqual(true);
-      expect(presenterService.update).toHaveBeenCalled();
-      expect(followerService.update).toHaveBeenCalled();
+      expect(presenterService.subscribe).toHaveBeenCalled();
+      expect(followerService.unsubscribe).toHaveBeenCalled();
       expect(service.clientDisconnected).toHaveBeenCalled();
     }))
   );
@@ -147,12 +148,13 @@ describe('Icp Service', () => {
     service.sessionSubscription = new Subscription();
 
     spyOn(service.sessionSubscription, 'unsubscribe');
-    spyOn(presenterService, 'update');
+    spyOn(presenterService, 'unsubscribe');
+    spyOn(followerService, 'unsubscribe');
 
     service.unsubscribeSession();
 
-    expect(presenterService.update).toHaveBeenCalled();
-    expect(followerService.update).toHaveBeenCalled();
+    expect(presenterService.unsubscribe).toHaveBeenCalled();
+    expect(followerService.unsubscribe).toHaveBeenCalled();
     expect(service.sessionSubscription.unsubscribe).toHaveBeenCalled();
   });
 

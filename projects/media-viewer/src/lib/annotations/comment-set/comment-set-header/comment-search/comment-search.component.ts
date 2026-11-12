@@ -11,7 +11,7 @@ import * as fromActions from '../../../../store/actions/annotation.actions';
     standalone: false
 })
 export class CommentSearchComponent implements AfterViewInit, OnDestroy {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
 
 
   @Input() public annotations: Annotation[];
