@@ -21,6 +21,14 @@ export class ConfirmActionDialogComponent implements AfterViewInit {
     this.icpEventService.leavingSession.next(false);
   }
 
+  onDialogKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.onCancel();
+    }
+  }
+
   onConfirm() {
     this.icpEventService.confirmExit();
     this.icpEventService.leavingSession.next(false);

@@ -360,7 +360,7 @@ export class KeyboardTextHighlightDirective implements OnDestroy {
     while (currentElement && currentElement.offsetParent) {
       currentElement = currentElement.offsetParent as HTMLElement;
       if (currentElement.dataset) {
-        const page = parseInt(currentElement.dataset.pageNumber, 10);
+        const page = Number.parseInt(currentElement.dataset.pageNumber, 10);
         if (page) {
           return page;
         }

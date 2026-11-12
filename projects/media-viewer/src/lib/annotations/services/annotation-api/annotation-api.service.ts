@@ -48,7 +48,7 @@ export class AnnotationApiService {
   }
 
   private extractComments(annotations: Annotation[]) {
-    return annotations.map(a => a.comments).flat();
+    return annotations.flatMap(a => a.comments);
   }
 
   public deleteAnnotation(annotationId: string): Observable<null> {

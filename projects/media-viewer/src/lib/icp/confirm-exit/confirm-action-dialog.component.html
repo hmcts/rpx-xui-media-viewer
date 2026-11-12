@@ -2,6 +2,7 @@
   <dialog open id="modal"
     class="modal-content govuk-width-container clearfix"
     (click)="$event.stopPropagation()"
+    (keydown)="onDialogKeyDown($event)"
     #modalContainer
     tabIndex="-1"
     aria-modal="true"
