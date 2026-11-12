@@ -28,7 +28,7 @@ describe('HighlightCreateDirective', () => {
   hostElement.scrollLeft = 20;
   hostElement.scrollTop = 30;
   const event = { clientX: 50, clientY: 40, preventDefault: () => { } };
-  const mouseEvent = { target: { offsetParent: { offsetParent: { offsetParent: { getAttribute: () => 1 } } } } } as any;
+  const mouseEvent = { target: { offsetParent: { offsetParent: { offsetParent: { dataset: { pageNumber: '1' } } } } } } as any;
   const page = {
     scaleRotation: { rotation: 0, scale: 1 },
     styles: { height: 1122, left: 341, width: 793 }
@@ -68,7 +68,7 @@ describe('HighlightCreateDirective', () => {
   it('should unsubscribe all subscriptions on ngOnDestroy', () => {
     const sub1 = new Subscription();
     const sub2 = new Subscription();
-    directive['$subscriptions'] = [sub1, sub2];
+    directive['$subscriptions'].push(sub1, sub2);
     spyOn(sub1, 'unsubscribe');
     spyOn(sub2, 'unsubscribe');
 
@@ -124,7 +124,7 @@ describe('HighlightCreateDirective', () => {
 
     directive.onMouseUp(mockEvent);
 
-    expect(highlightService.applyRotation).toHaveBeenCalledWith(height, width, 20, 10, 50, 20, 0, 1);
+    expect(highlightService.applyRotation).toHaveBeenCalledWith({ pageHeight: height, pageWidth: width, offsetHeight: 20, offsetWidth: 10, offsetTop: 50, offsetLeft: 20, rotate: 0, zoom: 1 });
     expect(viewerEvents.textSelected)
       .toHaveBeenCalledWith({ page: 1, rectangles: [{ id, ...rectangle }] });
   });
@@ -182,7 +182,7 @@ describe('HighlightCreateDirective', () => {
 
     directive.onMouseUp(mockEvent);
 
-    expect(highlightService.applyRotation).toHaveBeenCalledWith(height, width, 20, 10, 50, 20, 0, 1);
+    expect(highlightService.applyRotation).toHaveBeenCalledWith({ pageHeight: height, pageWidth: width, offsetHeight: 20, offsetWidth: 10, offsetTop: 50, offsetLeft: 20, rotate: 0, zoom: 1 });
     expect(viewerEvents.textSelected)
       .toHaveBeenCalledWith({ page: 1, rectangles: [{ id, ...rectangle }] });
   });

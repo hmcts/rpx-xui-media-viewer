@@ -68,7 +68,7 @@ describe('DocumentReducer', () => {
     expect(state.redactedDocumentInfo).toEqual(payload);
   });
 
-  it('should set redacted document info', () => {
+  it('should reset redacted document info', () => {
     const payload = { blob: 'blob' as any, filename: 'file-name' };
     let state = fromRedaction.redactionReducer({ ...redactionState }, new RedactSuccess(payload));
     state = fromRedaction.redactionReducer({ ...state }, new ResetRedactedDocument());

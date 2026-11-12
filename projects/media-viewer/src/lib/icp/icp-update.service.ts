@@ -5,7 +5,7 @@ import { IcpEvents } from './icp.events';
 
 @Injectable({ providedIn: 'root' })
 export class IcpUpdateService {
-  private socket = inject(SocketService);
+  private readonly socket = inject(SocketService);
 
 
   session: IcpSession;

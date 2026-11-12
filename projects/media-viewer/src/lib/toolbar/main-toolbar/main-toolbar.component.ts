@@ -154,53 +154,55 @@ export class MainToolbarComponent implements OnInit, OnDestroy, AfterViewInit {
       return;
     }
 
-    let didClose = false;
+    if (this.closePanelForTarget(targetId)) {
+      stopEvent();
+    }
+  }
 
+  private closePanelForTarget(targetId: string): boolean {
     switch (targetId) {
       case 'mvSearchBtn':
         if (!this.toolbarEvents.searchBarHidden.getValue()) {
           this.closeSearchBarAndFocus();
-          didClose = true;
+          return true;
         }
         break;
       case 'mvIndexBtn':
         if (this.isIndexOpen) {
           this.toolbarEvents.toggleSideBar(false);
           this.isIndexOpen = false;
-          didClose = true;
+          return true;
         }
         break;
       case 'mvBookmarksBtn':
         if (this.isBookmarksOpen) {
           this.toolbarEvents.toggleSideBar(false);
           this.isBookmarksOpen = false;
-          didClose = true;
+          return true;
         }
         break;
       case 'mvHighlightBtn':
         if (this.isHighlightOpen) {
           this.toolbarEvents.toggleHighlightToolbar();
-          didClose = true;
+          return true;
         }
         break;
       case 'mvRedactBtn':
         if (this.isRedactOpen) {
           this.toggleRedactBar();
-          didClose = true;
+          return true;
         }
         break;
       case 'mvCommentsBtn':
       case 'commentSubPane0':
         if (this.isCommentsOpen) {
           this.toggleCommentsPanel();
-          didClose = true;
+          return true;
         }
         break;
     }
 
-    if (didClose) {
-      stopEvent();
-    }
+    return false;
   }
 
   private closeSearchBarAndFocus(): void {

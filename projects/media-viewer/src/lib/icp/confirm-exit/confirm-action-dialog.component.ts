@@ -7,7 +7,7 @@ import { IcpEventService } from '../../toolbar/icp-event.service';
     standalone: false
 })
 export class ConfirmActionDialogComponent implements AfterViewInit {
-  private icpEventService = inject(IcpEventService);
+  private readonly icpEventService = inject(IcpEventService);
 
   @ViewChild('modalContainer') modalContainer: ElementRef;
 
@@ -19,6 +19,14 @@ export class ConfirmActionDialogComponent implements AfterViewInit {
 
   onCancel() {
     this.icpEventService.leavingSession.next(false);
+  }
+
+  onDialogKeyDown(event: KeyboardEvent): void {
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      event.stopPropagation();
+      this.onCancel();
+    }
   }
 
   onConfirm() {

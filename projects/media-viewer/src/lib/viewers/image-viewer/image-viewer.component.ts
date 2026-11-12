@@ -18,12 +18,12 @@ import { ViewerEventService } from '../viewer-event.service';
     standalone: false
 })
 export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly printService = inject(PrintService);
   private readonly viewerUtilService = inject(ViewerUtilService);
   readonly toolbarEvents = inject(ToolbarEventService);
   readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
-  private viewerEvents = inject(ViewerEventService);
+  private readonly viewerEvents = inject(ViewerEventService);
 
 
   @Input() url: string;
@@ -43,7 +43,7 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   rotation = 0;
   zoom = 1;
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   private viewerException: ViewerException;
   private response: Subscription;
 

@@ -133,6 +133,83 @@ describe('PdfJsWrapper', () => {
     expect(documentLoadedSpy).toHaveBeenCalledTimes(1);
   }));
 
+  it('waits for every nested outline page number before publishing the outline', fakeAsync(() => {
+    const grandchild = { dest: ['grandchild'], items: [] } as any;
+    const child = { dest: ['child'], items: [grandchild] } as any;
+    const root = { dest: ['root'], items: [child] } as any;
+    let resolveGrandchild: (pageIndex: number) => void;
+    const grandchildPage = new Promise<number>(resolve => resolveGrandchild = resolve);
+    const mockDocument = {
+      numPages: 10,
+      getOutline: () => [root],
+      getPageIndex: ref => ref === 'grandchild' ? grandchildPage : Promise.resolve(ref === 'child' ? 1 : 0),
+      getMetadata: () => ({ info: { Title: 'Title' } })
+    };
+    spyOn(wrapper, 'createLoadingTask').and.returnValue({ promise: Promise.resolve(mockDocument) });
+    const published = spyOn(wrapper.outlineLoaded, 'next');
+
+    wrapper.loadDocument('document-url');
+    tick();
+    expect(published).not.toHaveBeenCalled();
+
+    resolveGrandchild(2);
+    tick();
+    expect(published).toHaveBeenCalledTimes(1);
+    const outline = published.calls.mostRecent().args[0][0];
+    expect(outline.pageNumber).toBe(1);
+    expect(outline.items[0].pageNumber).toBe(2);
+    expect(outline.items[0].items[0].pageNumber).toBe(3);
+  }));
+
+  it('reports nested outline failures without publishing an incomplete outline', fakeAsync(() => {
+    const error = new Error('Nested page lookup failed');
+    const child = { dest: ['child'], items: [] };
+    const mockDocument = {
+      numPages: 10,
+      getOutline: () => [{ dest: ['root'], items: [child] }],
+      getPageIndex: ref => ref === 'child' ? Promise.reject(error) : Promise.resolve(0)
+    };
+    spyOn(wrapper, 'createLoadingTask').and.returnValue({ promise: Promise.resolve(mockDocument) });
+    const failed = spyOn(wrapper.documentLoadFailed, 'next');
+    const published = spyOn(wrapper.outlineLoaded, 'next');
+
+    wrapper.loadDocument('document-url');
+    tick();
+
+    expect(failed).toHaveBeenCalledOnceWith(error);
+    expect(published).not.toHaveBeenCalled();
+  }));
+
+  it('loads outline groups, named destinations, page indices and external links', fakeAsync(() => {
+    const pageReference = { num: 42, gen: 0 };
+    const named = { dest: 'chapter', items: [] };
+    const direct = { dest: [0, { name: 'Fit' }], items: [] };
+    const external = { dest: null, url: 'https://example.com', items: [] };
+    const missing = { dest: 'missing', items: [] };
+    const mockDocument = {
+      numPages: 10,
+      getOutline: () => [{ dest: null, items: [named, direct, external, missing] }],
+      getDestination: jasmine.createSpy('getDestination').and.callFake(name =>
+        Promise.resolve(name === 'chapter' ? [pageReference, { name: 'Fit' }] : null)),
+      getPageIndex: jasmine.createSpy('getPageIndex').and.returnValue(Promise.resolve(3)),
+      getMetadata: () => ({ info: { Title: 'Title' } })
+    };
+    spyOn(wrapper, 'createLoadingTask').and.returnValue({ promise: Promise.resolve(mockDocument) });
+    const published = spyOn(wrapper.outlineLoaded, 'next');
+    const failed = spyOn(wrapper.documentLoadFailed, 'next');
+
+    wrapper.loadDocument('document-url');
+    tick();
+
+    expect(failed).not.toHaveBeenCalled();
+    expect(published).toHaveBeenCalledTimes(1);
+    const outline = published.calls.mostRecent().args[0][0];
+    expect(outline.pageNumber).toBeUndefined();
+    expect(outline.items.map(item => item.pageNumber)).toEqual([4, 1, undefined, undefined]);
+    expect(mockDocument.getPageIndex).toHaveBeenCalledOnceWith(pageReference);
+    expect(outline.items[2].url).toBe('https://example.com');
+  }));
+
   it('loads a document with exception', fakeAsync(() => {
     const pdfViewerSpy = spyOn(mockViewer, 'setDocument');
     const newDocumentLoadInitSpy = spyOn(wrapper.documentLoadInit, 'next').and.callThrough();
@@ -154,6 +231,20 @@ describe('PdfJsWrapper', () => {
     wrapper.rotate(90);
 
     expect(mockViewer.pagesRotation).toEqual(90);
+  });
+
+  it('preserves rotation return values when PDF.js normalises the stored angle', () => {
+    let storedRotation = 0;
+    Object.defineProperty(mockViewer, 'pagesRotation', {
+      configurable: true,
+      get: () => storedRotation,
+      set: (angle: number) => storedRotation = ((angle % 360) + 360) % 360
+    });
+
+    expect(wrapper.rotate(-90)).toBe(-90);
+    expect(mockViewer.pagesRotation).toBe(270);
+    expect(wrapper.resetRotation(450)).toBe(450);
+    expect(mockViewer.pagesRotation).toBe(90);
   });
 
   it('should set the zoomValue only if the zoom name includes XYZ', () => {

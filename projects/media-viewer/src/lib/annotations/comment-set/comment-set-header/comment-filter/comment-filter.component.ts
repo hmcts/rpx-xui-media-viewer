@@ -16,8 +16,8 @@ import {auditTime, tap} from 'rxjs/operators';
     standalone: false
 })
 export class CommentFilterComponent implements OnInit, OnDestroy {
-  private store = inject<Store<fromStore.State>>(Store);
-  private fb = inject(UntypedFormBuilder);
+  private readonly store = inject<Store<fromStore.State>>(Store);
+  private readonly fb = inject(UntypedFormBuilder);
 
   tagGroup: UntypedFormGroup;
   $subscriptions: Subscription;

@@ -16,8 +16,8 @@ import { AnnotationSet } from '../../annotation-set.model';
 
 @Injectable({ providedIn: 'root' })
 export class HighlightCreateService {
-  private toolBarEvents = inject(ToolbarEventService);
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly toolBarEvents = inject(ToolbarEventService);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
 
 
   saveAnnotation(rectangles: Rectangle[], page: number, annotationId?: string) {
@@ -68,7 +68,16 @@ export class HighlightCreateService {
   }
 
 
-  applyRotation(pageHeight, pageWidth, offsetHeight, offsetWidth, offsetTop, offsetLeft, rotate, zoom) {
+  applyRotation({ pageHeight, pageWidth, offsetHeight, offsetWidth, offsetTop, offsetLeft, rotate, zoom }: {
+    pageHeight: number;
+    pageWidth: number;
+    offsetHeight: number;
+    offsetWidth: number;
+    offsetTop: number;
+    offsetLeft: number;
+    rotate: number;
+    zoom: number;
+  }) {
     const { x, y, width, height } = {
       x: +(offsetLeft / zoom).toFixed(2),
       y: +(offsetTop / zoom).toFixed(2),

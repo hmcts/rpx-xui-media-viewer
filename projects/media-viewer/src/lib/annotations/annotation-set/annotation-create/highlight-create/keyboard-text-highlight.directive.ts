@@ -19,11 +19,10 @@ export interface CursorPosition {
   standalone: false
 })
 export class KeyboardTextHighlightDirective implements OnDestroy {
-  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
 
   @Input() set enabled(value: boolean) {
-    const wasEnabled = this._enabled;
     this._enabled = value;
   }
   get enabled(): boolean {
@@ -258,22 +257,7 @@ export class KeyboardTextHighlightDirective implements OnDestroy {
     const startNode = range.startContainer;
     const startOffset = range.startOffset;
 
-    let endNode: Node | null = null;
-    let endOffset = 0;
-
-    if ((document as any).caretPositionFromPoint) {
-      const caretPosition = (document as any).caretPositionFromPoint(this.selectionEndX, this.selectionEndY);
-      if (caretPosition) {
-        endNode = caretPosition.offsetNode;
-        endOffset = caretPosition.offset;
-      }
-    } else if ((document as any).caretRangeFromPoint) {
-      const caretRange = (document as any).caretRangeFromPoint(this.selectionEndX, this.selectionEndY);
-      if (caretRange) {
-        endNode = caretRange.startContainer;
-        endOffset = caretRange.startOffset;
-      }
-    }
+    let { endNode, endOffset } = this.getSelectionEnd();
 
     if (endNode) {
       const range = document.createRange();
@@ -304,6 +288,27 @@ export class KeyboardTextHighlightDirective implements OnDestroy {
         endOffset
       );
     }
+  }
+
+  private getSelectionEnd(): { endNode: Node | null; endOffset: number } {
+    let endNode: Node | null = null;
+    let endOffset = 0;
+
+    if ((document as any).caretPositionFromPoint) {
+      const caretPosition = (document as any).caretPositionFromPoint(this.selectionEndX, this.selectionEndY);
+      if (caretPosition) {
+        endNode = caretPosition.offsetNode;
+        endOffset = caretPosition.offset;
+      }
+    } else if ((document as any).caretRangeFromPoint) {
+      const caretRange = (document as any).caretRangeFromPoint(this.selectionEndX, this.selectionEndY);
+      if (caretRange) {
+        endNode = caretRange.startContainer;
+        endOffset = caretRange.startOffset;
+      }
+    }
+
+    return { endNode, endOffset };
   }
 
   private confirmTextSelection(): void {
@@ -354,8 +359,8 @@ export class KeyboardTextHighlightDirective implements OnDestroy {
     let currentElement = this.elementRef.nativeElement;
     while (currentElement && currentElement.offsetParent) {
       currentElement = currentElement.offsetParent as HTMLElement;
-      if (currentElement.getAttribute) {
-        const page = parseInt(currentElement.getAttribute('data-page-number'), 10);
+      if (currentElement.dataset) {
+        const page = Number.parseInt(currentElement.dataset.pageNumber, 10);
         if (page) {
           return page;
         }

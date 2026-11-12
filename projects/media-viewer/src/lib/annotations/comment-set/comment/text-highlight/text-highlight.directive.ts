@@ -5,7 +5,7 @@ import { AfterViewChecked, Directive, ElementRef, Input, inject } from '@angular
     standalone: false
 })
 export class TextHighlightDirective implements AfterViewChecked {
-  private element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
 
 
   @Input() textToHighlight: string;

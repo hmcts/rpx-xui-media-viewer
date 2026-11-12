@@ -28,7 +28,8 @@ export function redactionReducer(
 ): RedactionState {
   switch (action.type) {
 
-    case fromRedaction.LOAD_REDACTIONS: {
+    case fromRedaction.LOAD_REDACTIONS:
+    case fromRedaction.UNMARK_ALL_SUCCESS: {
       return {
         ...state,
         ...initialRedactionState
@@ -125,12 +126,6 @@ export function redactionReducer(
       };
     }
 
-    case fromRedaction.UNMARK_ALL_SUCCESS: {
-      return {
-        ...state,
-        ...initialRedactionState
-      };
-    }
   }
 
   return state;

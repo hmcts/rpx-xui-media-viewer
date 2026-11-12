@@ -353,7 +353,7 @@ describe('BoxHighlightCreateComponent', () => {
 
         component.initHighlight(event);
 
-        expect(highlightService.applyRotation).toHaveBeenCalledWith(400, 200, 400, 200, 0, 0, 0, 1);
+        expect(highlightService.applyRotation).toHaveBeenCalledWith({ pageHeight: 400, pageWidth: 200, offsetHeight: 400, offsetWidth: 200, offsetTop: 0, offsetLeft: 0, rotate: 0, zoom: 1 });
 
         expect(component.saveSelection.emit).toHaveBeenCalled();
         expect(component.drawStartX).toBe(-1);

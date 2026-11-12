@@ -7,7 +7,7 @@ export type KeyboardNavOrientation = 'horizontal' | 'vertical';
   standalone: false
 })
 export class KeyboardNavDirective implements OnInit, OnDestroy {
-  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
   @Input('mvKeyboardNav') orientation: KeyboardNavOrientation = 'horizontal';
   @Output() itemFocused = new EventEmitter<HTMLElement>();
@@ -119,96 +119,45 @@ export class KeyboardNavDirective implements OnInit, OnDestroy {
       return;
     }
 
-    let handled = false;
-    let isArrowKey = false;
-
-    switch (event.key) {
-      case 'Tab':
-        if (this.isUsingArrowKeys) {
-          this.isUsingArrowKeys = false;
-          this.focusableItems.forEach(item => {
-            item.setAttribute('tabindex', '0');
-          });
-        }
-        return;
-      case 'ArrowRight':
-        if (this.orientation === 'horizontal') {
-          isArrowKey = true;
-          if (!this.isUsingArrowKeys) {
-            this.isUsingArrowKeys = true;
-            this.applyArrowKeyTabindex();
-          }
-          this.focusNext(currentIndex);
-          handled = true;
-        }
-        break;
-
-      case 'ArrowLeft':
-        if (this.orientation === 'horizontal') {
-          isArrowKey = true;
-          if (!this.isUsingArrowKeys) {
-            this.isUsingArrowKeys = true;
-            this.applyArrowKeyTabindex();
-          }
-          this.focusPrevious(currentIndex);
-          handled = true;
-        }
-        break;
-
-      case 'ArrowDown':
-        if (this.orientation === 'vertical') {
-          isArrowKey = true;
-          if (!this.isUsingArrowKeys) {
-            this.isUsingArrowKeys = true;
-            this.applyArrowKeyTabindex();
-          }
-          this.focusNext(currentIndex);
-          handled = true;
-        }
-        break;
-
-      case 'ArrowUp':
-        if (this.orientation === 'vertical') {
-          isArrowKey = true;
-          if (!this.isUsingArrowKeys) {
-            this.isUsingArrowKeys = true;
-            this.applyArrowKeyTabindex();
-          }
-          this.focusPrevious(currentIndex);
-          handled = true;
-        }
-        break;
-
-      case 'Home':
-        isArrowKey = true;
-        if (!this.isUsingArrowKeys) {
-          this.isUsingArrowKeys = true;
-          this.applyArrowKeyTabindex();
-        }
-        this.focusFirst();
-        handled = true;
-        break;
-
-      case 'End':
-        isArrowKey = true;
-        if (!this.isUsingArrowKeys) {
-          this.isUsingArrowKeys = true;
-          this.applyArrowKeyTabindex();
-        }
-        this.focusLast();
-        handled = true;
-        break;
-
-      case 'Enter':
-      case ' ':
-        this.activateItem(target);
-        handled = true;
-        break;
+    if (event.key === 'Tab') {
+      if (this.isUsingArrowKeys) {
+        this.isUsingArrowKeys = false;
+        this.focusableItems.forEach(item => item.setAttribute('tabindex', '0'));
+      }
+      return;
     }
 
-    if (handled) {
-      event.preventDefault();
-      event.stopPropagation();
+    const navigation = this.getNavigationAction(event.key, currentIndex);
+    if (navigation) {
+      if (!this.isUsingArrowKeys) {
+        this.isUsingArrowKeys = true;
+        this.applyArrowKeyTabindex();
+      }
+      navigation();
+    } else if (event.key === 'Enter' || event.key === ' ') {
+      this.activateItem(target);
+    } else {
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+  }
+
+  private getNavigationAction(key: string, currentIndex: number): (() => void) | undefined {
+    switch (key) {
+      case 'ArrowRight':
+        return this.orientation === 'horizontal' ? () => this.focusNext(currentIndex) : undefined;
+      case 'ArrowLeft':
+        return this.orientation === 'horizontal' ? () => this.focusPrevious(currentIndex) : undefined;
+      case 'ArrowDown':
+        return this.orientation === 'vertical' ? () => this.focusNext(currentIndex) : undefined;
+      case 'ArrowUp':
+        return this.orientation === 'vertical' ? () => this.focusPrevious(currentIndex) : undefined;
+      case 'Home':
+        return () => this.focusFirst();
+      case 'End':
+        return () => this.focusLast();
     }
   }
 

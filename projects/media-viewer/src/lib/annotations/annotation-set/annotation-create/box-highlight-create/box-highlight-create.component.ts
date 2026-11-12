@@ -144,7 +144,7 @@ export class BoxHighlightCreateComponent implements OnInit, OnDestroy {
   createHighlight() {
     if (this.height / this.zoom > 5 || this.width / this.zoom > 5) {
       let rectangle = this.highlightService
-        .applyRotation(this.pageHeight, this.pageWidth, this.height, this.width, this.top, this.left, this.rotate, this.zoom);
+        .applyRotation({ pageHeight: this.pageHeight, pageWidth: this.pageWidth, offsetHeight: this.height, offsetWidth: this.width, offsetTop: this.top, offsetLeft: this.left, rotate: this.rotate, zoom: this.zoom });
       const annotationId = uuid();
       rectangle = { id: annotationId, ...rectangle } as any;
       this.saveSelection.emit({ rectangles: [rectangle], page: this.page, annotationId });

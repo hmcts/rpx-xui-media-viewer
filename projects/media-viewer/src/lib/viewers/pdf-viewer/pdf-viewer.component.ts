@@ -31,13 +31,13 @@ import { HighlightCreateDirective } from '../../annotations/annotation-set/annot
     standalone: false
 })
 export class PdfViewerComponent implements AfterContentInit, OnChanges, OnDestroy {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
-  private icpStore = inject<Store<IcpState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly icpStore = inject<Store<IcpState>>(Store);
   private readonly pdfJsWrapperFactory = inject(PdfJsWrapperFactory);
   private readonly printService = inject(PrintService);
   readonly toolbarEvents = inject(ToolbarEventService);
   private readonly viewerEvents = inject(ViewerEventService);
-  private icpService = inject(IcpService);
+  private readonly icpService = inject(IcpService);
   readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
   private readonly icpEventService = inject(IcpEventService);
 
@@ -100,7 +100,7 @@ export class PdfViewerComponent implements AfterContentInit, OnChanges, OnDestro
     this.drawMode = toolbarEvents.drawModeSubject;
   }
 
-  async ngAfterContentInit(): Promise<void> {
+  ngAfterContentInit(): void {
     this.pdfWrapper.documentLoadProgress.subscribe(v => this.onDocumentLoadProgress(v));
     this.pdfWrapper.documentLoaded.subscribe(() => this.onDocumentLoaded());
     this.pdfWrapper.documentLoadFailed.subscribe((error) => this.onDocumentLoadFailed(error));
@@ -326,8 +326,8 @@ export class PdfViewerComponent implements AfterContentInit, OnChanges, OnDestro
     const isTextLayer = elementTo?.classList.contains('textLayer');
 
     if (isTextLayer) {
-      const focusedPageElement = elementTo.closest('[data-page-number]');
-      const focusedPageNumber = focusedPageElement ? parseInt(focusedPageElement.getAttribute('data-page-number')) : null;
+      const focusedPageElement = elementTo.closest<HTMLElement>('[data-page-number]');
+      const focusedPageNumber = focusedPageElement ? parseInt(focusedPageElement.dataset.pageNumber) : null;
       const currentPage = this.getCurrentPageNumber();
 
       if (focusedPageNumber !== null && focusedPageNumber !== currentPage) {
