@@ -102,7 +102,7 @@
     "govuk-frontend": "^4.9.0",
     "hammerjs": "^2.0.8",
     "moment-timezone": "^0.6.2",
-    "mutable-div": "2.0.0",
+    "mutable-div": "^2.0.0",
     "ngx-chips": "3.0.0",
     "nunjucks": "^3.2.4",
     "otp": "2.0.1",

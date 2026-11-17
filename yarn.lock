@@ -3046,7 +3046,7 @@ __metadata:
     karma-jasmine: "npm:^5.0.0"
     karma-jasmine-html-reporter: "npm:^2.0.0"
     moment-timezone: "npm:^0.6.2"
-    mutable-div: "npm:2.0.0"
+    mutable-div: "npm:^2.0.0"
     ng-packagr: "npm:20"
     ngx-chips: "npm:3.0.0"
     node-html-parser: "npm:^6.1.5"
@@ -12500,7 +12500,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"mutable-div@npm:2.0.0":
+"mutable-div@npm:^2.0.0":
   version: 2.0.0
   resolution: "mutable-div@npm:2.0.0"
   dependencies:
