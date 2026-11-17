@@ -157,6 +157,8 @@ test.describe('Bookmarks', () => {
   });
 
   test('adds thirty bookmarks without losing the bookmark input contract', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+    // 30 sequential add/save round trips: budget for slow CI instead of racing the default 60s limit.
+    test.slow();
     await mediaViewer.bookmarks.stubApi();
     await mediaViewer.openDocument(mediaAssets.pdf);
     await mediaViewer.bookmarks.open();

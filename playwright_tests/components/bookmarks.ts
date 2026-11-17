@@ -115,7 +115,10 @@ export class Bookmarks {
         request.url().includes('/em-anno/bookmarks') && request.method() === 'PUT');
       await draft.locator('.bookmark__input').fill(name);
       await draft.locator('.bookmark__save').click();
-      return (await updateRequest).postDataJSON() as Bookmark;
+      const saved = (await updateRequest).postDataJSON() as Bookmark;
+      // Let the draft close before returning so a following add() cannot race the previous save.
+      await this.nodes.locator('.bookmark__input:visible').waitFor({ state: 'hidden' });
+      return saved;
     }
     return undefined;
   }
