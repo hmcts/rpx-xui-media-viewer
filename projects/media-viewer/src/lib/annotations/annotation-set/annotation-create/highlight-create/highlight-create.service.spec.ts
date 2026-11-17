@@ -1,5 +1,8 @@
 import { HighlightCreateService } from './highlight-create.service';
 import { of } from 'rxjs';
+import { Injector, runInInjectionContext } from '@angular/core';
+import { Store } from '@ngrx/store';
+import { ToolbarEventService } from '../../../../toolbar/toolbar-event.service';
 
 describe('HighlightCreateService', () => {
 
@@ -18,7 +21,13 @@ describe('HighlightCreateService', () => {
   let service: HighlightCreateService;
 
   beforeEach(() => {
-    service = new HighlightCreateService(toolbarEvents, mockStore);
+    service = runInInjectionContext(
+      Injector.create({ providers: [
+        { provide: ToolbarEventService, useValue: toolbarEvents },
+        { provide: Store, useValue: mockStore }
+      ] }),
+      () => new HighlightCreateService()
+    );
   });
 
 

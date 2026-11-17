@@ -38,21 +38,28 @@ export class Annotations {
     await text.dblclick();
   }
 
-  async drawOnPage(page: Locator): Promise<void> {
-    await this.page.locator('#mvHighlightBtn').click();
+  async drawOnPage(surface: Locator, start = { x: 80, y: 80 }): Promise<void> {
+    if (!await this.drawBoxButton.isVisible()) {
+      await this.page.locator('#mvHighlightBtn').click();
+    }
     await this.drawBoxButton.click();
-    await this.drawRectangle(page);
+    await this.drawRectangle(surface, start);
   }
 
-  private async drawRectangle(page: Locator): Promise<void> {
-    const bounds = await page.boundingBox();
-    if (!bounds) {
-      throw new Error('Media page was not visible for draw-box annotation');
+  private async drawRectangle(surface: Locator, start: { x: number; y: number }): Promise<void> {
+    await surface.waitFor({ state: 'visible' });
+    const bounds = await surface.boundingBox();
+    if (!bounds || bounds.width < start.x + 100 || bounds.height < start.y + 50) {
+      throw new Error('Media page did not reach a drawable size for draw-box annotation');
     }
-    await this.page.mouse.move(bounds.x + 80, bounds.y + 80);
+    await this.page.mouse.move(bounds.x + start.x, bounds.y + start.y);
     await this.page.mouse.down();
-    await this.page.mouse.move(bounds.x + 180, bounds.y + 130);
+    await this.page.mouse.move(bounds.x + start.x + 100, bounds.y + start.y + 50, { steps: 10 });
     await this.page.mouse.up();
+  }
+
+  async deleteSelected(): Promise<void> {
+    await this.contextToolbar.getByRole('button', { name: 'Delete' }).click();
   }
 
   async openSearch(): Promise<void> {

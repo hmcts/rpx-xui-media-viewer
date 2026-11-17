@@ -11,6 +11,16 @@ test.describe('Multimedia playback', () => {
     await expect(player).toHaveAttribute('controls', '');
     await expect.poll(() => player.evaluate((video: HTMLMediaElement) => video.readyState)).toBeGreaterThanOrEqual(2);
     await expect(page.getByText('Use the player to play to the file or')).toBeVisible();
+
+    await player.focus();
+    await page.keyboard.press('Space');
+    await expect.poll(() => player.evaluate((media: HTMLMediaElement) => media.paused)).toBe(false);
+    await expect.poll(() => player.evaluate((media: HTMLMediaElement) => media.currentTime)).toBeGreaterThan(0);
+
+    await page.keyboard.press('Space');
+    await expect.poll(() => player.evaluate((media: HTMLMediaElement) => media.paused)).toBe(true);
+    await page.keyboard.press('Home');
+    await expect.poll(() => player.evaluate((media: HTMLMediaElement) => media.currentTime)).toBeLessThan(0.1);
   });
 
   test('plays, pauses and rewinds an audio fixture through the focused native player', { tag: ['@e2e-functional', '@feature-multimedia'] }, async ({ mediaViewer, page }) => {

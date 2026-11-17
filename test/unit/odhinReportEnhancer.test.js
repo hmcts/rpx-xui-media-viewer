@@ -1,13 +1,12 @@
 'use strict';
 
 const assert = require('node:assert/strict');
-const { execFileSync } = require('node:child_process');
+const fs = require('node:fs');
+const os = require('node:os');
 const path = require('node:path');
 const { test } = require('node:test');
 const { __test__ } = require('../../playwright_tests/common/reporters/odhin-report-enhancer.cjs');
 const coverageInventory = require('../../playwright_tests/functional/mediaViewerCoverage.json');
-
-const repositoryRoot = path.resolve(__dirname, '../..');
 
 test('feature tag takes precedence over the spec folder', () => {
   assert.equal(
@@ -34,29 +33,69 @@ test('capability summary reports every supported status', () => {
   assert.match(html, /odhin-capability-status-not-covered/);
 });
 
-test('capability inventory accounts for every active Codecept scenario', () => {
-  const codeceptBin = require.resolve('codeceptjs/bin/codecept.js');
-  const output = execFileSync(
-    process.execPath,
-    [codeceptBin, 'dry-run', '-c', './test/end-to-end/codecept.conf.js'],
+test('capability summary reports whether a contract runs by default', () => {
+  const coveredCapability = capability('Covered');
+  coveredCapability.execution = 'Runs by default';
+
+  const html = __test__.buildCapabilityCoverageBlock(
     {
-      cwd: repositoryRoot,
-      encoding: 'utf8',
-      env: {
-        ...process.env,
-        E2E_TEST_PATH: './mvFeatures/**/*.js',
-        NODE_PATH: '.',
-      },
-    }
-  );
-  const discoveredScenarios = Number(output.match(/Total:\s+\d+ suites\s+\|\s+(\d+) tests/)?.[1]);
-  const inventoriedScenarios = coverageInventory.capabilities.reduce(
-    (total, capability) => total + (capability.activeLegacyScenarios ?? capability.legacyScenarios),
-    0
+      title: 'Capability coverage',
+      capabilities: [coveredCapability],
+    },
+    []
   );
 
-  assert.ok(Number.isFinite(discoveredScenarios), 'Codecept dry-run output did not contain a scenario total');
-  assert.equal(inventoriedScenarios, discoveredScenarios);
+  assert.match(html, /<th>Execution<\/th>/);
+  assert.match(html, /Runs by default/);
+});
+
+test('links suite-local Perfetto timelines from the generated Odhín report', () => {
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), 'media-odhin-'));
+  const outputFolder = path.join(root, 'odhin-report');
+  const testResultsFolder = path.join(root, 'test-results');
+  fs.mkdirSync(outputFolder, { recursive: true });
+  fs.mkdirSync(testResultsFolder, { recursive: true });
+  fs.writeFileSync(path.join(outputFolder, 'index.html'), '<html><body><div class="tab"><button class="main-tablinks">Tests</button></div><main>Results</main></body></html>');
+  fs.writeFileSync(path.join(testResultsFolder, 'perfetto.json'), '{}');
+
+  const buildUrl = process.env.BUILD_URL;
+  const artifactBaseUrl = process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL;
+  delete process.env.BUILD_URL;
+  delete process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL;
+  let report = '';
+  try {
+    __test__.enhanceGeneratedReport(outputFolder, []);
+    report = fs.readFileSync(path.join(outputFolder, 'index.html'), 'utf8');
+  } finally {
+    if (buildUrl === undefined) delete process.env.BUILD_URL;
+    else process.env.BUILD_URL = buildUrl;
+    if (artifactBaseUrl === undefined) delete process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL;
+    else process.env.PLAYWRIGHT_PERFETTO_ARTIFACT_BASE_URL = artifactBaseUrl;
+    fs.rmSync(root, { recursive: true, force: true });
+  }
+  assert.match(report, /class="main-tablinks" onclick="openMainTab\(event, 'TabPerfetto'\)">Perfetto Results/);
+  assert.match(report, /id="TabPerfetto" style="display: none" class="main-tabcontent"/);
+  assert.match(report, /href="\.\.\/test-results\/perfetto\.json"/);
+});
+
+test('capability inventory does not leave a Codecept scenario active after migration', () => {
+  const activeLegacyTestFiles = coverageInventory.capabilities
+    .filter((capability) => (capability.activeLegacyScenarios ?? capability.legacyScenarios) > 0)
+    .map((capability) => capability.legacyTestFile);
+  assert.equal(activeLegacyTestFiles.length, 0, 'all historical Codecept scenarios must be retired from default execution');
+  assert.equal(
+    coverageInventory.capabilities.reduce((total, capability) => total + (capability.activeLegacyScenarios ?? capability.legacyScenarios), 0),
+    0,
+    'the capability inventory must not claim an active legacy scenario'
+  );
+});
+
+test('reserves Partial status for an active legacy migration gap', () => {
+  const partialCapabilities = coverageInventory.capabilities.filter((capability) => capability.status === 'Partial');
+  assert.ok(
+    partialCapabilities.every((capability) => (capability.activeLegacyScenarios ?? 0) > 0),
+    'A non-migration assurance gap belongs in Remaining gap; Partial is reserved for active legacy scenarios'
+  );
 });
 
 function capability(status) {

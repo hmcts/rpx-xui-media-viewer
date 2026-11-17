@@ -76,6 +76,16 @@ describe('DocumentReducer', () => {
     expect(state.redactedDocumentInfo).toBeUndefined();
   });
 
+  it('should keep redaction markers after redacted document is saved', () => {
+    const payload = { blob: 'blob' as any, filename: 'file-name' };
+    let state = fromRedaction.redactionReducer({ ...redactionState }, new LoadRedactionSuccess([redaction]));
+    state = fromRedaction.redactionReducer({ ...state }, new RedactSuccess(payload));
+    state = fromRedaction.redactionReducer({ ...state }, new ResetRedactedDocument());
+
+    expect(state.redactionEntities).toEqual({ 'redaction-id': redaction });
+    expect(state.redactionPageEntities).toEqual({ '1': [redaction] });
+  });
+
   it('should delete all marked redactions', () => {
     const payload = { blob: 'blob' as any, filename: 'file-name' };
     let state = fromRedaction.redactionReducer({ ...redactionState }, new RedactSuccess(payload));

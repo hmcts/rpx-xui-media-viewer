@@ -2,7 +2,7 @@
 
 const assert = require('node:assert/strict');
 const { parse } = require('node-html-parser');
-const commonConfig = require('../end-to-end/data/commonConfig.json');
+const commonConfig = require('../fixtures/commonConfig.json');
 const { test } = require('node:test');
 
 const duplicateCommentMarkup = `

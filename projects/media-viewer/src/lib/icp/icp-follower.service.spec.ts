@@ -73,8 +73,14 @@ describe('Icp Follower Service', () => {
 
       followerService.followScreenUpdate({ pdfPosition });
 
-      expect(viewerEvents.goToDestinationICP).toHaveBeenCalled();
-      expect(toolbarEvents.rotate).toHaveBeenCalled();
+      expect(viewerEvents.goToDestinationICP).toHaveBeenCalledOnceWith([
+        0,
+        { name: 'XYZ' },
+        pdfPosition.left,
+        pdfPosition.top
+      ]);
+      expect(toolbarEvents.rotate).toHaveBeenCalledOnceWith(270);
     }))
   );
+
 });

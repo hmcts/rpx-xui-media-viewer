@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { ToolbarEventService } from '../toolbar/toolbar-event.service';
 import { select, Store } from '@ngrx/store';
 import * as fromDocSelectors from '../store/selectors/document.selectors';
@@ -10,16 +10,16 @@ import { PdfPosition } from '../store/reducers/document.reducer';
 
 @Injectable({ providedIn: 'root' })
 export class IcpPresenterService {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly socketService = inject(IcpUpdateService);
+  private store = inject<Store<IcpState>>(Store);
+
 
   session: IcpSession;
   presenter: IcpParticipant;
   pdfPosition: PdfPosition;
 
   $subscription: Subscription;
-
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-              private readonly socketService: IcpUpdateService,
-              private store: Store<IcpState>) {}
 
   update(isPresenter: boolean) {
     if (isPresenter) {

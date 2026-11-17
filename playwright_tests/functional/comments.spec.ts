@@ -1,4 +1,4 @@
-import { commentCreationTest, expect, commentsTest, mediaAssets, multiDocumentCommentsTest, twoPageCommentsTest } from '../fixtures/mediaViewerTest';
+import { commentCreationTest, expect, commentsTest, longCommentsTest, mediaAssets, multiDocumentCommentsTest, twoPageCommentsTest } from '../fixtures/mediaViewerTest';
 
 const isLoadedPdfAnnotationRequest = (url: string) =>
   url.includes('/em-anno/annotation-sets/filter') &&
@@ -58,8 +58,10 @@ commentsTest.describe('Comments panel', () => {
     await mediaViewer.sidePanels.openComments();
 
     const deleteRequest = page.waitForRequest((request) => request.url().endsWith('/em-anno/annotations') && request.method() === 'POST');
+    const deleteResponse = page.waitForResponse((response) => response.url().endsWith('/em-anno/annotations') && response.request().method() === 'POST');
     await mediaViewer.comments.remove('Existing viewer comment');
     const request = await deleteRequest;
+    expect((await deleteResponse).status()).toBe(200);
 
     await expect(mediaViewer.comments.comment('Existing viewer comment')).toHaveCount(0);
     await expect(mediaViewer.comments.comment('Unrelated viewer comment')).toBeVisible();
@@ -128,6 +130,28 @@ commentsTest.describe('Comments panel', () => {
     await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 1 of 2');
     await mediaViewer.comments.nextSearchResult.click();
     await expect(mediaViewer.comments.searchResultStatus).toHaveText('Showing 2 of 2');
+
+    await mediaViewer.sidePanels.toggleComments();
+    await expect(mediaViewer.comments.panel).toBeHidden();
+  });
+
+  longCommentsTest('renders long comments with the supported ellipsis contract', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {
+    const longComment = 'A'.repeat(140);
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.sidePanels.openComments();
+
+    const commentText = mediaViewer.comments.comment(longComment).locator('p.commentText');
+    await expect(commentText).toBeVisible();
+    await mediaViewer.comments.commentsTab.click();
+    await expect.poll(() => commentText.evaluate(element => {
+      const style = getComputedStyle(element);
+      return {
+        overflow: style.overflow,
+        textOverflow: style.textOverflow,
+        whiteSpace: style.whiteSpace,
+        isClipped: element.scrollWidth > element.clientWidth,
+      };
+    })).toEqual({ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', isClipped: true });
   });
 
   commentsTest('collates rendered comments and returns to the panel', { tag: ['@e2e-functional', '@feature-comments'] }, async ({ mediaViewer }) => {

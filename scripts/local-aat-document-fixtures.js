@@ -4,8 +4,8 @@ const fs = require('fs');
 const path = require('path');
 
 const DEFAULT_API_URL = 'http://localhost:1337';
-const DEFAULT_PDF = 'test/end-to-end/data/example.pdf';
-const DEFAULT_IMAGE = 'test/end-to-end/data/quote.jpg';
+const DEFAULT_PDF = 'playwright_tests/fixtures/assets/example.pdf';
+const DEFAULT_IMAGE = 'playwright_tests/fixtures/assets/quote.jpg';
 
 function contentTypeFor(filePath) {
   const ext = path.extname(filePath).toLowerCase();

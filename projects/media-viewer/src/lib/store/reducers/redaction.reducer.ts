@@ -111,9 +111,9 @@ export function redactionReducer(
 
     case fromRedaction.REDACT_SUCCESS: {
       const redactedDocumentInfo = action.payload;
+      // Markers persist on the backend, so keep them in state to stay consistent with a reload
       return {
         ...state,
-        ...initialRedactionState,
         redactedDocumentInfo
       };
     }

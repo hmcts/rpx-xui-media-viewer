@@ -1,7 +1,10 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
+import { Store } from '@ngrx/store';
 import { RotationPersistDirective } from './rotation-persist.directive';
 import * as fromDocumentActions from '../../store/actions/document.actions';
 import { of, Subject } from 'rxjs';
+import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
+import { ToolbarButtonVisibilityService } from '../../toolbar/toolbar-button-visibility.service';
 
 describe('RotationPersistDirective', () => {
   let directive: RotationPersistDirective;
@@ -12,7 +15,15 @@ describe('RotationPersistDirective', () => {
   const elementRef = new ElementRef<HTMLElement>(hostElement);
 
   beforeEach(() => {
-    directive = new RotationPersistDirective(elementRef, store, toolbarButtons, toolbarEvents);
+    directive = runInInjectionContext(
+      Injector.create({ providers: [
+        { provide: ElementRef, useValue: elementRef },
+        { provide: Store, useValue: store },
+        { provide: ToolbarButtonVisibilityService, useValue: toolbarButtons },
+        { provide: ToolbarEventService, useValue: toolbarEvents }
+      ] }),
+      () => new RotationPersistDirective()
+    );
   });
 
   it('should set initial rotation on media load', () => {

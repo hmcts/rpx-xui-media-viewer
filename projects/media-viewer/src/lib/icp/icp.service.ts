@@ -1,4 +1,4 @@
-import { Injectable, OnDestroy } from '@angular/core';
+import { Injectable, OnDestroy, inject } from '@angular/core';
 import { IcpParticipant, IcpState } from './icp.interfaces';
 import { Subscription } from 'rxjs';
 import { ToolbarEventService } from '../toolbar/toolbar-event.service';
@@ -15,6 +15,14 @@ import { IcpEventService } from '../toolbar/icp-event.service';
 
 @Injectable({ providedIn: 'root' })
 export class IcpService implements OnDestroy {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly viewerEvents = inject(ViewerEventService);
+  private readonly socketService = inject(IcpUpdateService);
+  private readonly presenterSubscriptions = inject(IcpPresenterService);
+  private readonly followerSubscriptions = inject(IcpFollowerService);
+  private store = inject<Store<IcpState>>(Store);
+  private readonly icpEventService = inject(IcpEventService);
+
 
   caseId: string;
   client: IcpParticipant;
@@ -25,13 +33,7 @@ export class IcpService implements OnDestroy {
   subscription: Subscription;
   sessionSubscription: Subscription;
 
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-    private readonly viewerEvents: ViewerEventService,
-    private readonly socketService: IcpUpdateService,
-    private readonly presenterSubscriptions: IcpPresenterService,
-    private readonly followerSubscriptions: IcpFollowerService,
-    private store: Store<IcpState>,
-    private readonly icpEventService: IcpEventService) {
+  constructor() {
     this.subscription = this.store.pipe(select(fromIcpSelectors.getCaseId), filter(value => !!value)).subscribe(caseId => {
       this.caseId = caseId;
     });

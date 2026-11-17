@@ -4,7 +4,6 @@
 /dist
 /tmp
 /out-tsc
-cucumber.json
 
 # dependencies
 node_modules/
@@ -14,7 +13,6 @@ reports/
 test-results/
 playwright-report/
 blob-report/
-mochawesome-report/
 smoke-output/
 .cache/
 logs/
@@ -61,7 +59,6 @@ api/\.sessions/
 
 reports_json/
 .nyc_output/
-cb_reports/
 report.json
 payload.json
 payload.json.gz

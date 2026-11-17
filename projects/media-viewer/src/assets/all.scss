@@ -1,36 +1,34 @@
 // CDK overlays require a small set of structural styles to work correctly
 // As the component is not yet using Angular Material we have to include the style ourself
 // see https://material.angular.io/cdk/overlay/overview
-@import 'node_modules/@angular/cdk/overlay-prebuilt';
+@use '@angular/cdk/overlay-prebuilt';
 
-@import 'sass/settings';
-@import "sass/annotation-set";
-@import 'sass/bookmarks.scss';
-@import "sass/box-highlight";
-@import "sass/bookmarks";
-@import "sass/comment";
-@import "sass/comment-search";
-@import "sass/comment-set-header";
-@import "sass/comment-set-panel";
-@import "sass/comment-set-toggle";
-@import "sass/comments-summary-dialog";
-@import "sass/confirm-action-dialog";
-@import 'sass/document';
-@import "sass/image-viewer";
-@import 'sass/media-viewer';
-@import 'sass/outline-attachment';
-@import 'sass/participants-list';
-@import "sass/pdf-viewer";
-@import "sass/popup-toolbar";
-@import "sass/rectangle";
-@import "sass/tags";
-@import "sass/toolbar/main";
-@import 'sass/tabs';
-@import 'sass/tooltip';
-@import 'sass/comment-filter';
-@import 'sass/angular-tree-component';
-@import 'sass/redaction';
-@import 'pdfjs/pdf_viewer';
+@use 'sass/annotation-set';
+@use 'sass/bookmarks';
+@use 'sass/box-highlight';
+@use 'sass/comment';
+@use 'sass/comment-search';
+@use 'sass/comment-set-header';
+@use 'sass/comment-set-panel';
+@use 'sass/comment-set-toggle';
+@use 'sass/comments-summary-dialog';
+@use 'sass/confirm-action-dialog';
+@use 'sass/document';
+@use 'sass/image-viewer';
+@use 'sass/media-viewer';
+@use 'sass/outline-attachment';
+@use 'sass/participants-list';
+@use 'sass/pdf-viewer';
+@use 'sass/popup-toolbar';
+@use 'sass/rectangle';
+@use 'sass/tags';
+@use 'sass/toolbar/main';
+@use 'sass/tabs';
+@use 'sass/tooltip';
+@use 'sass/comment-filter';
+@use 'sass/angular-tree-component';
+@use 'sass/redaction';
+@use 'pdfjs/pdf_viewer';
 div.govuk-prose-scope, p {
   white-space: pre-wrap;
 }

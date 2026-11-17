@@ -7,6 +7,8 @@ import { fakeAsync, tick } from '@angular/core/testing';
 import { Outline } from '../side-bar/outline-item/outline.model';
 import { PdfPosition } from '../../../store/reducers/document.reducer';
 import { RefProxy } from 'pdfjs-dist/types/src/display/api';
+import { Injector, runInInjectionContext } from '@angular/core';
+import { IcpEventService } from '../../../toolbar/icp-event.service';
 
 
 describe('PdfJsWrapper', () => {
@@ -46,7 +48,10 @@ describe('PdfJsWrapper', () => {
 
     const icpEventService = jasmine.createSpyObj('IcpEventService', ['confirmExit', 'leavingSession']);
 
-    toolbarEventService = new ToolbarEventService(icpEventService);
+    toolbarEventService = runInInjectionContext(
+      Injector.create({ providers: [{ provide: IcpEventService, useValue: icpEventService }] }),
+      () => new ToolbarEventService()
+    );
 
     wrapper = new PdfJsWrapper(
       mockViewer,

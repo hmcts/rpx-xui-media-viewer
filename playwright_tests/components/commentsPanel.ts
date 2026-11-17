@@ -1,3 +1,4 @@
+import { errors } from '@playwright/test';
 import type { Locator, Page } from '@playwright/test';
 
 export class CommentsPanel {
@@ -60,23 +61,44 @@ export class CommentsPanel {
 
   private async openEditor(content: string): Promise<Locator> {
     const comment = await this.card(content);
-    await comment.locator('p.commentText').click();
-    await comment.getByRole('button', { name: 'Edit' }).click();
-    await comment.locator('textarea[aria-label="comment"]').waitFor();
+    await comment.locator('p.commentText').click({ timeout: 2_000 });
+    await comment.getByRole('button', { name: 'Edit' }).click({ timeout: 2_000 });
     return comment;
   }
 
   async edit(content: string, replacement: string): Promise<void> {
-    const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[aria-label="comment"]');
+    for (let attempt = 0; attempt < 2; attempt += 1) {
+      try {
+        const comment = await this.openEditor(content);
+        const editor = comment.locator('textarea[name="content"]');
+        await editor.waitFor({ state: 'visible', timeout: 2_000 });
+        await editor.fill(replacement, { timeout: 2_000 });
+        await comment.getByRole('button', { name: 'Save' }).click({ timeout: 2_000 });
+        await editor.waitFor({ state: 'hidden', timeout: 2_000 });
+        return;
+      } catch (error) {
+        const editorWasReplaced = error instanceof errors.TimeoutError ||
+          (error instanceof Error && error.message.includes('element was detached'));
+        if (attempt === 1 || !editorWasReplaced) {
+          throw error;
+        }
+      }
+    }
+  }
+
+  async editSelected(content: string, replacement: string): Promise<void> {
+    const comment = await this.card(content);
+    const editor = comment.locator('textarea[name="content"]');
+    await comment.getByRole('button', { name: 'Edit' }).click();
+    await editor.waitFor();
     await editor.fill(replacement);
-    await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
+    await comment.getByRole('button', { name: 'Save' }).click();
     await editor.waitFor({ state: 'hidden' });
   }
 
   async cancelEdit(content: string, replacement: string): Promise<void> {
     const comment = await this.openEditor(content);
-    const editor = comment.locator('textarea[aria-label="comment"]');
+    const editor = comment.locator('textarea[name="content"]');
     await editor.fill(replacement);
     await comment.getByRole('button', { name: 'Cancel' }).click();
     await editor.waitFor({ state: 'hidden' });
@@ -89,10 +111,10 @@ export class CommentsPanel {
 
   async addToSelectedAnnotation(content: string): Promise<void> {
     await this.page.locator('button[title="Comment"]').click();
-    const editor = this.panel.locator('textarea[aria-label="comment"]');
+    const editor = this.panel.locator('textarea[name="content"]');
     await editor.waitFor();
     await editor.fill(content);
-    await this.panel.locator('button.govuk-button').filter({ hasText: 'Save' }).click();
+    await editor.locator('~ .commentBtns > button').first().click();
     await editor.waitFor({ state: 'hidden' });
   }
 

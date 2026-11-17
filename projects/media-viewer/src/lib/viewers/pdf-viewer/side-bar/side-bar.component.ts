@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { Outline } from './outline-item/outline.model';
 import { Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -18,6 +18,10 @@ import { BookmarksComponent } from './bookmarks/bookmarks.component';
     standalone: false
 })
 export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
+  private viewerEvents = inject(ViewerEventService);
+  private store = inject<Store<BookmarksState>>(Store);
+  private readonly toolbarEvents = inject(ToolbarEventService);
+
 
   @Input() annotationsEnabled: boolean;
   @Input() outline: Outline;
@@ -36,11 +40,6 @@ export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
 
   private subscriptions: Subscription[] = [];
   @ViewChild('sidebar') sidebarDiv;
-
-  constructor(private viewerEvents: ViewerEventService,
-    private store: Store<BookmarksState>,
-    private readonly toolbarEvents: ToolbarEventService,
-  ) { }
 
   ngOnInit(): void {
     this.bookmarkNodes$ = this.store.pipe(select(bookmarksSelectors.getBookmarkNodes));

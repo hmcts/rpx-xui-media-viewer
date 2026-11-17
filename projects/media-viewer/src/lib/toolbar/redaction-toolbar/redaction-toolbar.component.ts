@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnDestroy, OnInit } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit, inject } from '@angular/core';
 import { SearchType, ToolbarEventService } from '../toolbar-event.service';
 import { select, Store } from '@ngrx/store';
 import * as fromRedactSelectors from '../../store/selectors/redaction.selectors';
@@ -14,6 +14,11 @@ import { ToolbarFocusService } from '../toolbar-focus.service';
     standalone: false
 })
 export class RedactionToolbarComponent implements OnInit, OnDestroy {
+  readonly toolbarEventService = inject(ToolbarEventService);
+  readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly toolbarFocusService = inject(ToolbarFocusService);
+
 
   @Input() showRedactSearch: boolean;
 
@@ -22,12 +27,6 @@ export class RedactionToolbarComponent implements OnInit, OnDestroy {
 
   private subscriptions: Subscription[] = [];
   redactionAllInProgress: boolean;
-
-  constructor(public readonly toolbarEventService: ToolbarEventService,
-    public readonly toolbarButtons: ToolbarButtonVisibilityService,
-    private store: Store<fromStore.AnnotationSetState>,
-    private readonly toolbarFocusService: ToolbarFocusService
-  ) { }
 
   ngOnInit(): void {
     this.subscriptions.push(this.store.pipe(select(fromRedactSelectors.getRedactionArray)).subscribe(redactions => {

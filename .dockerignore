@@ -43,7 +43,6 @@ README.md
 playwright-report
 blob-report
 trace
-mochawesome-report
 smoke-output
 tmp
 .sessions

@@ -1,14 +1,10 @@
-// global toolbar for <a> and <p> tags
-$govuk-global-styles: true;
+@use "govuk-frontend/govuk/all" as * with (
+  $govuk-global-styles: true
+);
+@use "../../projects/media-viewer/src/assets/all";
+
 // Width of main container
 $hmcts-page-width: 1220px;
-
-// Consumer component will have to import following dependencies // START
-// Import GOV.UK Frontend
-@import "govuk-frontend/govuk/all";
-// Import Media Viewer Styles
-@import "../../projects/media-viewer/src/assets/all";
-// END
 
 html {
   background-color: govuk-colour("light-grey");
@@ -65,9 +61,11 @@ body {
 
 .aui-case-action-alert__heading {
   @include govuk-font($size: 24, $weight: bold);
-  color: inherit;
-  margin-bottom: govuk-spacing(2);
-  margin-top: 0;
+  & {
+    color: inherit;
+    margin-bottom: govuk-spacing(2);
+    margin-top: 0;
+  }
 }
 
 .aui-case-action-alert__content {

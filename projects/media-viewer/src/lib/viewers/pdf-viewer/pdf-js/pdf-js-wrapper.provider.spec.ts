@@ -1,6 +1,8 @@
+import { Injector, runInInjectionContext } from '@angular/core';
 import { PdfJsWrapperFactory } from './pdf-js-wrapper.provider';
 import { Subject } from 'rxjs';
 import { ToolbarEventService } from '../../../toolbar/toolbar-event.service';
+import { IcpEventService } from '../../../toolbar/icp-event.service';
 
 describe('PdfJsWrapperFactory', () => {
   const icpEventService = jasmine.createSpyObj('IcpEventService', ['confirmExit', 'leavingSession']);
@@ -10,7 +12,13 @@ describe('PdfJsWrapperFactory', () => {
       nativeElement: document.createElement('div')
     }
     elementRef.nativeElement.appendChild(document.createElement('div'));
-    const factory = new PdfJsWrapperFactory(new ToolbarEventService(icpEventService));
+    const factory = runInInjectionContext(
+      Injector.create({ providers: [
+        { provide: IcpEventService, useValue: icpEventService },
+        ToolbarEventService
+      ] }),
+      () => new PdfJsWrapperFactory()
+    );
     const wrapper = factory.create(elementRef);
 
     expect(wrapper).not.toBeNull();

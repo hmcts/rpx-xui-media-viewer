@@ -1,4 +1,4 @@
-import { Directive, ElementRef, HostListener, OnDestroy, OnInit } from '@angular/core';
+import { Directive, ElementRef, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Store } from '@ngrx/store';
 import { debounceTime, filter, Subscription } from 'rxjs';
@@ -17,6 +17,12 @@ import { HtmlTemplatesHelper } from '../../../../shared/util/helpers/html-templa
     standalone: false
 })
 export class HighlightCreateDirective implements OnInit, OnDestroy {
+  private element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private toolbarEvents = inject(ToolbarEventService);
+  private viewerEvents = inject(ViewerEventService);
+  private highlightService = inject(HighlightCreateService);
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+
   pageHeight: number;
   pageWidth: number;
   zoom: number;
@@ -24,14 +30,6 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
   allPages: object;
 
   private $subscriptions: Subscription[] = [];
-
-  constructor(
-    private element: ElementRef<HTMLElement>,
-    private toolbarEvents: ToolbarEventService,
-    private viewerEvents: ViewerEventService,
-    private highlightService: HighlightCreateService,
-    private store: Store<fromStore.AnnotationSetState>
-  ) { }
 
   ngOnInit() {
     this.$subscriptions.push(this.store.select(fromDocument.getPages).subscribe((pages) => {
@@ -122,9 +120,9 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     this.setPageProperties(page);
 
     const range = selection.getRangeAt(0).cloneRange();
-    const clientRects = range.getClientRects();
+    const selectionRects = this.getSelectionRectangles(range);
 
-    if (!clientRects || clientRects.length === 0) {
+    if (!selectionRects || selectionRects.length === 0) {
       return [];
     }
 
@@ -140,7 +138,7 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
 
     this.removeEnhancedTextModeStyling(textLayerElement);
 
-    return this.processClientRects(clientRects, textLayer);
+    return this.processClientRects(selectionRects, textLayer);
   }
 
   @HostListener('mousedown', ['$event'])
@@ -166,14 +164,18 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
 
       if (selection.rangeCount && !selection.isCollapsed) {
         const range = selection.getRangeAt(0).cloneRange();
-        const clientRects = range.getClientRects();
+        const selectionRects = this.getSelectionRectangles(range);
 
-        if (clientRects) {
+        if (selectionRects) {
           const textLayer = localElement.closest(".textLayer") as HTMLElement;
-          return this.processClientRects(clientRects, textLayer);
+          return this.processClientRects(selectionRects, textLayer);
         }
       }
     }
+  }
+
+  private getSelectionRectangles(range: Range): DOMRect[] | DOMRectList {
+    return range.getClientRects();
   }
 
   private createTextRectangle(rect: any, parentRect: any): Rectangle {
@@ -217,14 +219,17 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     this.rotate = parseInt(this.allPages[page].scaleRotation.rotation, 10);
   }
 
-  private processClientRects(clientRects: DOMRectList, textLayer: HTMLElement): Rectangle[] {
+  private processClientRects(clientRects: ArrayLike<DOMRect>, textLayer: HTMLElement): Rectangle[] {
     const parentRect = HtmlTemplatesHelper.getAdjustedBoundingRect(textLayer);
     const selectionRectangles: Rectangle[] = [];
 
     for (let i = 0; i < clientRects.length; i++) {
       const selectionRectangle = this.createTextRectangle(clientRects[i], parentRect);
       const findSelectionRectangle = selectionRectangles.find(
-        (rect) => rect.width === selectionRectangle.width && rect.x === selectionRectangle.x
+        (rect) => rect.width === selectionRectangle.width
+          && rect.height === selectionRectangle.height
+          && rect.x === selectionRectangle.x
+          && rect.y === selectionRectangle.y
       );
       if (!findSelectionRectangle) {
         selectionRectangles.push(selectionRectangle);
