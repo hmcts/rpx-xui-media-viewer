@@ -17,7 +17,7 @@ module.exports = function (config) {
     client: {
         jasmine: {
         },
-        clearContext: false // leave Jasmine Spec Runner output visible in browser
+        clearContext: true // Clear the test iframe before the headless browser exits
     },
     jasmineHtmlReporter: {
         suppressAll: true // removes the duplicated traces

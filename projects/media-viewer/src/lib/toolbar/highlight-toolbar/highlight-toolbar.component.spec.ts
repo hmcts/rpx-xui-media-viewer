@@ -1,3 +1,4 @@
+import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 /* tslint:disable:no-unused-variable */
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
@@ -22,6 +23,7 @@ describe('HighlightToolbarComponent', () => {
   beforeEach(() => {
     return TestBed.configureTestingModule({
       declarations: [
+        KeyboardNavDirective,
         HighlightToolbarComponent,
       ],
       imports: [

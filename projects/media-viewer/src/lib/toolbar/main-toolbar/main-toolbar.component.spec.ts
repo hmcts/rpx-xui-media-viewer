@@ -1,3 +1,4 @@
+import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 import { RpxTranslationModule } from 'rpx-xui-translation';
 import { By } from '@angular/platform-browser';
 import { Component } from '@angular/core';
@@ -24,6 +25,7 @@ describe('MainToolbarComponent', () => {
   beforeEach(() => {
     return TestBed.configureTestingModule({
       declarations: [
+        KeyboardNavDirective,
         MainToolbarComponent,
         SearchBarComponent
       ],
