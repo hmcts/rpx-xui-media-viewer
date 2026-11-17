@@ -1,28 +1,30 @@
-<mv-side-bar
-  *ngIf="toolbarEvents.sidebarOpen"
-  id="sidebarContainer"
-  [url]="url"
-  [zoom]="zoom"
-  [rotate]="rotation"
-  [outline]="documentOutline"
-  [annotationsEnabled]="enableAnnotations"
-  [currentPageNumber]="getCurrentPageNumber()"
->
-</mv-side-bar>
-<mv-comment-set-header
-  *ngIf="enableAnnotations"
-  [ngClass]="{ 'show-comments-panel': showCommentsPanel }"
-  [isHidden]="!showCommentsPanel"
-  [showCommentSummary]="toolbarButtons.showCommentSummary"
-  (showCommentSummaryDialog)="toggleCommentsSummary()"
->
-</mv-comment-set-header>
+@if (toolbarEvents.sidebarOpen) {
+  <mv-side-bar
+    id="sidebarContainer"
+    [url]="url"
+    [zoom]="zoom"
+    [rotate]="rotation"
+    [outline]="documentOutline"
+    [annotationsEnabled]="enableAnnotations"
+    [currentPageNumber]="getCurrentPageNumber()"
+    >
+  </mv-side-bar>
+}
+@if (enableAnnotations) {
+  <mv-comment-set-header
+    [ngClass]="{ 'show-comments-panel': showCommentsPanel }"
+    [isHidden]="!showCommentsPanel"
+    [showCommentSummary]="toolbarButtons.showCommentSummary"
+    (showCommentSummaryDialog)="toggleCommentsSummary()"
+    >
+  </mv-comment-set-header>
+}
 <mv-participants-list></mv-participants-list>
 <div
   class="pdfContainer"
   [ngStyle]="{ height: height }"
   [ngClass]="{ pdfContainer: true, hidden: errorMessage }"
->
+  >
   <mv-redaction-search-bar></mv-redaction-search-bar>
   <div
     #viewerContainer
@@ -38,7 +40,7 @@
     "
     [class.grabNDrag]="enableGrabNDrag"
     (focusin)="onViewerContainerFocusIn($event)"
-  >
+    >
     <div
       #pdfViewer
       class="pdfViewer"
@@ -56,52 +58,60 @@
         drawMode: drawMode | async
       }"
     ></div>
-    <div *ngIf="showSelectionStartCursor"
-      class="selection-start-cursor"
-      [style.position]="'fixed'"
-      [style.top]="selectionStartCursorY + 'px'"
-      [style.left]="selectionStartCursorX + 'px'">
-    </div>
-    <div *ngIf="showSelectionEndCursor"
-      class="selection-end-cursor"
-      [style.position]="'fixed'"
-      [style.top]="selectionEndCursorY + 'px'"
-      [style.left]="selectionEndCursorX + 'px'">
-    </div>
-    <mv-redactions
-      *ngIf="toolbarEvents.redactionMode | async; else annotationTemplate"
-      [zoom]="zoom"
-      [rotate]="rotation"
-    ></mv-redactions>
-    <ng-template #annotationTemplate>
-      <mv-metadata-layer
-        *ngIf="enableAnnotations && annotationSet"
+    @if (showSelectionStartCursor) {
+      <div
+        class="selection-start-cursor"
+        [style.position]="'fixed'"
+        [style.top]="selectionStartCursorY + 'px'"
+        [style.left]="selectionStartCursorX + 'px'">
+      </div>
+    }
+    @if (showSelectionEndCursor) {
+      <div
+        class="selection-end-cursor"
+        [style.position]="'fixed'"
+        [style.top]="selectionEndCursorY + 'px'"
+        [style.left]="selectionEndCursorX + 'px'">
+      </div>
+    }
+    @if (toolbarEvents.redactionMode | async) {
+      <mv-redactions
         [zoom]="zoom"
         [rotate]="rotation"
-      >
-      </mv-metadata-layer>
+      ></mv-redactions>
+    } @else {
+      @if (enableAnnotations && annotationSet) {
+        <mv-metadata-layer
+          [zoom]="zoom"
+          [rotate]="rotation"
+          >
+        </mv-metadata-layer>
+      }
       <mv-bookmark-icons [zoom]="zoom" [rotate]="rotation"> </mv-bookmark-icons>
-    </ng-template>
+    }
   </div>
-  <mv-comment-set
-    [contentScrollTop]="viewerContainer.scrollTop"
-    *ngIf="
-      enableAnnotations &&
-      annotationSet &&
-      (toolbarEvents.redactionMode | async) !== true
-    "
-    [annotationSet]="annotationSet"
-    [zoom]="zoom"
-    [rotate]="rotation"
-    [height]="pdfViewer.offsetHeight"
-    [pageHeights]="pageHeights"
-  >
-  </mv-comment-set>
-  <div class="loadingMessage" *ngIf="loadingDocument">
-    <h3 class="govuk-heading-m">
-      {{ "Loading..." | rpxTranslate}}{{
+  @if (
+    enableAnnotations &&
+    annotationSet &&
+    (toolbarEvents.redactionMode | async) !== true
+    ) {
+    <mv-comment-set
+      [contentScrollTop]="viewerContainer.scrollTop"
+      [annotationSet]="annotationSet"
+      [zoom]="zoom"
+      [rotate]="rotation"
+      [height]="pdfViewer.offsetHeight"
+      [pageHeights]="pageHeights"
+      >
+    </mv-comment-set>
+  }
+  @if (loadingDocument) {
+    <div class="loadingMessage">
+      <h3 class="govuk-heading-m">
+        {{ "Loading..." | rpxTranslate}}{{
         loadingDocumentProgress ? loadingDocumentProgress + "%" : ""
-      }}
-    </h3>
-  </div>
+        }}
+      </h3>
+    </div>
+  }
 </div>

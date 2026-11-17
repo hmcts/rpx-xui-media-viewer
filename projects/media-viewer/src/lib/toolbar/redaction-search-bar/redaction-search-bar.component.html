@@ -1,77 +1,79 @@
-<div
-  *ngIf="openSearchModal"
-  class="searchbar redaction-search-bar govuk-!-padding-3"
->
-  <div class="govuk-grid-row">
-    <div class="govuk-grid-column-full govuk-!-padding-right-0">
-      <div class="redaction-search-buttons-area">
-        <button
-          id="mvCloseBtn"
-          #mvCloseBtn
-          class="mv-button searchbar-button--close"
-          title="Close Search"
-          [attr.aria-label]="'Close Search' | rpxTranslate"
-          data-l10n-id="mvRedactBtn"
-          (click)="onCloseSearchModal()"
-        ></button>
-      </div>
-      <input
-        id="search_input"
-        class="govuk-input govuk-!-width-three-quarters govuk-!-display-inline-block govuk-!-margin-top-5"
-        type="text"
-        aria-label="Redact from search"
-        #findInput
-        title="Redact from search"
-        placeholder="{{ titleText + ' from search...' | rpxTranslate }}"
-        data-l10n-id="search_input"
-        [ngModel]="searchText"
-        (ngModelChange)="onSearchTextChange($event)"
-        (keydown.escape)="onEscapeKeyPress($event)"
-        (keydown.enter)="onEnterKeyPress($event)"
-      />
-      <div class="redaction-search-buttons-area">
-        <button
-          id="mvSearchAllBtn"
-          class="govuk-button govuk-!-margin-bottom-0"
-          data-module="govuk-button"
-          (click)="search()"
-          [disabled]="redactAllInProgress"
-        >
-          {{ "Search" | rpxTranslate }}
-        </button>
-        <button
-          id="mvRedactAllBtn"
-          class="govuk-button govuk-!-margin-left-2 govuk-!-margin-bottom-0"
-          data-module="govuk-button"
-          (click)="search(false)"
-          [disabled]="redactAllInProgress || resultCount <= 0 || !searchText?.trim()"
-        >
-          {{ titleText + " all" | rpxTranslate }}
-        </button>
-      </div>
-      <div
-        class="govuk-grid-column-three-quarters govuk-!-padding-left-0 govuk-!-padding-top-2 redaction-status-text"
-      >
-        <span
-          id="findRedactResultsCount"
-          class="govuk-grid-column-full govuk-!-margin-right-4 govuk-!-margin-left-0 govuk-!-padding-left-0"
-          ><h4
-            class="govuk-!-display-inline-block govuk-!-margin-top-0 govuk-!-margin-bottom-1"
-            *ngIf="redactAllInProgress"
+@if (openSearchModal) {
+  <div
+    class="searchbar redaction-search-bar govuk-!-padding-3"
+    >
+    <div class="govuk-grid-row">
+      <div class="govuk-grid-column-full govuk-!-padding-right-0">
+        <div class="redaction-search-buttons-area">
+          <button
+            id="mvCloseBtn"
+            #mvCloseBtn
+            class="mv-button searchbar-button--close"
+            title="Close Search"
+            [attr.aria-label]="'Close Search' | rpxTranslate"
+            data-l10n-id="mvRedactBtn"
+            (click)="onCloseSearchModal()"
+          ></button>
+        </div>
+        <input
+          id="search_input"
+          class="govuk-input govuk-!-width-three-quarters govuk-!-display-inline-block govuk-!-margin-top-5"
+          type="text"
+          aria-label="Redact from search"
+          #findInput
+          title="Redact from search"
+          placeholder="{{ titleText + ' from search...' | rpxTranslate }}"
+          data-l10n-id="search_input"
+          [ngModel]="searchText"
+          (ngModelChange)="onSearchTextChange($event)"
+          (keydown.escape)="onEscapeKeyPress($event)"
+          (keydown.enter)="onEnterKeyPress($event)"
+          />
+        <div class="redaction-search-buttons-area">
+          <button
+            id="mvSearchAllBtn"
+            class="govuk-button govuk-!-margin-bottom-0"
+            data-module="govuk-button"
+            (click)="search()"
+            [disabled]="redactAllInProgress"
+            >
+            {{ "Search" | rpxTranslate }}
+          </button>
+          <button
+            id="mvRedactAllBtn"
+            class="govuk-button govuk-!-margin-left-2 govuk-!-margin-bottom-0"
+            data-module="govuk-button"
+            (click)="search(false)"
+            [disabled]="redactAllInProgress || resultCount <= 0 || !searchText?.trim()"
+            >
+            {{ titleText + " all" | rpxTranslate }}
+          </button>
+        </div>
+        <div
+          class="govuk-grid-column-three-quarters govuk-!-padding-left-0 govuk-!-padding-top-2 redaction-status-text"
           >
-            {{ inProgressText + " in progress" | rpxTranslate }}
-          </h4>
+          <span
+            id="findRedactResultsCount"
+            class="govuk-grid-column-full govuk-!-margin-right-4 govuk-!-margin-left-0 govuk-!-padding-left-0"
+            >@if (redactAllInProgress) {
+            <h4
+              class="govuk-!-display-inline-block govuk-!-margin-top-0 govuk-!-margin-bottom-1"
+              >
+              {{ inProgressText + " in progress" | rpxTranslate }}
+            </h4>
+          }
           {{ redactAllInProgress ? "" : resultsText }}</span
-        >
-        <span>
-          <h5
-            id="redactAllInProgressCount"
-            class="govuk-!-display-inline-block govuk-!-margin-top-0 govuk-!-margin-bottom-1"
           >
-            {{ redactAllInProgress ? redactAllText : "" }}
-          </h5>
-        </span>
+          <span>
+            <h5
+              id="redactAllInProgressCount"
+              class="govuk-!-display-inline-block govuk-!-margin-top-0 govuk-!-margin-bottom-1"
+              >
+              {{ redactAllInProgress ? redactAllText : "" }}
+            </h5>
+          </span>
+        </div>
       </div>
     </div>
   </div>
-</div>
+}

@@ -24,7 +24,7 @@ export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
 
 
   @Input() annotationsEnabled: boolean;
-  @Input() outline: Outline;
+  @Input() outline: Outline[];
   @Input() url: string;
   @Input() zoom: number;
   @Input() rotate: number;

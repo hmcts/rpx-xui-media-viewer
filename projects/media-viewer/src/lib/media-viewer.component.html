@@ -9,101 +9,113 @@
     'has-different-page-size': hasDifferentPageSize$ | async
   }"
   [ngStyle]="{ width: width }"
->
+  >
   <div class="govuk-skip-link-container">
     <a href="#sidebarContent" class="mv-govuk-skip-link" (click)="skipToSidebar($event)">Skip to index menu</a>
     <a href="#viewerContainer" class="mv-govuk-skip-link" (click)="skipToViewer($event)">Skip to document</a>
   </div>
-  <mv-comments-summary
-    *ngIf="showCommentSummary"
-    [title]="documentTitle || 'Comment Summary'"
-    [contentType]="contentType"
-  >
-  </mv-comments-summary>
+  @if (showCommentSummary) {
+    <mv-comments-summary
+      [title]="documentTitle || 'Comment Summary'"
+      [contentType]="contentType"
+      >
+    </mv-comments-summary>
+  }
 
-  <mv-confirm-action
-    *ngIf="icpEventService.leavingSession | async"
-  ></mv-confirm-action>
+  @if (icpEventService.leavingSession | async) {
+    <mv-confirm-action
+    ></mv-confirm-action>
+  }
 
   <div id="mainContainer">
-    <mv-main-toolbar
-      *ngIf="showToolbar"
-      [enableAnnotations]="enableAnnotations"
-      [enableICP]="enableICP"
-      [enableRedactions]="enableRedactions"
-      [contentType]="contentType"
-    >
-    </mv-main-toolbar>
-    <mv-redaction-toolbar
-      [showRedactSearch]="enableRedactSearch"
-      *ngIf="toolbarEvents.redactionMode | async"
-    ></mv-redaction-toolbar>
-    <mv-highlight-toolbar
-      *ngIf="toolbarEvents.highlightToolbarSubject | async"
-    ></mv-highlight-toolbar>
-    <mv-icp-toolbar *ngIf="icpEventService.enabled | async"></mv-icp-toolbar>
+    @if (showToolbar) {
+      <mv-main-toolbar
+        [enableAnnotations]="enableAnnotations"
+        [enableICP]="enableICP"
+        [enableRedactions]="enableRedactions"
+        [contentType]="contentType"
+        >
+      </mv-main-toolbar>
+    }
+    @if (toolbarEvents.redactionMode | async) {
+      <mv-redaction-toolbar
+        [showRedactSearch]="enableRedactSearch"
+      ></mv-redaction-toolbar>
+    }
+    @if (toolbarEvents.highlightToolbarSubject | async) {
+      <mv-highlight-toolbar
+      ></mv-highlight-toolbar>
+    }
+    @if (icpEventService.enabled | async) {
+      <mv-icp-toolbar></mv-icp-toolbar>
+    }
 
     <div #viewerRef>
-      <mv-conversion-viewer
-        *ngIf="convertibleContent"
-        (documentTitle)="onDocumentTitleChange($event)"
-        (mediaLoadStatus)="onMediaLoad($event)"
-        (viewerException)="onLoadException($event)"
-        [enableAnnotations]="enableAnnotations"
-        [enableRedactions]="enableRedactions"
-        [annotationSet]="enableAnnotations ? (annotationSet$ | async) : null"
-        [originalUrl]="url"
-        [downloadFileName]="downloadFileName"
-        [height]="viewerHeight"
-        mvRotationPersist
-      >
-      </mv-conversion-viewer>
-      <mv-pdf-viewer
-        *ngIf="contentType === 'pdf'"
-        #pdfViewer
-        (mediaLoadStatus)="onMediaLoad($event)"
-        (pdfViewerException)="onLoadException($event)"
-        (documentTitle)="onDocumentTitleChange($event)"
-        [url]="url"
-        [enableAnnotations]="enableAnnotations"
-        [enableRedactions]="enableRedactions"
-        [enableICP]="enableICP"
-        [annotationSet]="enableAnnotations ? (annotationSet$ | async) : null"
-        [downloadFileName]="downloadFileName"
-        [height]="viewerHeight"
-        [caseId]="caseId"
-        mvRotationPersist
-      >
-      </mv-pdf-viewer>
-      <mv-image-viewer
-        *ngIf="contentType === 'image'"
-        (mediaLoadStatus)="onMediaLoad($event)"
-        (imageViewerException)="onLoadException($event)"
-        [url]="url"
-        [enableAnnotations]="enableAnnotations"
-        [annotationSet]="enableAnnotations ? (annotationSet$ | async) : null"
-        [downloadFileName]="downloadFileName"
-        [height]="viewerHeight"
-        mvRotationPersist
-      >
-      </mv-image-viewer>
-      <mv-multimedia-player
-        *ngIf="multimediaContent"
-        [multimediaOn]="multimediaPlayerEnabled"
-        [url]="url"
-        [downloadFileName]="downloadFileName"
-        (loadStatus)="onMediaLoad($event)"
-      >
-      </mv-multimedia-player>
-      <mv-unsupported-viewer
-        *ngIf="unsupportedContent"
-        [url]="url"
-        [typeException]="typeException"
-        [downloadFileName]="downloadFileName"
-        (loadStatus)="onMediaLoad($event)"
-        (unsupportedViewerException)="onLoadException($event)"
-      >
-      </mv-unsupported-viewer>
+      @if (convertibleContent) {
+        <mv-conversion-viewer
+          (documentTitle)="onDocumentTitleChange($event)"
+          (mediaLoadStatus)="onMediaLoad($event)"
+          (viewerException)="onLoadException($event)"
+          [enableAnnotations]="enableAnnotations"
+          [enableRedactions]="enableRedactions"
+          [annotationSet]="enableAnnotations ? (annotationSet$ | async) : null"
+          [originalUrl]="url"
+          [downloadFileName]="downloadFileName"
+          [height]="viewerHeight"
+          mvRotationPersist
+          >
+        </mv-conversion-viewer>
+      }
+      @if (contentType === 'pdf') {
+        <mv-pdf-viewer
+          #pdfViewer
+          (mediaLoadStatus)="onMediaLoad($event)"
+          (pdfViewerException)="onLoadException($event)"
+          (documentTitle)="onDocumentTitleChange($event)"
+          [url]="url"
+          [enableAnnotations]="enableAnnotations"
+          [enableRedactions]="enableRedactions"
+          [enableICP]="enableICP"
+          [annotationSet]="enableAnnotations ? (annotationSet$ | async) : null"
+          [downloadFileName]="downloadFileName"
+          [height]="viewerHeight"
+          [caseId]="caseId"
+          mvRotationPersist
+          >
+        </mv-pdf-viewer>
+      }
+      @if (contentType === 'image') {
+        <mv-image-viewer
+          (mediaLoadStatus)="onMediaLoad($event)"
+          (imageViewerException)="onLoadException($event)"
+          [url]="url"
+          [enableAnnotations]="enableAnnotations"
+          [annotationSet]="enableAnnotations ? (annotationSet$ | async) : null"
+          [downloadFileName]="downloadFileName"
+          [height]="viewerHeight"
+          mvRotationPersist
+          >
+        </mv-image-viewer>
+      }
+      @if (multimediaContent) {
+        <mv-multimedia-player
+          [multimediaOn]="multimediaPlayerEnabled"
+          [url]="url"
+          [downloadFileName]="downloadFileName"
+          (loadStatus)="onMediaLoad($event)"
+          >
+        </mv-multimedia-player>
+      }
+      @if (unsupportedContent) {
+        <mv-unsupported-viewer
+          [url]="url"
+          [typeException]="typeException"
+          [downloadFileName]="downloadFileName"
+          (loadStatus)="onMediaLoad($event)"
+          (unsupportedViewerException)="onLoadException($event)"
+          >
+        </mv-unsupported-viewer>
+      }
     </div>
   </div>
 </div>

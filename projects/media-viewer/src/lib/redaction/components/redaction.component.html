@@ -1,34 +1,36 @@
 <div class="pageContainer">
-  <div *ngFor="let redaction of (redactionsPerPage$ | async);  index as i"
-       class="pageContainer__page"
+  @for (redaction of (redactionsPerPage$ | async); track redaction; let i = $index) {
+    <div
+      class="pageContainer__page"
        [ngStyle]="{
        'width.px': redaction.styles.width,
        'height.px': redaction.styles.height
        }"
       [attr.redaction-page-num]="i+1"
-       [ngClass]="{ 'pageContainer__page--draw' : drawMode }">
-    <mv-box-highlight-create
-      [page]="i + 1"
-      [pageHeight]="redaction.styles.height"
-      [pageWidth]="redaction.styles.width"
-      [rotate]="rotate"
-      [zoom]="zoom"
-      (saveSelection)="markBoxRedaction($event)">
-    </mv-box-highlight-create>
-    <div class="pageContainer__page-item">
-      <ng-container *ngFor="let anno of redaction.anno">
-        <!--  TODO rename this to selection -->
-        <mv-annotation [annotation]="anno"
-                       [zoom]="zoom"
-                       [rotate]="rotate"
-                       [selectedAnnoId]="selectedRedaction$ | async"
-                       [pageHeight]="redaction.styles.height"
-                       [pageWidth]="redaction.styles.width"
-                       (update)="onMarkerUpdate($event)"
-                       (delete)="onMarkerDelete($event)"
-                       (annotationClick)="selectRedaction($event)">
-        </mv-annotation>
-      </ng-container>
+      [ngClass]="{ 'pageContainer__page--draw' : drawMode }">
+      <mv-box-highlight-create
+        [page]="i + 1"
+        [pageHeight]="redaction.styles.height"
+        [pageWidth]="redaction.styles.width"
+        [rotate]="rotate"
+        [zoom]="zoom"
+        (saveSelection)="markBoxRedaction($event)">
+      </mv-box-highlight-create>
+      <div class="pageContainer__page-item">
+        @for (anno of redaction.anno; track anno) {
+          <!--  TODO rename this to selection -->
+          <mv-annotation [annotation]="anno"
+            [zoom]="zoom"
+            [rotate]="rotate"
+            [selectedAnnoId]="selectedRedaction$ | async"
+            [pageHeight]="redaction.styles.height"
+            [pageWidth]="redaction.styles.width"
+            (update)="onMarkerUpdate($event)"
+            (delete)="onMarkerDelete($event)"
+            (annotationClick)="selectRedaction($event)">
+          </mv-annotation>
+        }
+      </div>
     </div>
-  </div>
+  }
 </div>

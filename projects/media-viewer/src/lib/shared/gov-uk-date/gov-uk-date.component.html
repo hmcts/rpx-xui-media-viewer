@@ -2,7 +2,7 @@
   class="govuk-form-group"
   [ngClass]="{ 'govuk-form-group--error': errorMessage?.isInvalid }"
   [formGroup]="formGroup"
->
+  >
   <mv-gov-uk-fieldset
     [config]="{
       legend: config.legend,
@@ -12,13 +12,14 @@
     }"
     [isHeading]="false"
     [errorMessage]="errorMessage"
-  >
-    <mv-gov-uk-error-message
-      [config]="{ id: 'passport' }"
-      *ngIf="errorMessage.isInvalid"
-      [errorMessage]="errorMessage"
     >
-    </mv-gov-uk-error-message>
+    @if (errorMessage.isInvalid) {
+      <mv-gov-uk-error-message
+        [config]="{ id: 'passport' }"
+        [errorMessage]="errorMessage"
+        >
+      </mv-gov-uk-error-message>
+    }
 
     <div class="govuk-date-input" [id]="config.id + '-date'">
       <div class="govuk-date-input__item">
@@ -30,7 +31,7 @@
               id: config.id + '-day',
               classes: 'govuk-date-input__label'
             }"
-          >
+            >
           </mv-gov-label>
           <input
             class="govuk-input govuk-date-input__input govuk-input--width-2"
@@ -41,7 +42,7 @@
             value=""
             pattern="[0-9]*"
             [formControlName]="'day'"
-          />
+            />
         </div>
       </div>
       <div class="govuk-date-input__item">
@@ -53,7 +54,7 @@
               id: config.id + '-month',
               classes: 'govuk-date-input__label'
             }"
-          >
+            >
           </mv-gov-label>
           <input
             class="govuk-input govuk-date-input__input govuk-input--width-2"
@@ -64,7 +65,7 @@
             value=""
             pattern="[0-9]*"
             [formControlName]="'month'"
-          />
+            />
         </div>
       </div>
       <div class="govuk-date-input__item">
@@ -76,7 +77,7 @@
               id: config.id + '-year',
               classes: 'govuk-date-input__label'
             }"
-          >
+            >
           </mv-gov-label>
           <input
             class="govuk-input govuk-date-input__input govuk-input--width-4"
@@ -87,7 +88,7 @@
             value=""
             pattern="[0-9]*"
             [formControlName]="'year'"
-          />
+            />
         </div>
       </div>
     </div>

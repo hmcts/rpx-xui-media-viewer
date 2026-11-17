@@ -8,7 +8,7 @@ export class TooltipDismissDirective {
   private el = inject(ElementRef);
 
 
-  @HostListener('document:keydown.escape', ['$event'])
+  @HostListener('document:keydown.escape')
   onEscapeDismissTooltip() {
     const element = this.el.nativeElement as HTMLElement;
     element.setAttribute('data-tooltip-dismissed', 'true');

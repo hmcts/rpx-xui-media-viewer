@@ -1,33 +1,41 @@
-<div #toolbarContainer class="toolbar" *ngIf="rectangle"
-     [style.top.px]="top"
-     [style.left.px]="left">
-  <button *ngIf="canHighlight"
-          type="button"
-          title="Highlight"
-          [attr.aria-label]="'Highlight' | rpxTranslate"
-          class="aui__toolbar-button aui__toolbar-button--comments contextual-btn leftButton aui__toolbar-button-highlight"
-          (mousedown)="createHighlight()"
-          (keydown.enter)="createHighlight()">
-    <span aria-hidden="true">Highlight</span>
-  </button>
-  <button *ngIf="canDelete"
-          type="button"
-          title="Delete"
-          [attr.aria-label]="'Delete' | rpxTranslate"
-          class="aui__toolbar-button aui__toolbar-button--comments contextual-btn leftButton"
-          (mousedown)="deleteHighlight()"
-          (keydown.enter)="deleteHighlight()">
-    <span aria-hidden="true">Remove</span>
-  </button>
-  <button *ngIf="canComment"
-          type="button"
-          title="Comment"
-          [attr.aria-label]="'Comment' | rpxTranslate"
-          class="aui__toolbar-button aui__toolbar-button--comments contextual-btn rightButton aui__toolbar-button-comment"
-          (mousedown)="addOrEditComment()"
-          (keydown.enter)="addOrEditComment()">
-    <span aria-hidden="true">Comment</span></button>
-  <button *ngIf="canBookmark"
+@if (rectangle) {
+  <div #toolbarContainer class="toolbar"
+    [style.top.px]="top"
+    [style.left.px]="left">
+    @if (canHighlight) {
+      <button
+        type="button"
+        title="Highlight"
+        [attr.aria-label]="'Highlight' | rpxTranslate"
+        class="aui__toolbar-button aui__toolbar-button--comments contextual-btn leftButton aui__toolbar-button-highlight"
+        (mousedown)="createHighlight()"
+        (keydown.enter)="createHighlight()">
+        <span aria-hidden="true">Highlight</span>
+      </button>
+    }
+    @if (canDelete) {
+      <button
+        type="button"
+        title="Delete"
+        [attr.aria-label]="'Delete' | rpxTranslate"
+        class="aui__toolbar-button aui__toolbar-button--comments contextual-btn leftButton"
+        (mousedown)="deleteHighlight()"
+        (keydown.enter)="deleteHighlight()">
+        <span aria-hidden="true">Remove</span>
+      </button>
+    }
+    @if (canComment) {
+      <button
+        type="button"
+        title="Comment"
+        [attr.aria-label]="'Comment' | rpxTranslate"
+        class="aui__toolbar-button aui__toolbar-button--comments contextual-btn rightButton aui__toolbar-button-comment"
+        (mousedown)="addOrEditComment()"
+        (keydown.enter)="addOrEditComment()">
+        <span aria-hidden="true">Comment</span></button>
+      }
+      @if (canBookmark) {
+        <button
           type="button"
           title="Bookmark"
           [attr.aria-label]="'Bookmark' | rpxTranslate"
@@ -35,8 +43,10 @@
           id="bookmarkButton"
           (mousedown)="createBookmark()"
           (keydown.enter)="createBookmark()">
-    <span aria-hidden="true">Bookmark</span></button>
-  <div class="arrow-down">
-    <div class="inner-triangle"></div>
-  </div>
-</div>
+          <span aria-hidden="true">Bookmark</span></button>
+        }
+        <div class="arrow-down">
+          <div class="inner-triangle"></div>
+        </div>
+      </div>
+    }
