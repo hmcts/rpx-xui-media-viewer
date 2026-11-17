@@ -37,7 +37,6 @@ class MockCtxToolbarComponent {
     standalone: false
 })
 class MockRectangleComponent {
-  @Input() rectangleTabIndex = 0;
   @Input() color: String;
   @Input() zoom: number;
   @Input() rotate: number;

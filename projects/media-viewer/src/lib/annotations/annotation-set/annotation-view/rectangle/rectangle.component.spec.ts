@@ -1,4 +1,3 @@
-import { KeyboardBoxMoveDirective } from './keyboard-box-move.directive';
 import { ComponentFixture, TestBed} from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA, DebugElement, SimpleChange, ElementRef } from '@angular/core';
 import { RectangleComponent } from './rectangle.component';
@@ -43,7 +42,7 @@ describe('RectangleComponent', () => {
 
   beforeEach(() => {
     return TestBed.configureTestingModule({
-      declarations: [RectangleComponent, KeyboardBoxMoveDirective],
+      declarations: [RectangleComponent],
       imports: [
         FormsModule,
         MutableDivModule,

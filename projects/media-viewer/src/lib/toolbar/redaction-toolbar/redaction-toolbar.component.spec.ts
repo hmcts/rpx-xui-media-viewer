@@ -1,4 +1,3 @@
-import { KeyboardNavDirective } from '../../shared/directives/keyboard-nav.directive';
 import { RpxTranslationModule } from 'rpx-xui-translation';
 import { Component } from '@angular/core';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
@@ -32,7 +31,7 @@ describe('RedactionToolbarComponent', () => {
 
   beforeEach(() => {
     return TestBed.configureTestingModule({
-      declarations: [RedactionToolbarComponent, KeyboardNavDirective],
+      declarations: [RedactionToolbarComponent],
       imports: [
         FormsModule,
         StoreModule.forFeature('media-viewer', reducers),

@@ -41,7 +41,6 @@ describe('TextareaAutoExpandDirective', () => {
       ' so the initial height will not be the same as the final height, testing the comment height when a large amount of text is enter' +
       ' so the initial height will not be the same as the final height, testing the comment height when a large amount of text is enter' +
       ' so the initial height will not be the same as the final height';
-    textareaEl.nativeElement.dispatchEvent(new Event('input'));
     fixture.detectChanges();
 
     expect(textareaEl.nativeElement.style.height).not.toEqual(initialHeight);

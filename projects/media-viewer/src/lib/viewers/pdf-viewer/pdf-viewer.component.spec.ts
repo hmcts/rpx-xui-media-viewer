@@ -1,4 +1,3 @@
-import { KeyboardTextHighlightDirective } from '../../annotations/annotation-set/annotation-create/highlight-create/keyboard-text-highlight.directive';
 import { getPages } from './../../store/selectors/document.selectors';
 import { Rotation } from './../rotation-persist/rotation.model';
 import { RpxTranslationModule } from 'rpx-xui-translation';
@@ -44,7 +43,6 @@ describe('PdfViewerComponent', () => {
     TestBed.configureTestingModule({
       declarations: [
         PdfViewerComponent,
-        KeyboardTextHighlightDirective,
         AnnotationSetComponent,
         GrabNDragDirective
       ],

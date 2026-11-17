@@ -1,4 +1,3 @@
-import { KeyboardBoxDrawDirective } from './keyboard-box-draw.directive';
 import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { By } from '@angular/platform-browser';
 import { HttpClientTestingModule } from '@angular/common/http/testing';
@@ -21,7 +20,7 @@ describe('BoxHighlightCreateComponent', () => {
   beforeEach(() => {
     TestBed.configureTestingModule({
       imports: [HttpClientTestingModule],
-      declarations: [BoxHighlightCreateComponent, KeyboardBoxDrawDirective],
+      declarations: [BoxHighlightCreateComponent],
       providers: [
         {
           provide: ToolbarEventService,
