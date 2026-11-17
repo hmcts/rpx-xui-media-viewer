@@ -5,8 +5,8 @@
       (click)="toggleOutline()"
     (keyup.enter)="toggleOutline()" tabindex="0"></div>
   }
-  <a (click)="goToDestination(outline?.dest)"
-    (keyup.enter)="goToDestination(outline?.dest)"
+  <a (click)="goToDestination($safeNavigationMigration(outline?.dest))"
+    (keyup.enter)="goToDestination($safeNavigationMigration(outline?.dest))"
     [style.font-weight]="outline.bold ? 'bold' : ''"
     [style.font-style]="outline.italic ? 'italic' : ''"
     [ngClass]="showHighlightOutlineCss()"

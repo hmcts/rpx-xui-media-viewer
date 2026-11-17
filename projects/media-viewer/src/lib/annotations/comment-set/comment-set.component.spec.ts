@@ -1,4 +1,4 @@
-import {Component, Input, Output, EventEmitter, SimpleChanges, SimpleChange} from '@angular/core';
+import {Component, Input, Output, EventEmitter, SimpleChanges, SimpleChange, ChangeDetectionStrategy} from '@angular/core';
 import {ComponentFixture, inject, TestBed} from '@angular/core/testing';
 import { BehaviorSubject } from 'rxjs';
 import { StoreModule, Store } from '@ngrx/store';
@@ -16,6 +16,7 @@ import * as fromActions from '../../store/actions/annotation.actions';
 @Component({
     selector: 'mv-anno-comment',
     template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MockCommentComponent {

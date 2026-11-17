@@ -1,4 +1,4 @@
-import { Component, Input, ViewChild, ElementRef, OnInit, OnDestroy, inject } from '@angular/core';
+import { Component, Input, ViewChild, ElementRef, OnInit, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormControl, FormGroup, UntypedFormControl, Validators } from '@angular/forms';
 import { combineLatest, Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -13,6 +13,7 @@ import * as fromTagSelectors from '../../store/selectors/tag.selectors';
 @Component({
     selector: 'mv-comments-summary',
     templateUrl: './comments-summary.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentsSummaryComponent implements OnInit, OnDestroy {

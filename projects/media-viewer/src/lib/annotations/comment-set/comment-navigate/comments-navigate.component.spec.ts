@@ -1,4 +1,4 @@
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
 import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { FormsModule } from '@angular/forms';
 import { RouterTestingModule } from '@angular/router/testing';
@@ -13,6 +13,7 @@ describe('CommentsNavigateComponent', () => {
   @Component({
     selector: `mv-host-component`,
     template: `<mv-comments-navigate [annotationList]="annotationList"></mv-comments-navigate>`,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
   class TestHostComponent {
@@ -73,7 +74,8 @@ describe('CommentsNavigateComponent', () => {
       hostComponent.annotationList = annotationList;
       fixture.detectChanges();
 
-      expect(component.navigationList).toBeTruthy();
+      expect(component.annotationList).toBe(hostComponent.annotationList);
+      expect(component.navigationList.length).toBe(4);
       expect(component.navigationList[0].rectangle.y).toBe(20);
       expect(component.navigationList[3].rectangle.y).toBe(10);
       expect(toolbarEvents.setPage).toHaveBeenCalledWith(1);

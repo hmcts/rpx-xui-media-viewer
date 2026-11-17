@@ -1,4 +1,4 @@
-import { Component, ElementRef, HostListener, OnInit, ViewChild, OnDestroy, AfterViewInit, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnInit, ViewChild, OnDestroy, AfterViewInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { SearchResultsCount, ToolbarEventService } from '../toolbar-event.service';
 import { Subscription } from 'rxjs';
@@ -6,6 +6,7 @@ import { Subscription } from 'rxjs';
 @Component({
     selector: 'mv-search-bar',
     templateUrl: './search-bar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SearchBarComponent implements OnInit, OnDestroy, AfterViewInit {

@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 
 /*
 * Gov UK Label component
@@ -24,6 +24,7 @@ import {Component, Input} from '@angular/core';
   }
 }
 `,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class GovUkLabelComponent {

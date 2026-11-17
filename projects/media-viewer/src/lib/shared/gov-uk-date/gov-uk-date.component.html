@@ -1,6 +1,6 @@
 <div
   class="govuk-form-group"
-  [ngClass]="{ 'govuk-form-group--error': errorMessage?.isInvalid }"
+  [ngClass]="{ 'govuk-form-group--error': $safeNavigationMigration(errorMessage?.isInvalid) }"
   [formGroup]="formGroup"
   >
   <mv-gov-uk-fieldset
@@ -35,7 +35,7 @@
           </mv-gov-label>
           <input
             class="govuk-input govuk-date-input__input govuk-input--width-2"
-            [ngClass]="{ 'govuk-input--error': errorMessage?.isInvalid }"
+            [ngClass]="{ 'govuk-input--error': $safeNavigationMigration(errorMessage?.isInvalid) }"
             [id]="config.id + '-day'"
             [name]="config.id + '-day'"
             type="number"
@@ -58,7 +58,7 @@
           </mv-gov-label>
           <input
             class="govuk-input govuk-date-input__input govuk-input--width-2"
-            [ngClass]="{ 'govuk-input--error': errorMessage?.isInvalid }"
+            [ngClass]="{ 'govuk-input--error': $safeNavigationMigration(errorMessage?.isInvalid) }"
             [id]="config.id + '-month'"
             [name]="config.id + '-month'"
             type="number"
@@ -81,7 +81,7 @@
           </mv-gov-label>
           <input
             class="govuk-input govuk-date-input__input govuk-input--width-4"
-            [ngClass]="{ 'govuk-input--error': errorMessage?.isInvalid }"
+            [ngClass]="{ 'govuk-input--error': $safeNavigationMigration(errorMessage?.isInvalid) }"
             [id]="config.id + '-year'"
             [name]="config.id + '-year'"
             type="number"

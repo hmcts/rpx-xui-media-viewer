@@ -1,5 +1,5 @@
 import { Observable } from 'rxjs';
-import { AfterContentInit, Component, ViewEncapsulation } from '@angular/core';
+import { AfterContentInit, Component, ViewEncapsulation, ChangeDetectionStrategy } from '@angular/core';
 import { Comment } from '../../../projects/media-viewer/src/lib/annotations/comment-set/comment/comment.model';
 import { ToolbarEventService } from '../../../projects/media-viewer/src/lib/toolbar/toolbar-event.service';
 
@@ -7,6 +7,7 @@ import { ToolbarEventService } from '../../../projects/media-viewer/src/lib/tool
     selector: 'media-viewer-wrapper',
     templateUrl: './media-viewer-wrapper.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaViewerWrapperComponent implements AfterContentInit {

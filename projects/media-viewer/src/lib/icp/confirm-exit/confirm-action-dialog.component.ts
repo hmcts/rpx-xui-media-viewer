@@ -1,9 +1,10 @@
-import { AfterViewInit, Component, ElementRef, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { IcpEventService } from '../../toolbar/icp-event.service';
 
 @Component({
     selector: 'mv-confirm-action',
     templateUrl: './confirm-action-dialog.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ConfirmActionDialogComponent implements AfterViewInit {

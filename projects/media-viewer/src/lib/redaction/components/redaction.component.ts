@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 import { v4 as uuid } from 'uuid';
@@ -20,6 +20,7 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 @Component({
     selector: 'mv-redactions',
     templateUrl: './redaction.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class RedactionComponent implements OnInit, OnDestroy {

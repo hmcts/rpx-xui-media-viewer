@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject } from '@angular/core';
+import { AfterContentInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import { asyncScheduler, BehaviorSubject, Observable, Subscription } from 'rxjs';
 import { debounceTime, filter, tap, throttleTime } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
@@ -28,6 +28,7 @@ import { HighlightCreateDirective } from '../../annotations/annotation-set/annot
     selector: 'mv-pdf-viewer',
     templateUrl: './pdf-viewer.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class PdfViewerComponent implements AfterContentInit, OnChanges, OnDestroy {

@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnInit, ViewChild, OnDestroy, Output, EventEmitter, inject } from '@angular/core';
+import { Component, ElementRef, Input, OnInit, ViewChild, OnDestroy, Output, EventEmitter, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 import { Subscription } from 'rxjs';
 import { ResponseType, ViewerException } from '../viewer-exception.model';
@@ -7,6 +7,7 @@ import { ViewerUtilService } from '../viewer-util.service';
 @Component({
     selector: 'mv-unsupported-viewer',
     templateUrl: './unsupported-viewer.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class UnsupportedViewerComponent implements OnInit, OnDestroy {

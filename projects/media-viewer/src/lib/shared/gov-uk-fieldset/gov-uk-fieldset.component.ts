@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {HtmlTemplatesHelper} from '../util/helpers/html-templates.helper';
 /*
 * Gov Uk Fieldset Component
@@ -32,6 +32,7 @@ import {HtmlTemplatesHelper} from '../util/helpers/html-templates.helper';
         <ng-content></ng-content>
       </fieldset>
       `,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class GovUkFieldsetComponent {

@@ -1,4 +1,4 @@
-import {Component, Directive, Input} from '@angular/core';
+import {Component, Directive, Input, ChangeDetectionStrategy} from '@angular/core';
 /*
 * Gov UK Error Message
 * Responsible for displaying in-line error messages
@@ -14,6 +14,7 @@ import {Component, Directive, Input} from '@angular/core';
       </span>
     }
     `,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class GovUkErrorMessageComponent {

@@ -29,6 +29,9 @@
       ]
     },
     "useDefineForClassFields": false,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "strict": false,
+    "ignoreDeprecations": "6.0",
+    "noUncheckedSideEffectImports": false
   }
 }

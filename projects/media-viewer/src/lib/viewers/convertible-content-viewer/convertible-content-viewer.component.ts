@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ResponseType, ViewerException } from '../viewer-exception.model';
 import { select, Store } from '@ngrx/store';
 import * as fromStore from '../../store/reducers/document.reducer';
@@ -12,6 +12,7 @@ import { filter } from 'rxjs/operators';
     selector: 'mv-conversion-viewer',
     templateUrl: './convertible-content-viewer.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnChanges {

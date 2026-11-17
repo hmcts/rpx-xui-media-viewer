@@ -1,4 +1,4 @@
-import { Component, Input, ViewEncapsulation, inject } from '@angular/core';
+import { Component, Input, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import {TagsModel} from '../models/tags.model';
 import {TagsServices} from '../services/tags/tags.services';
 import {UntypedFormControl} from '@angular/forms';
@@ -8,6 +8,7 @@ import {Observable} from 'rxjs';
     selector: 'mv-tags',
     templateUrl: './tags.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class TagsComponent {
