@@ -37,7 +37,7 @@
     "@ngrx/store": "^22.0.0",
     "@ngrx/store-devtools": "^22.0.0",
     "ngx-chips": "3.0.0",
-    "rpx-xui-translation": "1.2.18",
+    "rpx-xui-translation": "1.2.19-angular-22-upgrade",
     "rxjs": "^7.8.2"
   },
   "resolutions": {
