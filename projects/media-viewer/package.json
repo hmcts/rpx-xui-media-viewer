@@ -17,7 +17,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@swimlane/ngx-datatable": "^23.0.1",
+    "@swimlane/ngx-datatable": "^25.1.0",
     "moment-timezone": "^0.6.2",
     "mutable-div": "^2.0.0",
     "pdfjs-dist": "^4.10.38",
