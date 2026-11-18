@@ -23,9 +23,9 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
     standalone: false
 })
 export class RedactionComponent implements OnInit, OnDestroy {
-  private store = inject<Store<fromStore.State>>(Store);
+  private readonly store = inject<Store<fromStore.State>>(Store);
   private readonly viewerEvents = inject(ViewerEventService);
-  private toolbarEvents = inject(ToolbarEventService);
+  private readonly toolbarEvents = inject(ToolbarEventService);
 
 
   @Input() zoom: number;

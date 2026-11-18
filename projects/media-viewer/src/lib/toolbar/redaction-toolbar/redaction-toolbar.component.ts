@@ -16,7 +16,7 @@ import { ToolbarFocusService } from '../toolbar-focus.service';
 export class RedactionToolbarComponent implements OnInit, OnDestroy {
   readonly toolbarEventService = inject(ToolbarEventService);
   readonly toolbarButtons = inject(ToolbarButtonVisibilityService);
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly toolbarFocusService = inject(ToolbarFocusService);
 
 
@@ -25,7 +25,7 @@ export class RedactionToolbarComponent implements OnInit, OnDestroy {
   preview = false;
   hasRedactions = false;
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   redactionAllInProgress: boolean;
 
   ngOnInit(): void {

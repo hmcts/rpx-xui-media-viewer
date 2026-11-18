@@ -57,14 +57,12 @@
     <button
       class="govuk-button"
       type="button"
-      role="button"
       (click)="editOrSave()"
     >
       {{ !editable ? ("Edit" | rpxTranslate) : ("Save" | rpxTranslate) }}
     </button>
     <button
       type="button"
-      role="button"
       class="govuk-button govuk-button--secondary"
       (click)="deleteOrCancel()"
     >

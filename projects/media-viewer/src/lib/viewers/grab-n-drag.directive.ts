@@ -6,7 +6,7 @@ import { Directive, ElementRef, HostListener, Input, inject } from '@angular/cor
     standalone: false
 })
 export class GrabNDragDirective {
-  private el = inject(ElementRef);
+  private readonly el = inject(ElementRef);
 
 
   originalPosition: { left: number; top: number };

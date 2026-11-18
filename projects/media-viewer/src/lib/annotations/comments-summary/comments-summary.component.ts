@@ -16,10 +16,10 @@ import * as fromTagSelectors from '../../store/selectors/tag.selectors';
     standalone: false
 })
 export class CommentsSummaryComponent implements OnInit, OnDestroy {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly printService = inject(PrintService);
   private readonly toolbarEvents = inject(ToolbarEventService);
-  private fb = inject(FormBuilder);
+  private readonly fb = inject(FormBuilder);
 
 
   @Input() title: string;

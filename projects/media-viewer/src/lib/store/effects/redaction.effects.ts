@@ -9,9 +9,9 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 
 @Injectable()
 export class RedactionEffects {
-  private actions$ = inject(Actions);
-  private redactionApiService = inject(RedactionApiService);
-  private toolbarEvents = inject(ToolbarEventService);
+  private readonly actions$ = inject(Actions);
+  private readonly redactionApiService = inject(RedactionApiService);
+  private readonly toolbarEvents = inject(ToolbarEventService);
 
 
   loadRedactions$ = createEffect(() =>

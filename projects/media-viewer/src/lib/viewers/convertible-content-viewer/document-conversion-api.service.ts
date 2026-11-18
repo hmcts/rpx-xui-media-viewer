@@ -8,7 +8,7 @@ export class DocumentConversionApiService {
   private readonly httpClient = inject(HttpClient);
 
 
-  private documentConversionUrl = '/doc-assembly/convert';
+  private readonly documentConversionUrl = '/doc-assembly/convert';
 
   public convert(documentId): Observable<HttpResponse<Blob>> {
     return this.httpClient

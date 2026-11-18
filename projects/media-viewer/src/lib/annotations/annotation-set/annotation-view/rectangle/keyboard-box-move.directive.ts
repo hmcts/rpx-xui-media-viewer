@@ -12,7 +12,7 @@ export interface BoxMovementBounds {
   standalone: false
 })
 export class KeyboardBoxMoveDirective implements OnDestroy {
-  private elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly elementRef = inject<ElementRef<HTMLElement>>(ElementRef);
 
 
   @Input() enabled = true;
@@ -23,8 +23,8 @@ export class KeyboardBoxMoveDirective implements OnDestroy {
   @Output() keyboardMovingChange = new EventEmitter<boolean>();
   @Output() boxDelete = new EventEmitter<void>();
 
-  private moveSubject = new Subject<void>();
-  private moveSubscription: Subscription;
+  private readonly moveSubject = new Subject<void>();
+  private readonly moveSubscription: Subscription;
   private isMoving = false;
 
   constructor() {

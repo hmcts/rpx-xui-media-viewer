@@ -17,11 +17,11 @@ import { HtmlTemplatesHelper } from '../../../../shared/util/helpers/html-templa
     standalone: false
 })
 export class HighlightCreateDirective implements OnInit, OnDestroy {
-  private element = inject<ElementRef<HTMLElement>>(ElementRef);
-  private toolbarEvents = inject(ToolbarEventService);
-  private viewerEvents = inject(ViewerEventService);
-  private highlightService = inject(HighlightCreateService);
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly element = inject<ElementRef<HTMLElement>>(ElementRef);
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly viewerEvents = inject(ViewerEventService);
+  private readonly highlightService = inject(HighlightCreateService);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
 
   pageHeight: number;
   pageWidth: number;
@@ -29,7 +29,7 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
   rotate: number;
   allPages: object;
 
-  private $subscriptions: Subscription[] = [];
+  private readonly $subscriptions: Subscription[] = [];
 
   ngOnInit() {
     this.$subscriptions.push(this.store.select(fromDocument.getPages).subscribe((pages) => {
@@ -66,8 +66,8 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     let currentElement = mouseEvent.target as HTMLElement;
     while (currentElement.offsetParent) {
       currentElement = currentElement.offsetParent as HTMLElement;
-      if (currentElement.getAttribute) {
-        page = parseInt(currentElement.getAttribute('data-page-number'), 10);
+      if (currentElement.dataset) {
+        page = parseInt(currentElement.dataset.pageNumber, 10);
         if (page) {
           break;
         }
@@ -102,8 +102,8 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
 
     while (currentElement && currentElement.offsetParent) {
       currentElement = currentElement.offsetParent as HTMLElement;
-      if (currentElement.getAttribute) {
-        const page = parseInt(currentElement.getAttribute('data-page-number'), 10);
+      if (currentElement.dataset) {
+        const page = parseInt(currentElement.dataset.pageNumber, 10);
         if (page) {
           return page;
         }
@@ -183,16 +183,7 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
     const width = rect.right - rect.left;
     const top = rect.top - parentRect.top;
     const left = rect.left - parentRect.left;
-    let rectangle = this.highlightService.applyRotation(
-      this.pageHeight,
-      this.pageWidth,
-      height,
-      width,
-      top,
-      left,
-      this.rotate,
-      this.zoom
-    );
+    let rectangle = this.highlightService.applyRotation({ pageHeight: this.pageHeight, pageWidth: this.pageWidth, offsetHeight: height, offsetWidth: width, offsetTop: top, offsetLeft: left, rotate: this.rotate, zoom: this.zoom });
     rectangle = { id: uuid(), ...rectangle };
 
     return rectangle as Rectangle;

@@ -45,7 +45,7 @@ describe('Icp Follower Service', () => {
   it('should call subscribe if client is follower', () => {
     spyOn(followerService, 'subscribe');
 
-    followerService.update(true);
+    followerService.subscribe();
 
     expect(followerService.subscribe).toHaveBeenCalled();
   });
@@ -53,7 +53,7 @@ describe('Icp Follower Service', () => {
   it('should call unsubscribe if client is not follower', () => {
     spyOn(followerService, 'unsubscribe');
 
-    followerService.update(false);
+    followerService.unsubscribe();
 
     expect(followerService.unsubscribe).toHaveBeenCalled();
   });

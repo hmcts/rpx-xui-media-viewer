@@ -117,8 +117,8 @@ export const getCommentsArray = createSelector(
 export const getCommentSummary = createSelector(
   getCommentsArray,
   getCommentSummaryFilters,
-  (commentSummary = [], filters) => {
-    const comments = StoreUtils.filterCommentsSummary(commentSummary, filters.filters);
+  (commentSummary, filters) => {
+    const comments = StoreUtils.filterCommentsSummary(commentSummary ?? [], filters.filters);
     return comments
       .filter(comment => comment.createdByDetails !== undefined)
       .map(comment => ({

@@ -11,7 +11,7 @@ import { Observable } from 'rxjs';
     standalone: false
 })
 export class BookmarkIconsComponent implements OnInit {
-  private store = inject<Store<fromStore.State>>(Store);
+  private readonly store = inject<Store<fromStore.State>>(Store);
 
 
   @Input() zoom: number;

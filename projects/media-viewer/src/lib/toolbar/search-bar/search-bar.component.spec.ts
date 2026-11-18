@@ -156,7 +156,7 @@ describe('SearchBarComponent', () => {
     component.toolbarEvents.searchResultsCountSubject.next({ current: 1, total: 4, isPrevious: false });
     fixture.detectChanges();
 
-    const findNextEl = nativeElement.querySelector('#findNext') as HTMLAnchorElement;
+    const findNextEl = nativeElement.querySelector('#findNext') as HTMLButtonElement;
     expect(findNextEl).toBeTruthy();
 
     const focusSpy = spyOn(findNextEl, 'focus');

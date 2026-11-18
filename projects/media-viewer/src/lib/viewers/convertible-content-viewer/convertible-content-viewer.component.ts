@@ -15,7 +15,7 @@ import { filter } from 'rxjs/operators';
     standalone: false
 })
 export class ConvertibleContentViewerComponent implements OnInit, OnDestroy, OnChanges {
-  private store = inject<Store<fromStore.DocumentState>>(Store);
+  private readonly store = inject<Store<fromStore.DocumentState>>(Store);
 
 
   @Input() originalUrl;

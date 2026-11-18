@@ -194,22 +194,22 @@ export class PdfJsWrapper {
   }
 
   private async setOutlinePageNumbers(pdfDocument, outlineArray: Outline[]) {
-    outlineArray.forEach(async (outline: Outline) => {
-      await this.setNestedOutlinePageNumbers(pdfDocument, outline);
-    });
+    await Promise.all(outlineArray.map(outline => this.setNestedOutlinePageNumbers(pdfDocument, outline)));
   }
 
   private async setNestedOutlinePageNumbers(pdfDocument, outline: Outline) {
     outline.pageNumber = await this.getOutlinePageNumber(pdfDocument, outline);
-    outline.items.forEach(async (outlineItem: Outline) => {
-      outlineItem.pageNumber = await this.getOutlinePageNumber(pdfDocument, outlineItem);
-      this.setNestedOutlinePageNumbers(pdfDocument, outlineItem);
-    });
+    await this.setOutlinePageNumbers(pdfDocument, outline.items);
   }
 
-  private async getOutlinePageNumber(pdfDocument, outline: Outline): Promise<number> {
-    const dest = outline.dest;
-    const pageIndex = await pdfDocument.getPageIndex(dest[0]);
+  private async getOutlinePageNumber(pdfDocument, outline: Outline): Promise<number | undefined> {
+    const dest = typeof outline.dest === 'string'
+      ? await pdfDocument.getDestination(outline.dest)
+      : outline.dest;
+    if (!Array.isArray(dest) || dest.length === 0) {
+      return undefined;
+    }
+    const pageIndex = typeof dest[0] === 'number' ? dest[0] : await pdfDocument.getPageIndex(dest[0]);
     return Number(pageIndex) + 1;
   }
 
@@ -284,11 +284,14 @@ export class PdfJsWrapper {
   }
 
   public rotate(rotation: number): number {
-    return this.pdfViewer.pagesRotation = (this.pdfViewer.pagesRotation + rotation) % 360;
+    const nextRotation = (this.pdfViewer.pagesRotation + rotation) % 360;
+    this.pdfViewer.pagesRotation = nextRotation;
+    return nextRotation;
   }
 
   public resetRotation(rotation: number): number {
-    return this.pdfViewer.pagesRotation = rotation;
+    this.pdfViewer.pagesRotation = rotation;
+    return rotation;
   }
 
   public getNormalisedPagesRotation(): number {

@@ -14,7 +14,7 @@ export class SearchBarComponent implements OnInit, OnDestroy, AfterViewInit {
 
 
   @ViewChild('findInput', { static: true }) findInput: ElementRef<HTMLInputElement>;
-  @ViewChild('findNext', { static: false }) findNext: ElementRef<HTMLAnchorElement>;
+  @ViewChild('findNext', { static: false }) findNext: ElementRef<HTMLButtonElement>;
 
   highlightAll = true;
   matchCase = false;
@@ -23,7 +23,7 @@ export class SearchBarComponent implements OnInit, OnDestroy, AfterViewInit {
   searchText = '';
   resultCount = 0;
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
 
   public advancedSearchVisible = false;
 

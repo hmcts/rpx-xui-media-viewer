@@ -9,9 +9,9 @@ export class RedactionApiService {
   private readonly httpClient = inject(HttpClient);
 
 
-  private markupsApiUrl = '/api/markups';
-  private redactApiUrl = '/api/redaction';
-  private markupsSearchApiUrl = '/api/markups/search';
+  private readonly markupsApiUrl = '/api/markups';
+  private readonly redactApiUrl = '/api/redaction';
+  private readonly markupsSearchApiUrl = '/api/markups/search';
 
   public getRedactions(documentId: string): Observable<HttpResponse<Redaction[]>> {
     const fixedUrl = `${this.markupsApiUrl}/${documentId}`;

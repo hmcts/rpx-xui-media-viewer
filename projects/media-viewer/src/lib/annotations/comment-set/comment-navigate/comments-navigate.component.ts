@@ -13,7 +13,7 @@ import {ToolbarEventService} from '../../../toolbar/toolbar-event.service';
     standalone: false
 })
 export class CommentsNavigateComponent implements OnChanges {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   readonly toolbarEvents = inject(ToolbarEventService);
 
 

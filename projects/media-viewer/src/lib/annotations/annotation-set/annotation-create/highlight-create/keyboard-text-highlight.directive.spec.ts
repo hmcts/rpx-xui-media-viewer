@@ -281,26 +281,26 @@ describe('KeyboardTextHighlightDirective', () => {
       directive.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true }));
     });
 
-    it('should confirm text selection when Enter is pressed during selection', (done) => {
+    it('should confirm text selection when Enter is pressed during selection', () => {
       directive.enabled = true;
-
-      directive.selectionConfirmed.subscribe(() => {
-        done();
-      });
+      const confirmed = jasmine.createSpy('selectionConfirmed');
+      directive.selectionConfirmed.subscribe(confirmed);
 
       directive.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(confirmed).not.toHaveBeenCalled();
       directive.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(confirmed).toHaveBeenCalledTimes(1);
     });
 
-    it('should cancel text selection when Escape is pressed during selection', (done) => {
+    it('should cancel text selection when Escape is pressed during selection', () => {
       directive.enabled = true;
-
-      directive.selectionCancelled.subscribe(() => {
-        done();
-      });
+      const cancelled = jasmine.createSpy('selectionCancelled');
+      directive.selectionCancelled.subscribe(cancelled);
 
       directive.onKeyDown(new KeyboardEvent('keydown', { key: 'Enter' }));
+      expect(cancelled).not.toHaveBeenCalled();
       directive.onKeyDown(new KeyboardEvent('keydown', { key: 'Escape' }));
+      expect(cancelled).toHaveBeenCalledTimes(1);
     });
 
     it('should hide selection cursor when selection is confirmed', (done) => {
@@ -368,14 +368,13 @@ describe('KeyboardTextHighlightDirective', () => {
       expect(cursorEmitted).toBe(false);
     });
 
-    it('should respond to keys when enabled', (done) => {
+    it('should respond to keys when enabled', () => {
       directive.enabled = true;
-
-      directive.cursorPositionChanged.subscribe(() => {
-        done();
-      });
+      const cursorChanged = jasmine.createSpy('cursorPositionChanged');
+      directive.cursorPositionChanged.subscribe(cursorChanged);
 
       directive.onKeyDown(new KeyboardEvent('keydown', { key: 'ArrowRight' }));
+      expect(cursorChanged).toHaveBeenCalledOnceWith(jasmine.objectContaining({ visible: true }));
     });
   });
 

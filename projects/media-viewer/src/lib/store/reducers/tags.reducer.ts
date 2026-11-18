@@ -90,7 +90,7 @@ export function tagsReducer (
         };
       }, {});
 
-      const annotations = Object.keys(filteredComments).map(key => state.annotations.filter(a => a.id === key)[0]);
+      const annotations = Object.keys(filteredComments).map(key => state.annotations.find(a => a.id === key));
       const filteredPageEntities = StoreUtils.groupByKeyEntities(annotations, 'page');
       return {
         ...state,

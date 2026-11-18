@@ -12,7 +12,7 @@ import { PdfPosition } from '../store/reducers/document.reducer';
 export class IcpPresenterService {
   private readonly toolbarEvents = inject(ToolbarEventService);
   private readonly socketService = inject(IcpUpdateService);
-  private store = inject<Store<IcpState>>(Store);
+  private readonly store = inject<Store<IcpState>>(Store);
 
 
   session: IcpSession;
@@ -20,14 +20,6 @@ export class IcpPresenterService {
   pdfPosition: PdfPosition;
 
   $subscription: Subscription;
-
-  update(isPresenter: boolean) {
-    if (isPresenter) {
-      this.subscribe();
-    } else {
-      this.unsubscribe();
-    }
-  }
 
   subscribe() {
     if (!this.$subscription) {

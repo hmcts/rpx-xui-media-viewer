@@ -41,13 +41,14 @@ export const getBookmarkInfo = createSelector(
   fromDocument.getPdfPosition,
   fromDocument.getPages,
   (bookmarkNodes, docId, pdfPosition, pages) => {
+    const sortedBookmarkNodes = [...bookmarkNodes].sort((a, b) => a.index - b.index);
     return {
       pageNumber: pdfPosition.pageNumber - 1,
       xCoordinate: pdfPosition.left,
       yCoordinate: ((pages[pdfPosition.pageNumber].styles.height)
         - (pdfPosition.top * (pages[pdfPosition.pageNumber].viewportScale)))
         / parseFloat(pages[pdfPosition.pageNumber].scaleRotation.scale),
-      previous: bookmarkNodes.length > 0 ? bookmarkNodes.sort((a, b) => a.index - b.index)[bookmarkNodes.length - 1].id : undefined,
+      previous: sortedBookmarkNodes.length > 0 ? sortedBookmarkNodes[sortedBookmarkNodes.length - 1].id : undefined,
       documentId: docId
     };
   }

@@ -22,16 +22,20 @@ export const generateBookmarkEntities = (bookmarks: Bookmark[]): {[id: string]: 
 
 const indexEntities = (entities: { [id: string]: Bookmark }) => {
   const entityIds = Object.keys(entities);
-  for (let index = 0; entityIds.length > 0; index++) {
-    let keysToRemove = [];
+  let index = 0;
+  while (entityIds.length > 0) {
+    const keysToRemove = [];
     entityIds.forEach(key => {
       if (!entities[key].previous || !entityIds.includes(entities[key].previous.toString())) {
         entities[key].index = index;
         keysToRemove.push(key);
       }
     });
+    if (keysToRemove.length === 0) {
+      throw new Error('Cannot order bookmarks with cyclic previous references');
+    }
     keysToRemove.forEach(key => entityIds.splice(entityIds.indexOf(key), 1));
-    keysToRemove = [];
+    index++;
   }
 };
 

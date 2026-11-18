@@ -23,7 +23,7 @@ export class UnsupportedViewerComponent implements OnInit, OnDestroy {
 
   @ViewChild('downloadLink', {static: false}) downloadLink: ElementRef;
 
-  private subscriptions: Subscription[] = [];
+  private readonly subscriptions: Subscription[] = [];
   private viewerException: ViewerException;
 
   public ngOnInit(): void {

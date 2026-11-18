@@ -51,6 +51,29 @@ describe('ConfirmActionDialogComponent', () => {
     expect(component).toBeTruthy();
   });
 
+  it('cancels the dialog with Escape and prevents the event reaching the toolbar', () => {
+    spyOn(icpEventService.leavingSession, 'next');
+    const bubbled = jasmine.createSpy('keydown');
+    fixture.nativeElement.addEventListener('keydown', bubbled);
+    const event = new KeyboardEvent('keydown', { key: 'Escape', bubbles: true, cancelable: true });
+
+    fixture.nativeElement.querySelector('dialog').dispatchEvent(event);
+
+    expect(icpEventService.leavingSession.next).toHaveBeenCalledOnceWith(false);
+    expect(event.defaultPrevented).toBeTrue();
+    expect(bubbled).not.toHaveBeenCalled();
+  });
+
+  it('keeps the dialog open for other keyboard input', () => {
+    spyOn(icpEventService.leavingSession, 'next');
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+
+    fixture.nativeElement.querySelector('dialog').dispatchEvent(event);
+
+    expect(icpEventService.leavingSession.next).not.toHaveBeenCalled();
+    expect(event.defaultPrevented).toBeFalse();
+  });
+
   it('should have onCancel method defined', () => {
     expect(component.onCancel).toBeDefined();
   });

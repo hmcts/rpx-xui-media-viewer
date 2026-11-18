@@ -7,8 +7,8 @@ import * as annotationsActions from '../actions/annotation.actions';
 
 @Injectable()
 export class AnnotationEffects {
-  private actions$ = inject(Actions);
-  private annotationApiService = inject(AnnotationApiService);
+  private readonly actions$ = inject(Actions);
+  private readonly annotationApiService = inject(AnnotationApiService);
 
 
   loadAnnotation$ = createEffect(() =>

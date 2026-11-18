@@ -5,7 +5,7 @@ import { HttpClient } from '@angular/common/http';
   providedIn: 'root'
 })
 export class ViewerUtilService {
-  private http = inject(HttpClient);
+  private readonly http = inject(HttpClient);
 
 
   public validateFile(url: string) {

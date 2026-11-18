@@ -21,7 +21,7 @@ import { CtxToolbarComponent } from '../ctx-toolbar/ctx-toolbar.component';
     standalone: false
 })
 export class MetadataLayerComponent implements OnInit, OnDestroy {
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   private readonly highlightService = inject(HighlightCreateService);
   private readonly toolbarEvents = inject(ToolbarEventService);
   private readonly viewerEvents = inject(ViewerEventService);

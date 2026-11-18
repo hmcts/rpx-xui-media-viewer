@@ -12,8 +12,8 @@ export class PdfJsWrapperFactory {
   private readonly toolbarEvents = inject(ToolbarEventService);
 
 
-  private linkService: pdfjsViewer.PDFLinkService;
-  private eventBus: pdfjsViewer.EventBus;
+  private readonly linkService: pdfjsViewer.PDFLinkService;
+  private readonly eventBus: pdfjsViewer.EventBus;
   private pdfJsWrapper: PdfJsWrapper;
 
   constructor() {

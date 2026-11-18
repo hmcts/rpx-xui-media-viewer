@@ -11,7 +11,7 @@ import {Observable} from 'rxjs';
     standalone: false
 })
 export class TagsComponent {
-  private tagsServices = inject(TagsServices);
+  private readonly tagsServices = inject(TagsServices);
 
   @Input() tagItems: TagsModel[];
   @Input() userId: string;

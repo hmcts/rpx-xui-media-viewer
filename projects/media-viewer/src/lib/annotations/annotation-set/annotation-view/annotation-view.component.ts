@@ -28,7 +28,7 @@ const FOCUSABLE_SELECTOR = [
 })
 export class AnnotationViewComponent implements OnDestroy {
   private readonly toolbarEvents = inject(ToolbarEventService);
-  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
+  private readonly store = inject<Store<fromStore.AnnotationSetState>>(Store);
   // todo rename this to selection vew c
 
   @Input() set annotation(value) {
@@ -38,7 +38,7 @@ export class AnnotationViewComponent implements OnDestroy {
   selected: boolean;
   isKeyboardMoving = false;
   showToolbar = false;
-  private showToolbarSubject = new Subject<boolean>();
+  private readonly showToolbarSubject = new Subject<boolean>();
 
   @Input() zoom: number;
   @Input() rotate: number;

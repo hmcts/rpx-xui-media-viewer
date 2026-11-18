@@ -6,8 +6,6 @@ import { RedactionSearch } from './redaction-search-bar/redaction-search.model';
 import { IcpEventService } from './icp-event.service';
 
 // Toolbar Custom-Event Types
-export type HighlightMode = boolean;
-export type DrawMode = boolean;
 export interface SearchOperation {
   searchTerm: string;
   highlightAll: boolean;
@@ -34,12 +32,12 @@ export interface SearchMode {
 
 @Injectable({ providedIn: 'root' })
 export class ToolbarEventService {
-  private icpEventService = inject(IcpEventService);
+  private readonly icpEventService = inject(IcpEventService);
 
 
-  public readonly highlightModeSubject = new BehaviorSubject<HighlightMode>(false);
-  public readonly highlightToolbarSubject = new BehaviorSubject<HighlightMode>(false);
-  public readonly drawModeSubject = new BehaviorSubject<DrawMode>(false);
+  public readonly highlightModeSubject = new BehaviorSubject<boolean>(false);
+  public readonly highlightToolbarSubject = new BehaviorSubject<boolean>(false);
+  public readonly drawModeSubject = new BehaviorSubject<boolean>(false);
   public readonly rotateSubject = new Subject<number>();
   public readonly searchSubject = new Subject<SearchOperation>();
   public readonly searchResultsCountSubject = new Subject<SearchResultsCount>();
@@ -223,14 +221,14 @@ export class ToolbarEventService {
 
   public toggleCommentsPanel(isVisible: boolean) {
     if (isVisible) {
-      this.toggleParticipantsList(!isVisible);
+      this.toggleParticipantsList(false);
     }
     this.commentsPanelVisible.next(isVisible);
   }
 
   public toggleParticipantsList(isVisible: boolean) {
     if (isVisible) {
-      this.toggleCommentsPanel(!isVisible);
+      this.toggleCommentsPanel(false);
     }
     this.icpEventService.participantsListVisible.next(isVisible);
   }

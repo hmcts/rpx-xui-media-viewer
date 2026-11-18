@@ -16,8 +16,8 @@ import { IcpEventService } from '../../../toolbar/icp-event.service';
     standalone: false
 })
 export class CommentSetHeaderComponent implements OnInit, OnDestroy {
-  private store = inject<Store<fromStore.State>>(Store);
-  private commentService = inject(CommentService);
+  private readonly store = inject<Store<fromStore.State>>(Store);
+  private readonly commentService = inject(CommentService);
   toolbarEvents = inject(ToolbarEventService);
   readonly icpEventService = inject(IcpEventService);
 

@@ -5,13 +5,13 @@ import { Directive, ElementRef, HostListener, inject } from "@angular/core";
   standalone: false
 })
 export class TooltipDismissDirective {
-  private el = inject(ElementRef);
+  private readonly el = inject(ElementRef);
 
 
   @HostListener('document:keydown.escape', ['$event'])
   onEscapeDismissTooltip() {
     const element = this.el.nativeElement as HTMLElement;
-    element.setAttribute('data-tooltip-dismissed', 'true');
+    element.dataset.tooltipDismissed = 'true';
   }
 
   @HostListener('mouseenter')
@@ -19,7 +19,7 @@ export class TooltipDismissDirective {
   @HostListener('focusin')
   onShowTooltip() {
     const element = this.el.nativeElement as HTMLElement;
-    element.removeAttribute('data-tooltip-dismissed');
+    delete element.dataset.tooltipDismissed;
   }
 
 }

@@ -11,9 +11,9 @@ import * as fromStore from '../reducers/reducers';
 
 @Injectable()
 export class BookmarksEffects {
-  private actions$ = inject(Actions);
-  private store = inject<Store<fromStore.AnnotationSetState | fromBookmarks.BookmarksState>>(Store);
-  private bookmarksApiService = inject(BookmarksApiService);
+  private readonly actions$ = inject(Actions);
+  private readonly store = inject<Store<fromStore.AnnotationSetState | fromBookmarks.BookmarksState>>(Store);
+  private readonly bookmarksApiService = inject(BookmarksApiService);
 
 
   loadBookmarks$ = createEffect(() =>
