@@ -145,9 +145,9 @@
     "bn.js": "^5.2.3",
     "immutable": "^5.1.9",
     "axios@^0.24.0": "0.34.0",
-    "minimatch@npm:^10.2.2": "npm:11.0.8",
-    "minimatch@npm:^10.2.6": "npm:11.0.8",
-    "minimatch@npm:^10.2.4": "npm:11.0.8"
+    "minimatch@npm:^10.2.2": "npm:minimatch@11.0.9",
+    "minimatch@npm:^10.2.6": "npm:minimatch@11.0.9",
+    "minimatch@npm:^10.2.4": "npm:minimatch@11.0.9"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "20.3.42",
