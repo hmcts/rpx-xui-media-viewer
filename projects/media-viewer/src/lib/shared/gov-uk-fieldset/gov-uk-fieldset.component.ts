@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 import {HtmlTemplatesHelper} from '../util/helpers/html-templates.helper';
 /*
 * Gov Uk Fieldset Component
@@ -12,20 +12,27 @@ import {HtmlTemplatesHelper} from '../util/helpers/html-templates.helper';
     selector: 'mv-gov-uk-fieldset',
     template: `
       <fieldset class="govuk-fieldset" [attr.aria-describedby]="setDescribedBy()">
-        <legend [class]="config.classes + ' govuk-fieldset__legend'" *ngIf="!isHeading">
-          {{config.legend}}
-        </legend>
+        @if (!isHeading) {
+          <legend [class]="config.classes + ' govuk-fieldset__legend'">
+            {{config.legend}}
+          </legend>
+        }
 
-        <legend [class]="config.classes + ' govuk-fieldset__legend'" *ngIf="isHeading">
-          <h1>{{config.legend}}</h1>
-        </legend>
+        @if (isHeading) {
+          <legend [class]="config.classes + ' govuk-fieldset__legend'">
+            <h1>{{config.legend}}</h1>
+          </legend>
+        }
 
-        <span [id]="config.id+'-hint'" class="govuk-hint" *ngIf="config.hint">
-          {{config.hint}}
-        </span>
+        @if (config.hint) {
+          <span [id]="config.id+'-hint'" class="govuk-hint">
+            {{config.hint}}
+          </span>
+        }
         <ng-content></ng-content>
       </fieldset>
-  `,
+      `,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class GovUkFieldsetComponent {

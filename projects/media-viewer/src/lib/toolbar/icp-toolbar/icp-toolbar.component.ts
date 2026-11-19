@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { ToolbarEventService } from '../toolbar-event.service';
 import { select, Store } from '@ngrx/store';
 import * as fromIcpSelectors from '../../store/selectors/icp.selectors';
@@ -9,6 +9,7 @@ import { IcpEventService } from '../icp-event.service';
 @Component({
     selector: 'mv-icp-toolbar',
     templateUrl: './icp-toolbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class IcpToolbarComponent implements OnInit, OnDestroy {

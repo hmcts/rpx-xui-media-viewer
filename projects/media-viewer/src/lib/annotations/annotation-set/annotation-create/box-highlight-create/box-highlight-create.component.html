@@ -13,12 +13,14 @@
   (mousemove)="updateHighlight($event)"
   (mouseup)="createHighlight()">
 
-  <div *ngIf="showCursor"
-    class="drawing-cursor"
-    [style.position]="'absolute'"
-    [style.top]="cursorY + 'px'"
-    [style.left]="cursorX + 'px'">
-  </div>
+  @if (showCursor) {
+    <div
+      class="drawing-cursor"
+      [style.position]="'absolute'"
+      [style.top]="cursorY + 'px'"
+      [style.left]="cursorX + 'px'">
+    </div>
+  }
 
   <div #boxHighlight
     class="box-highlight"

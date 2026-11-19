@@ -1,8 +1,15 @@
 {
   "extends": "../tsconfig.json",
   "compilerOptions": {
+    "rootDir": "..",
     "noEmit": true,
     "types": ["node"]
   },
-  "include": ["../playwright.config.ts", "./**/*.ts"]
+  "include": ["../playwright.config.ts", "./**/*.ts"],
+  "ts-node": {
+    "compilerOptions": {
+      "module": "NodeNext",
+      "moduleResolution": "NodeNext"
+    }
+  }
 }

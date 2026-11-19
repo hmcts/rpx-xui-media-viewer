@@ -1,8 +1,8 @@
 <div #container [ngClass]="{'comments': showCommentsPanel}">
   <div #panel [ngClass]="{ 'comments-panel comment-container': true, 'expanded': showCommentsPanel }"
-     [style.height.px]="height"
-     (click)="onContainerClick($event)">
-    <ng-container *ngFor="let comment of (comments$ | async); let i = index;">
+    [style.height.px]="height"
+    (click)="onContainerClick($event)">
+    @for (comment of (comments$ | async); track comment; let i = $index) {
       <mv-anno-comment
         [ngStyle]="showCommentsPanel ? {} : {'display':'none'}"
         #commentComponent
@@ -18,6 +18,6 @@
         [annotation]="(annoEntities$ | async)[comment.annotationId]"
         (renderComments)="redrawComments()">
       </mv-anno-comment>
-    </ng-container>
+    }
   </div>
 </div>

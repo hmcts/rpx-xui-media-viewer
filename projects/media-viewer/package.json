@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.49",
+  "version": "4.2.49-upgrade-angular-22",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
@@ -17,7 +17,7 @@
     "access": "public"
   },
   "dependencies": {
-    "@swimlane/ngx-datatable": "^23.0.1",
+    "@swimlane/ngx-datatable": "^25.1.0",
     "moment-timezone": "^0.6.2",
     "mutable-div": "^2.0.0",
     "pdfjs-dist": "^4.10.38",
@@ -26,18 +26,18 @@
     "uuid": "^11.1.1"
   },
   "peerDependencies": {
-    "@angular/animations": "^20.0.0",
-    "@angular/cdk": "^20.0.0",
-    "@angular/common": "^20.0.0",
-    "@angular/core": "^20.0.0",
-    "@angular/forms": "^20.0.0",
-    "@angular/platform-browser": "^20.0.0",
-    "@angular/router": "^20.0.0",
-    "@ngrx/effects": "^20",
-    "@ngrx/store": "^20",
-    "@ngrx/store-devtools": "^20",
+    "@angular/animations": "^22.0.0",
+    "@angular/cdk": "^22.0.0",
+    "@angular/common": "^22.0.0",
+    "@angular/core": "^22.0.0",
+    "@angular/forms": "^22.0.0",
+    "@angular/platform-browser": "^22.0.0",
+    "@angular/router": "^22.0.0",
+    "@ngrx/effects": "^22.0.0",
+    "@ngrx/store": "^22.0.0",
+    "@ngrx/store-devtools": "^22.0.0",
     "ngx-chips": "3.0.0",
-    "rpx-xui-translation": "1.2.18",
+    "rpx-xui-translation": "1.2.19-angular-22-upgrade",
     "rxjs": "^7.8.2"
   },
   "resolutions": {

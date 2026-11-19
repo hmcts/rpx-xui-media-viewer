@@ -1,7 +1,7 @@
 import { BulkRedaction, Redaction } from './../../redaction/services/redaction.model';
 import { SearchMode, SearchResultsCount, SearchType } from './../toolbar-event.service';
 import { RedactionSearch, RedactRectangle } from './redaction-search.model';
-import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, HostListener, OnDestroy, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { ToolbarEventService } from '../toolbar-event.service';
@@ -19,6 +19,7 @@ import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.he
     selector: 'mv-redaction-search-bar',
     templateUrl: './redaction-search-bar.component.html',
     styleUrls: ['./redaction-search-bar.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class RedactionSearchBarComponent implements OnInit, OnDestroy {

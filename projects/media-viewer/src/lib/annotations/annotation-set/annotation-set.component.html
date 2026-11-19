@@ -1,12 +1,12 @@
-<ng-container *ngFor="let annotation of annotations">
+@for (annotation of annotations; track annotation) {
   <mv-annotation [annotation]="annotation"
-                 [zoom]="zoom"
-                 [rotate]="rotate"
-                 [selectedAnnoId]="selectedAnnotation$ | async"
-                 [pageHeight]="pageHeight"
-                 [pageWidth]="pageWidth"
-                 (update)="onAnnotationUpdate($event)"
-                 (delete)="onAnnotationDelete($event)"
-                 (annotationClick)="selectAnnotation($event)">
+    [zoom]="zoom"
+    [rotate]="rotate"
+    [selectedAnnoId]="selectedAnnotation$ | async"
+    [pageHeight]="pageHeight"
+    [pageWidth]="pageWidth"
+    (update)="onAnnotationUpdate($event)"
+    (delete)="onAnnotationDelete($event)"
+    (annotationClick)="selectAnnotation($event)">
   </mv-annotation>
-</ng-container>
+}

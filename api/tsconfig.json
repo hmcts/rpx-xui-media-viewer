@@ -1,7 +1,7 @@
 {
   "compilerOptions": {
-    "moduleResolution": "node",
-    "module": "commonjs",
+    "moduleResolution": "NodeNext",
+    "module": "NodeNext",
     "target": "es2017",
     "sourceMap": false,
     "experimentalDecorators": true,

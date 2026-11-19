@@ -1,10 +1,10 @@
 import { logger } from './logger';
 import * as path from 'path';
 import * as nunjucks from 'nunjucks';
-import * as express from 'express';
+import express from 'express';
 import { ClientRequest } from 'http';
 import { config } from './config';
-import { legacyCreateProxyMiddleware } from 'http-proxy-middleware';
+import { createProxyMiddleware } from 'http-proxy-middleware';
 import { TokenRepository } from './security/token-repository';
 import { ServiceAuthProviderClient } from './security/service-auth-provider-client';
 import { IdamClient } from './security/idam-client';
@@ -34,7 +34,7 @@ Promise.all([serviceAuthRepository.init(), idamRepository.init()])
         };
 
         const proxyOptions = {
-            onProxyReq: addHeaders,
+            on: { proxyReq: addHeaders },
             // Set to false if the target server uses a self-signed certificate. This is not recommended for production environments
             // secure: false,
             secure: true,
@@ -42,35 +42,41 @@ Promise.all([serviceAuthRepository.init(), idamRepository.init()])
         };
 
         const assemblyProxy = config.proxies.assembly;
-        app.use(legacyCreateProxyMiddleware(assemblyProxy.endpoints, {
+        app.use(createProxyMiddleware({
+            pathFilter: assemblyProxy.endpoints,
             target: assemblyProxy.target,
             pathRewrite: assemblyProxy.pathRewrite,
             ...proxyOptions
         }));
 
         const annotationProxy = config.proxies.annotation;
-        app.use(legacyCreateProxyMiddleware(annotationProxy.endpoints, {
+        app.use(createProxyMiddleware({
+            pathFilter: annotationProxy.endpoints,
             target: annotationProxy.target,
             pathRewrite: annotationProxy.pathRewrite,
             ...proxyOptions
         }));
 
         const dmStoreProxy = config.proxies.dmStore;
-        app.use(legacyCreateProxyMiddleware(dmStoreProxy.endpoints, {
+        app.use(createProxyMiddleware({
+            pathFilter: dmStoreProxy.endpoints,
             target: dmStoreProxy.target,
-            onProxyReq: (req: ClientRequest) => {
-                req.setHeader('user-roles', 'caseworker');
-                req.setHeader('ServiceAuthorization', serviceAuthRepository.getToken());
+            on: {
+                proxyReq: (req: ClientRequest) => {
+                    req.setHeader('user-roles', 'caseworker');
+                    req.setHeader('ServiceAuthorization', serviceAuthRepository.getToken());
+                }
             },
             secure: false,
             changeOrigin: true
         }));
 
         const npaProxy = config.proxies.npa;
-        app.use(legacyCreateProxyMiddleware(npaProxy.endpoints, { target: npaProxy.target, ...proxyOptions }));
+        app.use(createProxyMiddleware({ pathFilter: npaProxy.endpoints, target: npaProxy.target, ...proxyOptions }));
 
         const icpProxy = config.proxies.icp;
-        app.use(legacyCreateProxyMiddleware(icpProxy.endpoints, {
+        app.use(createProxyMiddleware({
+            pathFilter: icpProxy.endpoints,
             target: icpProxy.target,
             ...proxyOptions,
             ws: true,
@@ -78,7 +84,7 @@ Promise.all([serviceAuthRepository.init(), idamRepository.init()])
         }));
 
         const hrsProxy = config.proxies.hrsApi;
-        app.use(legacyCreateProxyMiddleware(hrsProxy.endpoints, { target: hrsProxy.target, ...proxyOptions }));
+        app.use(createProxyMiddleware({ pathFilter: hrsProxy.endpoints, target: hrsProxy.target, ...proxyOptions }));
 
         app.use('/', healthcheckRoutes);
         app.use('/dm-store', (req, res) => res.render('index.html'));

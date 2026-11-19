@@ -15,6 +15,7 @@ import { Rectangle } from '../annotation-view/rectangle/rectangle.model';
 @Component({
     selector: 'mv-ctx-toolbar',
     templateUrl: './ctx-toolbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CtxToolbarComponent implements OnChanges {

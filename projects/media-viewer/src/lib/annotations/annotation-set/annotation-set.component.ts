@@ -1,4 +1,4 @@
-import { Component, Input, OnInit, inject } from '@angular/core';
+import { Component, Input, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Annotation } from './annotation-view/annotation.model';
 import { Observable } from 'rxjs';
 import { SelectionAnnotation } from '../models/event-select.model';
@@ -11,6 +11,7 @@ import * as fromSelectors from '../../store/selectors/annotation.selectors';
 @Component({
     selector: 'mv-annotation-set',
     templateUrl: './annotation-set.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AnnotationSetComponent implements OnInit {

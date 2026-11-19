@@ -1,4 +1,4 @@
-import { Component, Input, Output, EventEmitter, ElementRef } from '@angular/core';
+import { Component, Input, Output, EventEmitter, ElementRef, ChangeDetectionStrategy } from '@angular/core';
 import { ComponentFixture, inject, TestBed, fakeAsync, tick } from '@angular/core/testing';
 import { Store, StoreModule } from '@ngrx/store';
 
@@ -11,6 +11,7 @@ import { AnnotationViewComponent } from './annotation-view.component';
 @Component({
     selector: 'mv-ctx-toolbar',
     template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 class MockCtxToolbarComponent {
@@ -34,6 +35,7 @@ class MockCtxToolbarComponent {
 @Component({
     selector: 'mv-anno-rectangle',
     template: '',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 class MockRectangleComponent {

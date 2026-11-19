@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 /*
 * Gov UK Date Component
 * Responsible for displaying 3 input fields:
@@ -8,6 +8,7 @@ import {Component, Input} from '@angular/core';
 @Component({
     selector: 'mv-gov-uk-date',
     templateUrl: './gov-uk-date.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class GovUkDateComponent {
