@@ -17,6 +17,7 @@
     <mv-ctx-toolbar *ngIf="rectangles && highlightPage === (i + 1)"
                     [rectangles]="rectangles"
                     [canBookmark]="true" [canHighlight]="true"
+                    [bookmarkDisabled]="(bookmarkMutationState$ | async)?.creating || (bookmarkMutationState$ | async)?.changingStructure || (bookmarkMutationState$ | async)?.loading"
                     [zoom]="zoom"
                     [rotate]="rotate"
                     [pageHeight]="page.styles.height"

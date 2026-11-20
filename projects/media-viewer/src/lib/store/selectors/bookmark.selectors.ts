@@ -10,6 +10,16 @@ export const getBookmarkState = createSelector(
   (state: fromFeature.State) => state.bookmarks
 );
 
+export const getBookmarkMutationState = createSelector(
+  getBookmarkState,
+  state => ({
+    saving: (state.pendingSaves || 0) > 0,
+    creating: (state.pendingCreates || 0) > 0,
+    changingStructure: !!state.pendingStructure,
+    loading: state.loading
+  })
+);
+
 export const getBookmarkPages = createSelector(
   getBookmarkState,
   fromBookmarks.getBookmarkPageEnt

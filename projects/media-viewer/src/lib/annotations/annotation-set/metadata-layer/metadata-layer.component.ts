@@ -33,6 +33,7 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
   @ViewChild(CtxToolbarComponent, { static: false }) ctxToolbar: CtxToolbarComponent;
 
   pages: any[] = []; // todo add type
+  bookmarkMutationState$ = this.store.select(fromBookmarks.getBookmarkMutationState);
   annoPages$: Observable<any>; // todo add type
 
   drawMode = false;
@@ -84,8 +85,10 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
   }
 
   createBookmark(rectangle: Rectangle) {
-    this.store.pipe(select(fromBookmarks.getBookmarkInfo), take(1))
-      .subscribe((bookmarkInfo) => {
+    this.store.pipe(select(fromBookmarks.getBookmarkMutationState), take(1))
+      .subscribe(state => {
+        if (state.creating || state.changingStructure || state.loading) return;
+        this.store.pipe(select(fromBookmarks.getBookmarkInfo), take(1)).subscribe((bookmarkInfo) => {
         const selection = window.getSelection().toString();
         this.store.dispatch(new CreateBookmark({
           ...bookmarkInfo,
@@ -99,7 +102,7 @@ export class MetadataLayerComponent implements OnInit, OnDestroy {
         this.toolbarEvents.toggleSideBarView(false);
         this.highlightService.resetHighlight();
         this.rectangles = undefined;
-
+        });
       });
   }
 
