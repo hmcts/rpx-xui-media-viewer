@@ -3,19 +3,25 @@
 >
 <cdk-tree
   cdkDropList
-  [cdkDropListDisabled]="!isDraggingOn"
+  [cdkDropListDisabled]="!isDraggingOn || mutationState.saving || mutationState.creating || mutationState.changingStructure"
   class="bookmarks-tree"
   *ngIf="datasource"
   [dataSource]="datasource"
   [treeControl]="treeControl"
+  [trackBy]="trackBookmark"
   (cdkDropListDropped)="drop($event)"
 >
   <!-- This is the tree node template for leaf nodes -->
-  <cdk-nested-tree-node class="node-wrapper" *cdkTreeNodeDef="let node">
+  <cdk-nested-tree-node
+    class="node-wrapper"
+    [attr.data-bookmark-id]="node.id"
+    *cdkTreeNodeDef="let node"
+  >
     <div *ngIf="node.id !== editableBookmark; else inputBookmark">
       <div
         class="node-content-wrapper nested-tree-node nest-tree-node-padding"
         cdkDrag
+        [cdkDragDisabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
         cdkDragBoundary=".bookmarks-tree"
         [cdkDragData]="node"
         (mouseenter)="dragHover($event, node)"
@@ -34,6 +40,7 @@
         ></button>
         <button
           class="bookmark__delete"
+          [disabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
           (click)="deleteBookmark2(node)"
         ></button>
       </div>
@@ -43,11 +50,13 @@
       <input
         #bookmarkName
         class="bookmark__input"
-        [value]="node.name"
+        [attr.value]="draft?.id === node.id ? draft.name : node.name"
+        (input)="draft = { id: node.id, name: $any($event.target).value }"
         [maxLength]="BOOKMARK_CHAR_LIMIT"
       />
       <button
         class="bookmark__save"
+        [disabled]="mutationState.changingStructure"
         (click)="updateBookmark(node, bookmarkName.value)"
       ></button>
     </ng-template>
@@ -55,12 +64,14 @@
   <!-- This is the tree node template for expandable nodes -->
   <cdk-nested-tree-node
     class="node-wrapper"
+    [attr.data-bookmark-id]="node.id"
     *cdkTreeNodeDef="let node; when: hasChild"
   >
     <div *ngIf="node.id !== editableBookmark; else inputBookmark2">
       <div
         class="node-content-wrapper nested-tree-node"
         cdkDrag
+        [cdkDragDisabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
         [cdkDragData]="node"
         (mouseenter)="dragHover($event, node)"
         (mouseleave)="dragHoverEnd($event, node)"
@@ -84,6 +95,7 @@
         ></button>
         <button
           class="bookmark__delete"
+          [disabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
           (click)="deleteBookmark2(node)"
         ></button>
       </div>
@@ -93,11 +105,13 @@
       <input
         #bookmarkName
         class="bookmark__input"
-        [value]="node.name"
+        [attr.value]="draft?.id === node.id ? draft.name : node.name"
+        (input)="draft = { id: node.id, name: $any($event.target).value }"
         [maxLength]="BOOKMARK_CHAR_LIMIT"
       />
       <button
         class="bookmark__save"
+        [disabled]="mutationState.changingStructure"
         (click)="updateBookmark(node, bookmarkName.value)"
       ></button>
     </ng-template>

@@ -12,9 +12,10 @@ describe('Bookmark actions', () => {
     describe('DeleteBookmarkSuccess', () => {
       it('should create an action', () => {
         const payload: any = 'some1234id';
-        const action = new fromBookmarks.DeleteBookmarkSuccess(payload);
+        const action = new fromBookmarks.DeleteBookmarkSuccess(payload, 'document-id');
         expect({ ...action }).toEqual({
           type: fromBookmarks.DELETE_BOOKMARK_SUCCESS,
+          documentId: 'document-id',
           payload
         });
       });
@@ -22,9 +23,10 @@ describe('Bookmark actions', () => {
     describe('DeleteBookmarkFail', () => {
       it('should create an action', () => {
         const error: any = 'some error';
-        const action = new fromBookmarks.DeleteBookmarkFailure(error);
+        const action = new fromBookmarks.DeleteBookmarkFailure(error, 'document-id');
         expect({ ...action }).toEqual({
           type: fromBookmarks.DELETE_BOOKMARK_FAIL,
+          documentId: 'document-id',
           payload: error
         });
       });
@@ -45,9 +47,10 @@ describe('Bookmark actions', () => {
     describe('UpdateBookmarkSuccess', () => {
       it('should create an action', () => {
         const payload: any = { name: 'bookmark name', id: 'id' };
-        const action = new fromBookmarks.UpdateBookmarkSuccess(payload);
+        const action = new fromBookmarks.UpdateBookmarkSuccess(payload, 'document-id');
         expect({ ...action }).toEqual({
           type: fromBookmarks.UPDATE_BOOKMARK_SUCCESS,
+          documentId: 'document-id',
           payload: payload
         });
       });
@@ -55,9 +58,10 @@ describe('Bookmark actions', () => {
     describe('UpdateBookmarkFail', () => {
       it('should create an action', () => {
         const error: any = 'some error';
-        const action = new fromBookmarks.UpdateBookmarkFailure(error);
+        const action = new fromBookmarks.UpdateBookmarkFailure(error, 'document-id');
         expect({ ...action }).toEqual({
           type: fromBookmarks.UPDATE_BOOKMARK_FAIL,
+          documentId: 'document-id',
           payload: error
         });
       });
@@ -78,9 +82,10 @@ describe('Bookmark actions', () => {
     describe('MoveBookmarkSuccess', () => {
       it('should create an action', () => {
         const payload: any = [{ name: 'bookmark name', id: 'id' }];
-        const action = new fromBookmarks.MoveBookmarkSuccess(payload);
+        const action = new fromBookmarks.MoveBookmarkSuccess(payload, 'document-id');
         expect({ ...action }).toEqual({
           type: fromBookmarks.MOVE_BOOKMARK_SUCCESS,
+          documentId: 'document-id',
           payload: payload
         });
       });
@@ -98,9 +103,10 @@ describe('Bookmark actions', () => {
     describe('MoveBookmarkFail', () => {
       it('should create an action', () => {
         const error: any = 'some error';
-        const action = new fromBookmarks.MoveBookmarkFailure(error);
+        const action = new fromBookmarks.MoveBookmarkFailure(error, 'document-id');
         expect({ ...action }).toEqual({
           type: fromBookmarks.MOVE_BOOKMARK_FAIL,
+          documentId: 'document-id',
           payload: error
         });
       });

@@ -25,6 +25,7 @@
   >
     <button
       id="addBookmark"
+      [disabled]="bookmarks?.mutationState?.creating || bookmarks?.mutationState?.changingStructure || bookmarks?.mutationState?.loading"
       class="toolbarButton addBookmark"
       (click)="bookmarks.onAddBookmarkClick()"
       [attr.aria-label]="'Add bookmark' | rpxTranslate"
@@ -37,6 +38,7 @@
     </button>
   </div>
 </div>
+<p *ngIf="bookmarks?.mutationState?.saving || bookmarks?.mutationState?.creating || bookmarks?.mutationState?.changingStructure || bookmarks?.mutationState?.loading" role="status">{{ 'Bookmark changes are saving. Some actions are temporarily unavailable.' | rpxTranslate }}</p>
 <div #sidebar id="sidebarContent" cdkScrollable (scroll)="onScroll($event)" [hidden]="!sidebarOpen">
   <div id="outlineView" class="outlineWithDeepNesting">
     <div class="outlineItem" *ngIf="selectedView === 'outline'">
