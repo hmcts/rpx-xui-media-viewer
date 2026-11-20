@@ -77,6 +77,268 @@ test.describe('Bookmarks', () => {
     await expect(mediaViewer.bookmarks.name()).toContainText('Updated bookmark');
   });
 
+  test('keeps a new draft open when an earlier save completes', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Original bookmark', 0)]);
+    let releaseSave: () => void;
+    const saveGate = new Promise<void>(resolve => { releaseSave = resolve; });
+    let saveStarted: () => void;
+    const saveRequest = new Promise<void>(resolve => { saveStarted = resolve; });
+    await page.route('**/em-anno/bookmarks', async route => {
+      if (route.request().method() !== 'PUT') {
+        await route.fallback();
+        return;
+      }
+      saveStarted();
+      await saveGate;
+      await route.fulfill({ json: route.request().postDataJSON() });
+    });
+    try {
+      await mediaViewer.openDocument(mediaAssets.pdf);
+      await mediaViewer.bookmarks.open();
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(0).fill('Updated bookmark');
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__save').click();
+      await saveRequest;
+      await mediaViewer.bookmarks.add();
+      await expect(mediaViewer.bookmarks.input(1)).toBeVisible();
+      await mediaViewer.bookmarks.input(1).fill('New draft in progress');
+      releaseSave();
+      await expect(mediaViewer.bookmarks.name(0)).toHaveText('Updated bookmark');
+      await expect(mediaViewer.bookmarks.input(1)).toHaveValue('New draft in progress');
+    } finally {
+      releaseSave();
+    }
+  });
+
+  for (const status of [200, 500]) {
+    test(`enables bookmark structure actions after a pending save returns ${status}`, { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+      await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Original bookmark', 0)]);
+      let releaseSave: () => void;
+      const saveGate = new Promise<void>(resolve => { releaseSave = resolve; });
+      let saveStarted: () => void;
+      const saveRequest = new Promise<void>(resolve => { saveStarted = resolve; });
+      await page.route('**/em-anno/bookmarks', async route => {
+        if (route.request().method() !== 'PUT') {
+          await route.fallback();
+          return;
+        }
+        saveStarted();
+        await saveGate;
+        await route.fulfill(status === 200 ? { json: route.request().postDataJSON() } : { status, body: 'Save failed' });
+      });
+      try {
+        await mediaViewer.openDocument(mediaAssets.pdf);
+        await mediaViewer.bookmarks.open();
+        await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+        await mediaViewer.bookmarks.input(0).fill('Updated bookmark');
+        await mediaViewer.bookmarks.node(0).locator('.bookmark__save').click();
+        await saveRequest;
+        await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__delete')).toBeDisabled();
+        await expect(mediaViewer.bookmarks.node(0).locator('.node-content-wrapper')).toHaveClass(/cdk-drag-disabled/);
+        await expect(mediaViewer.bookmarks.addButton).toBeEnabled();
+        releaseSave();
+        await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__delete')).toBeEnabled();
+        await expect(mediaViewer.bookmarks.node(0).locator('.node-content-wrapper')).not.toHaveClass(/cdk-drag-disabled/);
+      } finally {
+        releaseSave();
+      }
+    });
+  }
+
+  test('keeps structural actions disabled until both queued saves finish', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'First', 0), bookmark('bookmark-2', 'Second', 1)]);
+    let releaseFirst: () => void;
+    let releaseSecond: () => void;
+    const firstGate = new Promise<void>(resolve => { releaseFirst = resolve; });
+    const secondGate = new Promise<void>(resolve => { releaseSecond = resolve; });
+    let firstStarted: () => void;
+    let secondStarted: () => void;
+    const firstRequest = new Promise<void>(resolve => { firstStarted = resolve; });
+    const secondRequest = new Promise<void>(resolve => { secondStarted = resolve; });
+    await page.route('**/em-anno/bookmarks', async route => {
+      if (route.request().method() !== 'PUT') {
+        await route.fallback();
+        return;
+      }
+      const first = route.request().postDataJSON().id === 'bookmark-1';
+      (first ? firstStarted : secondStarted)();
+      await (first ? firstGate : secondGate);
+      await route.fulfill({ json: route.request().postDataJSON() });
+    });
+    try {
+      await mediaViewer.openDocument(mediaAssets.pdf);
+      await mediaViewer.bookmarks.open();
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(0).fill('First updated');
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__save').click();
+      await firstRequest;
+      await mediaViewer.bookmarks.node(1).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(1).fill('Second updated');
+      await mediaViewer.bookmarks.node(1).locator('.bookmark__save').click();
+      await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__delete')).toBeDisabled();
+      releaseFirst();
+      await secondRequest;
+      await expect(mediaViewer.bookmarks.name(0)).toHaveText('First updated');
+      await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__delete')).toBeDisabled();
+      releaseSecond();
+      await expect(mediaViewer.bookmarks.name(1)).toHaveText('Second updated');
+      await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__delete')).toBeEnabled();
+    } finally {
+      releaseFirst();
+      releaseSecond();
+    }
+  });
+
+  test('isolates pending saves when switching documents and returning', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    let first = { ...bookmark('a', 'Document A', 0), documentId: mediaAssets.pdf.url };
+    let second = { ...bookmark('b', 'Document B', 0), documentId: mediaAssets.replacementPdf.url };
+    let releaseSave: () => void;
+    const saveGate = new Promise<void>(resolve => { releaseSave = resolve; });
+    let saveStarted: () => void;
+    const saveRequest = new Promise<void>(resolve => { saveStarted = resolve; });
+    await mediaViewer.bookmarks.stubApi();
+    await page.route('**/em-anno/**', async route => {
+      const request = route.request();
+      if (request.method() === 'GET' && new URL(request.url()).pathname.endsWith('/bookmarks')) {
+        await route.fulfill({ json: [request.url().includes('example2.pdf') ? second : first] });
+        return;
+      }
+      if (request.method() === 'PUT' && new URL(request.url()).pathname.endsWith('/bookmarks')) {
+        const payload = request.postDataJSON();
+        if (payload.id === 'a') {
+          saveStarted();
+          await saveGate;
+          first = payload;
+        } else {
+          second = payload;
+        }
+        await route.fulfill({ json: payload });
+        return;
+      }
+      await route.fallback();
+    });
+    try {
+      await mediaViewer.openDocument(mediaAssets.pdf);
+      await mediaViewer.bookmarks.open();
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(0).fill('Document A updated');
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__save').click();
+      await saveRequest;
+      await mediaViewer.loadDocument(mediaAssets.replacementPdf.url, 'standalone-media-viewer-fixture');
+      await mediaViewer.bookmarks.open();
+      await expect(mediaViewer.bookmarks.name(0)).toHaveText('Document B');
+      await mediaViewer.bookmarks.rename(0, 'Document B updated');
+      await expect(mediaViewer.bookmarks.name(0)).toHaveText('Document B updated');
+      await mediaViewer.loadDocument(mediaAssets.pdf.url, 'standalone-media-viewer-fixture');
+      await mediaViewer.bookmarks.open();
+      await expect(mediaViewer.bookmarks.addButton).toBeDisabled();
+      releaseSave();
+      await expect(mediaViewer.bookmarks.name(0)).toHaveText('Document A updated');
+      await expect(mediaViewer.bookmarks.addButton).toBeEnabled();
+    } finally {
+      releaseSave();
+    }
+  });
+
+  test('holds save and both create controls until a structural change fails', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Original', 0)]);
+    let releaseDelete: () => void;
+    const deleteGate = new Promise<void>(resolve => { releaseDelete = resolve; });
+    let deleteStarted: () => void;
+    const deleteRequest = new Promise<void>(resolve => { deleteStarted = resolve; });
+    await page.route('**/em-anno/bookmarks_multiple', async route => {
+      if (route.request().method() !== 'DELETE') {
+        await route.fallback();
+        return;
+      }
+      deleteStarted();
+      await deleteGate;
+      await route.fulfill({ status: 500, body: 'Delete failed' });
+    });
+    try {
+      await mediaViewer.openAnnotatedDocument(mediaAssets.pdf);
+      await mediaViewer.bookmarks.open();
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__delete').click();
+      await deleteRequest;
+      await expect(mediaViewer.bookmarks.addButton).toBeDisabled();
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(0).fill('Draft');
+      await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__save')).toBeDisabled();
+      await page.locator('#mvHighlightBtn').click();
+      await page.locator('#highlightTextBtn').click();
+      await page.locator('.textLayer span').filter({ hasText: /example/i }).first().dblclick();
+      await expect(page.locator('#bookmarkButton')).toBeDisabled();
+      releaseDelete();
+      await expect(mediaViewer.bookmarks.addButton).toBeEnabled();
+      await expect(mediaViewer.bookmarks.node(0).locator('.bookmark__save')).toBeEnabled();
+      await expect(page.locator('#bookmarkButton')).toBeEnabled();
+      await expect(mediaViewer.bookmarks.input(0)).toHaveValue('Draft');
+    } finally {
+      releaseDelete();
+    }
+  });
+
+  test('opens a new draft after saving an unchanged bookmark name', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
+    await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Existing bookmark', 0)]);
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.open();
+
+    const saved = await mediaViewer.bookmarks.rename(0, 'Existing bookmark');
+    expect(saved).toMatchObject({ id: 'bookmark-1', name: 'Existing bookmark' });
+    await mediaViewer.bookmarks.add();
+    await expect(mediaViewer.bookmarks.input(1)).toBeVisible();
+  });
+
+  test('keeps edits to a bookmark while its previous save completes', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Original bookmark', 0)]);
+    let releaseSave: () => void;
+    const saveGate = new Promise<void>(resolve => { releaseSave = resolve; });
+    let saveStarted: () => void;
+    const saveRequest = new Promise<void>(resolve => { saveStarted = resolve; });
+    await page.route('**/em-anno/bookmarks', async route => {
+      if (route.request().method() !== 'PUT') {
+        await route.fallback();
+        return;
+      }
+      saveStarted();
+      await saveGate;
+      await route.fulfill({ json: route.request().postDataJSON() });
+    });
+    try {
+      await mediaViewer.openDocument(mediaAssets.pdf);
+      await mediaViewer.bookmarks.open();
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(0).fill('First edit');
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__save').click();
+      await saveRequest;
+      await mediaViewer.bookmarks.node(0).locator('.bookmark__rename').click();
+      await mediaViewer.bookmarks.input(0).fill('Second edit in progress');
+      const firstSave = page.waitForResponse(response => response.request().method() === 'PUT' && response.url().endsWith('/em-anno/bookmarks'));
+      releaseSave();
+      await firstSave;
+      await expect(mediaViewer.bookmarks.input(0)).toHaveValue('Second edit in progress');
+    } finally {
+      releaseSave();
+    }
+  });
+
+  test('reports a failed bookmark save', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer, page }) => {
+    await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Existing bookmark', 0)]);
+    await page.route('**/em-anno/bookmarks', async route => {
+      if (route.request().method() === 'PUT') {
+        await route.fulfill({ status: 500, body: 'Save failed' });
+      } else {
+        await route.fallback();
+      }
+    });
+    await mediaViewer.openDocument(mediaAssets.pdf);
+    await mediaViewer.bookmarks.open();
+
+    await expect(mediaViewer.bookmarks.rename(0, 'Updated bookmark'))
+      .rejects.toThrow('Bookmark save failed with HTTP 500');
+    await expect(mediaViewer.bookmarks.name(0)).toHaveText('Existing bookmark');
+  });
+
   test('deletes a bookmark and supports an empty bookmark draft', { tag: ['@e2e-functional', '@feature-bookmarks'] }, async ({ mediaViewer }) => {
     await mediaViewer.bookmarks.stubApi([bookmark('bookmark-1', 'Existing bookmark', 0)]);
     await mediaViewer.openDocument(mediaAssets.pdf);
