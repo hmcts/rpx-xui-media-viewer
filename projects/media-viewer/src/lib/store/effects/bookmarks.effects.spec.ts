@@ -1,6 +1,6 @@
 import { inject, TestBed } from '@angular/core/testing';
 import { cold, hot } from 'jasmine-marbles';
-import { of, throwError } from 'rxjs';
+import { of, Subject, throwError } from 'rxjs';
 import { provideMockActions } from '@ngrx/effects/testing';
 import * as bookmarkActions from '../actions/bookmark.actions';
 import { BookmarksEffects } from './bookmarks.effects';
@@ -124,6 +124,54 @@ describe('Bookmark Effects', () => {
   });
 
   describe('updateBookmark$', () => {
+    it('saves consecutive bookmarks in order without cancelling the first request', () => {
+      const first = { ...bookmark, name: 'first' };
+      const second = { ...bookmark, id: 'second', name: 'second' };
+      const firstResponse = new Subject<any>();
+      const secondResponse = new Subject<any>();
+      const actions = new Subject<any>();
+      actions$ = actions;
+      bookmarksApi.updateBookmark.calls.reset();
+      bookmarksApi.updateBookmark.and.returnValues(firstResponse, secondResponse);
+      const completed: any[] = [];
+      const subscription = effects.updateBookmark$.subscribe(action => completed.push(action));
+
+      actions.next(new bookmarkActions.UpdateBookmark(first));
+      actions.next(new bookmarkActions.UpdateBookmark(second));
+      expect(bookmarksApi.updateBookmark).toHaveBeenCalledTimes(1);
+      firstResponse.next(first);
+      firstResponse.complete();
+      expect(bookmarksApi.updateBookmark).toHaveBeenCalledTimes(2);
+      secondResponse.next(second);
+      secondResponse.complete();
+      expect(completed).toEqual([
+        new bookmarkActions.UpdateBookmarkSuccess(first),
+        new bookmarkActions.UpdateBookmarkSuccess(second)
+      ]);
+      subscription.unsubscribe();
+    });
+
+    it('continues with the next save after a request fails', () => {
+      const firstResponse = new Subject<any>();
+      const second = { ...bookmark, id: 'second' };
+      const actions = new Subject<any>();
+      actions$ = actions;
+      bookmarksApi.updateBookmark.calls.reset();
+      bookmarksApi.updateBookmark.and.returnValues(firstResponse, of(second));
+      const completed: any[] = [];
+      const subscription = effects.updateBookmark$.subscribe(action => completed.push(action));
+
+      actions.next(new bookmarkActions.UpdateBookmark(bookmark));
+      actions.next(new bookmarkActions.UpdateBookmark(second));
+      firstResponse.error('save failed');
+      expect(completed).toEqual([
+        new bookmarkActions.UpdateBookmarkFailure('save failed' as any),
+        new bookmarkActions.UpdateBookmarkSuccess(second)
+      ]);
+      expect(bookmarksApi.updateBookmark).toHaveBeenCalledTimes(2);
+      subscription.unsubscribe();
+    });
+
     it('should return a UpdateBookmarkSuccess', () => {
       const action = new bookmarkActions.UpdateBookmark(bookmark);
       bookmarksApi.updateBookmark.and.returnValue(of(bookmark));

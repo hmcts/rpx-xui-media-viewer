@@ -227,6 +227,8 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
     return node.children && node.children.length > 0;
   }
 
+  trackBookmark = (_: number, node: Bookmark) => `${node.id}:${!!node.children?.length}`;
+
   getNode(bookmarks, parentId) {
     if (typeof bookmarks !== 'undefined') {
       for (let i = 0; i < bookmarks.length; i++) {

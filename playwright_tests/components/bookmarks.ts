@@ -1,4 +1,10 @@
-import type { Locator, Page, Route } from '@playwright/test';
+import type { Locator, Page, Request, Response, Route } from '@playwright/test';
+
+const isBookmarkCall = (request: Request, method: 'POST' | 'PUT'): boolean =>
+  new URL(request.url()).pathname.endsWith('/em-anno/bookmarks') && request.method() === method;
+
+const exactText = (text: string): RegExp =>
+  new RegExp(`^\\s*${text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}\\s*$`);
 
 type Bookmark = {
   id: string;
@@ -117,33 +123,63 @@ export class Bookmarks {
     return this.nodes.filter({ has: this.page.locator('.bookmark__input:visible') }).last();
   }
 
-  async add(name?: string): Promise<Bookmark | undefined> {
-    const createRequest = this.page.waitForRequest(request =>
-      request.url().includes('/em-anno/bookmarks') && request.method() === 'POST');
-    await this.addButton.click();
-    const draft = this.draftNode();
-    await draft.locator('.bookmark__input').waitFor({ state: 'visible' });
-    await createRequest;
-    if (name) {
-      const updateRequest = this.page.waitForRequest(request =>
-        request.url().includes('/em-anno/bookmarks') && request.method() === 'PUT');
-      await draft.locator('.bookmark__input').fill(name);
-      await draft.locator('.bookmark__save').click();
-      const saved = (await updateRequest).postDataJSON() as Bookmark;
-      // Let the draft close before returning so a following add() cannot race the previous save.
-      await this.nodes.locator('.bookmark__input:visible').waitFor({ state: 'hidden' });
-      return saved;
+  private nodeById(id: string): Locator {
+    return this.page.locator(`.bookmarks-tree .node-wrapper[data-bookmark-id="${id}"]`);
+  }
+
+  private async bookmarkResponse(response: Promise<Response>, action: string): Promise<Response> {
+    const settled = await response;
+    if (!settled.ok()) {
+      throw new Error(`Bookmark ${action} failed with HTTP ${settled.status()}`);
     }
-    return undefined;
+    const error = await settled.finished();
+    if (error) {
+      throw error;
+    }
+    return settled;
+  }
+
+  async add(name?: string): Promise<Bookmark | undefined> {
+    // The draft input only renders after the create response sets the store's editable bookmark.
+    const createResponse = this.page.waitForResponse(response =>
+      isBookmarkCall(response.request(), 'POST'));
+    await this.addButton.click();
+    const created = await (await this.bookmarkResponse(createResponse, 'create')).json() as Bookmark;
+    const draft = this.nodeById(created.id);
+    const input = draft.locator('.bookmark__input');
+    await input.waitFor({ state: 'visible' });
+    if (!name) {
+      return undefined;
+    }
+
+    return this.saveName(created.id, name);
+  }
+
+  private async bookmarkId(node: Locator): Promise<string> {
+    const id = await node.getAttribute('data-bookmark-id');
+    if (!id) {
+      throw new Error('Bookmark node has no data-bookmark-id');
+    }
+    return id;
+  }
+
+  // Saves the open input of one bookmark and waits until the store has applied the update.
+  private async saveName(id: string, name: string): Promise<Bookmark> {
+    const node = this.nodeById(id);
+    const updateResponse = this.page.waitForResponse(response =>
+      isBookmarkCall(response.request(), 'PUT') && response.request().postDataJSON()?.id === id);
+    await node.locator('.bookmark__input').fill(name);
+    await node.locator('.bookmark__save').click();
+    const saved = (await this.bookmarkResponse(updateResponse, 'save')).request().postDataJSON() as Bookmark;
+    await node.locator(':scope > div > .node-content-wrapper > .outlineItem > a')
+      .filter({ hasText: exactText(name) }).waitFor({ state: 'visible' });
+    return saved;
   }
 
   async saveDraft(name: string): Promise<Bookmark> {
-    const updateRequest = this.page.waitForRequest(request =>
-      request.url().endsWith('/em-anno/bookmarks') && request.method() === 'PUT');
     const draft = this.draftNode();
-    await draft.locator('.bookmark__input').fill(name);
-    await draft.locator('.bookmark__save').click();
-    return (await updateRequest).postDataJSON() as Bookmark;
+    await draft.locator('.bookmark__input').waitFor({ state: 'visible' });
+    return this.saveName(await this.bookmarkId(draft), name);
   }
 
   async reorder(from: number, to: number): Promise<Bookmark[]> {
@@ -172,13 +208,10 @@ export class Bookmarks {
   }
 
   async rename(index: number, name: string): Promise<Bookmark> {
-    const updateRequest = this.page.waitForRequest(request =>
-      request.url().endsWith('/em-anno/bookmarks') && request.method() === 'PUT');
-    await this.node(index).locator('.bookmark__rename').click();
-    const input = this.node(index).locator('.bookmark__input');
-    await input.fill(name);
-    await this.node(index).locator('.bookmark__save').click();
-    return (await updateRequest).postDataJSON() as Bookmark;
+    const id = await this.bookmarkId(this.node(index));
+    await this.nodeById(id).locator('.bookmark__rename').click();
+    await this.nodeById(id).locator('.bookmark__input').waitFor({ state: 'visible' });
+    return this.saveName(id, name);
   }
 
   async delete(index = 0): Promise<{ deleted: string[]; updated?: Bookmark }> {

@@ -4,7 +4,7 @@ import {
   LoadBookmarksFailure,
   LoadBookmarksSuccess,
   DeleteBookmarkSuccess,
-  UpdateBookmarkSuccess, MoveBookmarkSuccess,
+  UpdateBookmark, UpdateBookmarkFailure, UpdateBookmarkSuccess, MoveBookmarkSuccess,
   UpdateBookmarkScrollTop
 } from '../actions/bookmark.actions';
 import * as fromBookmarks from './bookmarks.reducer';
@@ -118,6 +118,26 @@ describe('BookmarksReducer', () => {
     expect(state.bookmarkEntities).toEqual({ [bookmark.id]: bookmark });
     expect(state.loaded).toBeTrue();
     expect(state.loading).toBeFalse();
+  });
+
+  it('does not close a newer draft when an earlier bookmark save completes', () => {
+    const editing = { ...fromBookmarks.initialBookmarksState, editableBookmark: bookmark.id };
+    const saving = fromBookmarks.bookmarksReducer(editing, new UpdateBookmark(bookmark));
+    expect(saving.editableBookmark).toBeUndefined();
+
+    const newerBookmark = { ...bookmark, id: 'newer' };
+    const newerDraft = fromBookmarks.bookmarksReducer(saving, new CreateBookmarkSuccess(newerBookmark));
+    const saved = fromBookmarks.bookmarksReducer(newerDraft, new UpdateBookmarkSuccess(bookmark));
+    expect(saved.editableBookmark).toBe(newerBookmark.id);
+    expect(saved.bookmarkEntities[bookmark.id]).toEqual(bookmark);
+  });
+
+  it('preserves a different draft when an update starts or fails', () => {
+    const editing = { ...fromBookmarks.initialBookmarksState, editableBookmark: 'newer' };
+    const saving = fromBookmarks.bookmarksReducer(editing, new UpdateBookmark(bookmark));
+    const failed = fromBookmarks.bookmarksReducer(saving, new UpdateBookmarkFailure(bookmark));
+    expect(saving.editableBookmark).toBe('newer');
+    expect(failed.editableBookmark).toBe('newer');
   });
 
   it('should move bookmark on success', () => {

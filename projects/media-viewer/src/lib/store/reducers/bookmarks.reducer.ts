@@ -114,6 +114,12 @@ export function bookmarksReducer(state = initialBookmarksState,
       };
     }
 
+    case fromBookmarks.UPDATE_BOOKMARK: {
+      return state.editableBookmark === action.payload.id
+        ? { ...state, editableBookmark: undefined }
+        : state;
+    }
+
     case fromBookmarks.UPDATE_BOOKMARK_SUCCESS: {
       const bookmark: Bookmark = action.payload;
       const bookmarkEntities = {
@@ -122,11 +128,9 @@ export function bookmarksReducer(state = initialBookmarksState,
       };
       const bookmarkArray = Object.keys(bookmarkEntities).map(key => bookmarkEntities[key]);
       const bookmarkPageEntities = StoreUtils.groupByKeyEntities(bookmarkArray, 'pageNumber');
-      const editableBookmark = undefined;
       return {
         ...state,
         bookmarkEntities,
-        editableBookmark,
         bookmarkPageEntities,
         loading: false,
         loaded: true

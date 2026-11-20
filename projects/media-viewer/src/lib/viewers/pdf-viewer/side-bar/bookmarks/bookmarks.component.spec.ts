@@ -1,4 +1,6 @@
-import { moveItemInArray } from '@angular/cdk/drag-drop';
+import { DragDropModule, moveItemInArray } from '@angular/cdk/drag-drop';
+import { CdkTreeModule } from '@angular/cdk/tree';
+import { CommonModule } from '@angular/common';
 import { ComponentFixture, fakeAsync, inject, TestBed, tick } from '@angular/core/testing';
 import { CUSTOM_ELEMENTS_SCHEMA } from '@angular/core';
 import { Store } from '@ngrx/store';
@@ -10,6 +12,8 @@ import * as fromActions from '../../../../store/actions/bookmark.actions';
 import { State } from 'projects/media-viewer/src/lib/store/reducers/reducers';
 import { off } from 'process';
 import { style } from '@angular/animations';
+import * as bookmarkSelectors from '../../../../store/selectors/bookmark.selectors';
+import * as documentSelectors from '../../../../store/selectors/document.selectors';
 
 describe('BookmarksComponent', () => {
   let component: BookmarksComponent;
@@ -412,5 +416,38 @@ describe('BookmarksComponent', () => {
       const result = component.isToNodeChildOfFromNode(bookmarks[2].children, bookmarks[1]);
       expect(result).toEqual(false);
     });
+  });
+});
+
+describe('BookmarksComponent tree templates', () => {
+  it('updates the node template when a leaf becomes a parent and back', () => {
+    TestBed.configureTestingModule({
+      declarations: [BookmarksComponent],
+      imports: [CommonModule, CdkTreeModule, DragDropModule],
+      providers: [provideMockStore({ selectors: [
+        { selector: bookmarkSelectors.getEditableBookmark, value: undefined },
+        { selector: documentSelectors.getPages, value: {} }
+      ] })]
+    });
+    const fixture = TestBed.createComponent(BookmarksComponent);
+    const component = fixture.componentInstance;
+    const leaf = { id: 'parent', name: 'Parent', children: [], index: 0 } as any;
+    component.bookmarkNodes = [leaf];
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.toggle-children-wrapper')).toBeNull();
+
+    component.bookmarkNodes = [{ ...leaf, children: [{ id: 'child', name: 'Child', children: [], index: 0 }] }];
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.toggle-children-wrapper')).not.toBeNull();
+    fixture.nativeElement.querySelector('.toggle-children-wrapper').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Child');
+
+    component.bookmarkNodes = [{ ...leaf }];
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.toggle-children-wrapper')).toBeNull();
+    fixture.nativeElement.querySelector('.bookmark__rename').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.bookmark__input').value).toBe('Parent');
   });
 });

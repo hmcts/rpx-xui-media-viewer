@@ -8,10 +8,15 @@
   *ngIf="datasource"
   [dataSource]="datasource"
   [treeControl]="treeControl"
+  [trackBy]="trackBookmark"
   (cdkDropListDropped)="drop($event)"
 >
   <!-- This is the tree node template for leaf nodes -->
-  <cdk-nested-tree-node class="node-wrapper" *cdkTreeNodeDef="let node">
+  <cdk-nested-tree-node
+    class="node-wrapper"
+    [attr.data-bookmark-id]="node.id"
+    *cdkTreeNodeDef="let node"
+  >
     <div *ngIf="node.id !== editableBookmark; else inputBookmark">
       <div
         class="node-content-wrapper nested-tree-node nest-tree-node-padding"
@@ -43,7 +48,7 @@
       <input
         #bookmarkName
         class="bookmark__input"
-        [value]="node.name"
+        [attr.value]="node.name"
         [maxLength]="BOOKMARK_CHAR_LIMIT"
       />
       <button
@@ -55,6 +60,7 @@
   <!-- This is the tree node template for expandable nodes -->
   <cdk-nested-tree-node
     class="node-wrapper"
+    [attr.data-bookmark-id]="node.id"
     *cdkTreeNodeDef="let node; when: hasChild"
   >
     <div *ngIf="node.id !== editableBookmark; else inputBookmark2">
@@ -93,7 +99,7 @@
       <input
         #bookmarkName
         class="bookmark__input"
-        [value]="node.name"
+        [attr.value]="node.name"
         [maxLength]="BOOKMARK_CHAR_LIMIT"
       />
       <button

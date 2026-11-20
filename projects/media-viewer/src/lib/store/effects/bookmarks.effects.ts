@@ -1,6 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { catchError, exhaustMap, map, switchMap, withLatestFrom } from 'rxjs/operators';
+import { catchError, concatMap, exhaustMap, map, switchMap, withLatestFrom } from 'rxjs/operators';
 import { of } from 'rxjs';
 import { BookmarksApiService } from '../../annotations/services/bookmarks-api/bookmarks-api.service';
 import * as bookmarksActions from '../actions/bookmark.actions';
@@ -82,7 +82,7 @@ export class BookmarksEffects {
     this.actions$.pipe(
     ofType(bookmarksActions.UPDATE_BOOKMARK),
     map((action: bookmarksActions.UpdateBookmark) => action.payload),
-    switchMap((bookmark) =>
+    concatMap((bookmark) =>
       this.bookmarksApiService.updateBookmark(bookmark)
         .pipe(
           map(bmrk => new bookmarksActions.UpdateBookmarkSuccess(bmrk)),
