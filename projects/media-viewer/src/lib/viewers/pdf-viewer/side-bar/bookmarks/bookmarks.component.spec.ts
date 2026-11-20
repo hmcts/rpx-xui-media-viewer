@@ -420,12 +420,124 @@ describe('BookmarksComponent', () => {
 });
 
 describe('BookmarksComponent tree templates', () => {
+  [false, true].forEach(initiallyParent => ['Draft in progress', ''].forEach(draft => {
+    it(`preserves ${draft ? 'a typed' : 'an empty'} draft when a bookmark ${initiallyParent ? 'loses its last child' : 'gains its first child'}`, () => {
+      TestBed.configureTestingModule({
+        declarations: [BookmarksComponent],
+        imports: [CommonModule, CdkTreeModule, DragDropModule],
+        providers: [provideMockStore({ selectors: [
+          { selector: bookmarkSelectors.getEditableBookmark, value: undefined },
+          { selector: bookmarkSelectors.getBookmarkMutationState, value: { saving: false, creating: false, changingStructure: false, loading: false } },
+          { selector: documentSelectors.getPages, value: {} }
+        ] })]
+      });
+      const fixture = TestBed.createComponent(BookmarksComponent);
+      const component = fixture.componentInstance;
+      const child = { id: 'child', name: 'Child', children: [], index: 0 };
+      const node = { id: 'parent', name: 'Parent', children: initiallyParent ? [child] : [], index: 0 } as any;
+      component.bookmarkNodes = [node];
+      fixture.detectChanges();
+      fixture.nativeElement.querySelector('.bookmark__rename').click();
+      fixture.detectChanges();
+      const input = fixture.nativeElement.querySelector('.bookmark__input') as HTMLInputElement;
+      input.value = draft;
+      input.dispatchEvent(new Event('input'));
+      fixture.detectChanges();
+
+      component.bookmarkNodes = [{ ...node, children: initiallyParent ? [] : [child] }];
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.bookmark__input').value).toBe(draft);
+    });
+  }));
+
+  it('disables structural actions during an outstanding save or creation', () => {
+    TestBed.configureTestingModule({
+      declarations: [BookmarksComponent],
+      imports: [CommonModule, CdkTreeModule, DragDropModule],
+      providers: [provideMockStore({ selectors: [
+        { selector: bookmarkSelectors.getEditableBookmark, value: undefined },
+        { selector: bookmarkSelectors.getBookmarkMutationState, value: { saving: false, creating: false, changingStructure: false, loading: false } },
+        { selector: documentSelectors.getPages, value: {} }
+      ] })]
+    });
+    const fixture = TestBed.createComponent(BookmarksComponent);
+    fixture.componentInstance.bookmarkNodes = [{ id: 'one', name: 'First', children: [], index: 0 }] as any;
+    fixture.detectChanges();
+    const store = TestBed.inject(Store);
+    spyOn(store, 'dispatch');
+    for (const state of [
+      { saving: true, creating: false, changingStructure: false, loading: false },
+      { saving: false, creating: true, changingStructure: false, loading: false }
+    ]) {
+      fixture.componentInstance.mutationState = state;
+      fixture.detectChanges();
+      expect(fixture.nativeElement.querySelector('.bookmark__delete').disabled).toBeTrue();
+      fixture.componentInstance.deleteBookmark2(fixture.componentInstance.bookmarkNodes[0]);
+      expect(store.dispatch).not.toHaveBeenCalled();
+    }
+  });
+
+  it('keeps a save draft available while structural changes are pending', () => {
+    TestBed.configureTestingModule({
+      declarations: [BookmarksComponent],
+      imports: [CommonModule, CdkTreeModule, DragDropModule],
+      providers: [provideMockStore({ selectors: [
+        { selector: bookmarkSelectors.getEditableBookmark, value: undefined },
+        { selector: bookmarkSelectors.getBookmarkMutationState, value: { saving: false, creating: false, changingStructure: false, loading: false } },
+        { selector: documentSelectors.getPages, value: {} }
+      ] })]
+    });
+    const fixture = TestBed.createComponent(BookmarksComponent);
+    fixture.componentInstance.bookmarkNodes = [{ id: 'one', name: 'First', children: [], index: 0 }] as any;
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('.bookmark__rename').click();
+    fixture.detectChanges();
+    fixture.componentInstance.mutationState = { saving: false, creating: false, changingStructure: true, loading: false };
+    fixture.detectChanges();
+    const store = TestBed.inject(Store);
+    spyOn(store, 'dispatch');
+    expect(fixture.nativeElement.querySelector('.bookmark__save').disabled).toBeTrue();
+    fixture.componentInstance.updateBookmark(fixture.componentInstance.bookmarkNodes[0], 'Draft');
+    expect(store.dispatch).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('.bookmark__input')).not.toBeNull();
+  });
+
+  it('does not reuse an abandoned draft when editing the same bookmark again', () => {
+    TestBed.configureTestingModule({
+      declarations: [BookmarksComponent],
+      imports: [CommonModule, CdkTreeModule, DragDropModule],
+      providers: [provideMockStore({ selectors: [
+        { selector: bookmarkSelectors.getEditableBookmark, value: undefined },
+          { selector: bookmarkSelectors.getBookmarkMutationState, value: { saving: false, creating: false, changingStructure: false, loading: false } },
+        { selector: documentSelectors.getPages, value: {} }
+      ] })]
+    });
+    const fixture = TestBed.createComponent(BookmarksComponent);
+    const component = fixture.componentInstance;
+    component.bookmarkNodes = [
+      { id: 'one', name: 'First', children: [], index: 0 },
+      { id: 'two', name: 'Second', children: [], index: 1 }
+    ] as any;
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('[data-bookmark-id="one"] .bookmark__rename').click();
+    fixture.detectChanges();
+    const input = fixture.nativeElement.querySelector('.bookmark__input') as HTMLInputElement;
+    input.value = 'Abandoned';
+    input.dispatchEvent(new Event('input'));
+    fixture.nativeElement.querySelector('[data-bookmark-id="two"] .bookmark__rename').click();
+    fixture.detectChanges();
+    fixture.nativeElement.querySelector('[data-bookmark-id="one"] .bookmark__rename').click();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.bookmark__input').value).toBe('First');
+  });
+
   it('updates the node template when a leaf becomes a parent and back', () => {
     TestBed.configureTestingModule({
       declarations: [BookmarksComponent],
       imports: [CommonModule, CdkTreeModule, DragDropModule],
       providers: [provideMockStore({ selectors: [
         { selector: bookmarkSelectors.getEditableBookmark, value: undefined },
+          { selector: bookmarkSelectors.getBookmarkMutationState, value: { saving: false, creating: false, changingStructure: false, loading: false } },
         { selector: documentSelectors.getPages, value: {} }
       ] })]
     });

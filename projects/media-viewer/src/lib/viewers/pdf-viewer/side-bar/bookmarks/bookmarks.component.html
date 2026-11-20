@@ -3,7 +3,7 @@
 >
 <cdk-tree
   cdkDropList
-  [cdkDropListDisabled]="!isDraggingOn"
+  [cdkDropListDisabled]="!isDraggingOn || mutationState.saving || mutationState.creating || mutationState.changingStructure"
   class="bookmarks-tree"
   *ngIf="datasource"
   [dataSource]="datasource"
@@ -21,6 +21,7 @@
       <div
         class="node-content-wrapper nested-tree-node nest-tree-node-padding"
         cdkDrag
+        [cdkDragDisabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
         cdkDragBoundary=".bookmarks-tree"
         [cdkDragData]="node"
         (mouseenter)="dragHover($event, node)"
@@ -39,6 +40,7 @@
         ></button>
         <button
           class="bookmark__delete"
+          [disabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
           (click)="deleteBookmark2(node)"
         ></button>
       </div>
@@ -48,11 +50,13 @@
       <input
         #bookmarkName
         class="bookmark__input"
-        [attr.value]="node.name"
+        [attr.value]="draft?.id === node.id ? draft.name : node.name"
+        (input)="draft = { id: node.id, name: $any($event.target).value }"
         [maxLength]="BOOKMARK_CHAR_LIMIT"
       />
       <button
         class="bookmark__save"
+        [disabled]="mutationState.changingStructure"
         (click)="updateBookmark(node, bookmarkName.value)"
       ></button>
     </ng-template>
@@ -67,6 +71,7 @@
       <div
         class="node-content-wrapper nested-tree-node"
         cdkDrag
+        [cdkDragDisabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
         [cdkDragData]="node"
         (mouseenter)="dragHover($event, node)"
         (mouseleave)="dragHoverEnd($event, node)"
@@ -90,6 +95,7 @@
         ></button>
         <button
           class="bookmark__delete"
+          [disabled]="mutationState.saving || mutationState.creating || mutationState.changingStructure"
           (click)="deleteBookmark2(node)"
         ></button>
       </div>
@@ -99,11 +105,13 @@
       <input
         #bookmarkName
         class="bookmark__input"
-        [attr.value]="node.name"
+        [attr.value]="draft?.id === node.id ? draft.name : node.name"
+        (input)="draft = { id: node.id, name: $any($event.target).value }"
         [maxLength]="BOOKMARK_CHAR_LIMIT"
       />
       <button
         class="bookmark__save"
+        [disabled]="mutationState.changingStructure"
         (click)="updateBookmark(node, bookmarkName.value)"
       ></button>
     </ng-template>

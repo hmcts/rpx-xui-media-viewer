@@ -1,7 +1,10 @@
 import * as fromBookmarks from '../actions/bookmark.actions';
+import * as fromDocument from '../actions/document.actions';
 import { Bookmark } from '../../viewers/pdf-viewer/side-bar/bookmarks/bookmarks.interfaces';
 import { StoreUtils } from '../store-utils';
 import { generateBookmarkEntities } from '../bookmarks-store-utils';
+
+interface PendingMutations { saves: number; creates: number; structure: boolean; }
 
 export interface BookmarksState {
   bookmarks: Bookmark[];
@@ -11,6 +14,11 @@ export interface BookmarksState {
   loaded: boolean;
   loading: boolean;
   scrollTop?: number;
+  pendingSaves?: number;
+  pendingCreates?: number;
+  pendingStructure?: boolean;
+  activeDocumentId?: string;
+  pendingByDocument?: { [documentId: string]: PendingMutations };
 }
 
 export const initialBookmarksState: BookmarksState = {
@@ -21,10 +29,48 @@ export const initialBookmarksState: BookmarksState = {
   loaded: false,
   loading: false,
   scrollTop: null,
+  pendingSaves: 0,
+  pendingCreates: 0,
+  pendingStructure: false,
+  pendingByDocument: {},
 };
 
 export function bookmarksReducer(state = initialBookmarksState,
-  action: fromBookmarks.BookmarksActions): BookmarksState {
+  action: fromBookmarks.BookmarksActions | fromDocument.SetDocumentId): BookmarksState {
+
+  if (action.type === fromDocument.SET_DOCUMENT_ID) {
+    if (state.activeDocumentId === action.payload) return state;
+    const pendingByDocument = { ...state.pendingByDocument };
+    if (state.activeDocumentId) {
+      const pending = { saves: state.pendingSaves || 0, creates: state.pendingCreates || 0, structure: !!state.pendingStructure };
+      if (pending.saves || pending.creates || pending.structure) pendingByDocument[state.activeDocumentId] = pending;
+      else delete pendingByDocument[state.activeDocumentId];
+    }
+    const pending = pendingByDocument[action.payload] || { saves: 0, creates: 0, structure: false };
+    return { ...initialBookmarksState, activeDocumentId: action.payload, pendingByDocument,
+      pendingSaves: pending.saves, pendingCreates: pending.creates, pendingStructure: pending.structure, loading: true };
+  }
+
+  if ('documentId' in action && action.documentId && action.documentId !== state.activeDocumentId) {
+    const pendingByDocument = { ...state.pendingByDocument };
+    const pending = { ...(pendingByDocument[action.documentId] || { saves: 0, creates: 0, structure: false }) };
+    switch (action.type) {
+      case fromBookmarks.CREATE_BOOKMARK_SUCCESS:
+      case fromBookmarks.CREATE_BOOKMARK_FAIL:
+        pending.creates = Math.max(0, pending.creates - 1); break;
+      case fromBookmarks.UPDATE_BOOKMARK_SUCCESS:
+      case fromBookmarks.UPDATE_BOOKMARK_FAIL:
+        pending.saves = Math.max(0, pending.saves - 1); break;
+      case fromBookmarks.MOVE_BOOKMARK_SUCCESS:
+      case fromBookmarks.MOVE_BOOKMARK_FAIL:
+      case fromBookmarks.DELETE_BOOKMARK_SUCCESS:
+      case fromBookmarks.DELETE_BOOKMARK_FAIL:
+        pending.structure = false; break;
+    }
+    if (pending.saves || pending.creates || pending.structure) pendingByDocument[action.documentId] = pending;
+    else delete pendingByDocument[action.documentId];
+    return { ...state, pendingByDocument };
+  }
 
   switch (action.type) {
 
@@ -46,11 +92,35 @@ export function bookmarksReducer(state = initialBookmarksState,
         bookmarks,
         bookmarkEntities,
         bookmarkPageEntities,
+        loading: false,
         loaded: true
       };
     }
 
+    case fromBookmarks.CREATE_BOOKMARK: {
+      return { ...state, pendingCreates: (state.pendingCreates || 0) + 1 };
+    }
+
+    case fromBookmarks.CREATE_BOOKMARK_FAIL: {
+      return { ...state, pendingCreates: Math.max(0, (state.pendingCreates || 0) - 1) };
+    }
+
+    case fromBookmarks.MOVE_BOOKMARK:
+    case fromBookmarks.DELETE_BOOKMARK: {
+      return { ...state, pendingStructure: true };
+    }
+
+    case fromBookmarks.MOVE_BOOKMARK_FAIL:
+    case fromBookmarks.DELETE_BOOKMARK_FAIL: {
+      return { ...state, pendingStructure: false };
+    }
+
+    case fromBookmarks.UPDATE_BOOKMARK_FAIL: {
+      return { ...state, pendingSaves: Math.max(0, (state.pendingSaves || 0) - 1) };
+    }
+
     case fromBookmarks.CREATE_BOOKMARK_SUCCESS: {
+      if (state.loading) return { ...state, pendingCreates: Math.max(0, (state.pendingCreates || 0) - 1) };
       const bookmark: Bookmark = action.payload;
       const bookmarkEntities = {
         ...state.bookmarkEntities,
@@ -63,13 +133,14 @@ export function bookmarksReducer(state = initialBookmarksState,
         ...state,
         bookmarkEntities,
         editableBookmark,
+        pendingCreates: Math.max(0, (state.pendingCreates || 0) - 1),
         bookmarkPageEntities,
-        loading: false,
         loaded: true
       };
     }
 
     case fromBookmarks.MOVE_BOOKMARK_SUCCESS: {
+      if (state.loading) return { ...state, pendingStructure: false };
       const movedBookmarks = generateBookmarkEntities(action.payload);
       const bookmarkEntities = {
         ...state.bookmarkEntities,
@@ -77,18 +148,20 @@ export function bookmarksReducer(state = initialBookmarksState,
       };
       return {
         ...state,
+        pendingStructure: false,
         bookmarkEntities,
-        loading: false,
         loaded: true
       };
     }
 
     case fromBookmarks.DELETE_BOOKMARK_SUCCESS: {
+      if (state.loading) return { ...state, pendingStructure: false };
       const bookmarkIds: string[] = action.payload;
       const bookmarkEntities = { ...state.bookmarkEntities };
       const bookmarkPageEntities = { ...state.bookmarkPageEntities };
       const removeBookmarksByPage: { [pageNumber: number]: string[] } = {};
       bookmarkIds.forEach(bookmarkId => {
+        if (!bookmarkEntities[bookmarkId]) return;
         if (removeBookmarksByPage[bookmarkEntities[bookmarkId].pageNumber] !== undefined &&
           removeBookmarksByPage[bookmarkEntities[bookmarkId].pageNumber].length > 0) {
           removeBookmarksByPage[bookmarkEntities[bookmarkId].pageNumber].push(bookmarkId);
@@ -109,18 +182,18 @@ export function bookmarksReducer(state = initialBookmarksState,
         ...state,
         bookmarkEntities,
         bookmarkPageEntities,
-        loading: false,
+        pendingStructure: false,
         loaded: true
       };
     }
 
     case fromBookmarks.UPDATE_BOOKMARK: {
-      return state.editableBookmark === action.payload.id
-        ? { ...state, editableBookmark: undefined }
-        : state;
+      return { ...state, pendingSaves: (state.pendingSaves || 0) + 1,
+        editableBookmark: state.editableBookmark === action.payload.id ? undefined : state.editableBookmark };
     }
 
     case fromBookmarks.UPDATE_BOOKMARK_SUCCESS: {
+      if (state.loading) return { ...state, pendingSaves: Math.max(0, (state.pendingSaves || 0) - 1) };
       const bookmark: Bookmark = action.payload;
       const bookmarkEntities = {
         ...state.bookmarkEntities,
@@ -132,7 +205,7 @@ export function bookmarksReducer(state = initialBookmarksState,
         ...state,
         bookmarkEntities,
         bookmarkPageEntities,
-        loading: false,
+        pendingSaves: Math.max(0, (state.pendingSaves || 0) - 1),
         loaded: true
       };
     }

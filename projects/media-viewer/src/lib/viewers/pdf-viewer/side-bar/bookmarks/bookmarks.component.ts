@@ -59,6 +59,8 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
 
   pageLookup: { [pageId: number]: DocumentPages } = {};
   editableBookmark: string;
+  mutationState = { saving: false, creating: false, changingStructure: false, loading: false };
+  draft: { id: string; name: string };
   BOOKMARK_CHAR_LIMIT = 30;
 
   dragNode: any;
@@ -84,6 +86,8 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
     this.sortMode = this.customSort;
     this.$subscription = this.store.pipe(select(bookmarksSelectors.getEditableBookmark))
       .subscribe(editableId => this.editableBookmark = editableId);
+    this.$subscription.add(this.store.select(bookmarksSelectors.getBookmarkMutationState)
+      .subscribe(state => this.mutationState = state));
     this.$subscription.add(this.store.select(fromDocument.getPages)
       .subscribe(pages => {
 
@@ -107,10 +111,12 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   editBookmark(id) {
+    this.draft = undefined;
     this.editableBookmark = id;
   }
 
   onAddBookmarkClick() {
+    if (this.mutationState.creating || this.mutationState.changingStructure || this.mutationState.loading) return;
     this.store.pipe(select(bookmarksSelectors.getBookmarkInfo), take(1))
       .subscribe((bookmarkInfo) => {
         this.store.dispatch(new CreateBookmark({
@@ -120,6 +126,7 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   deleteBookmark2(node: Bookmark) {
+    if (this.mutationState.saving || this.mutationState.creating || this.mutationState.changingStructure) return;
     this.customSortBookmarks();
     let next: Bookmark;
 
@@ -136,11 +143,13 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   updateBookmark(bookmark: Bookmark, name) {
+    if (this.mutationState.changingStructure) return;
     const editedBookmark = {
       ...bookmark,
       name
     };
     if (name) {
+      this.draft = undefined;
       this.store.dispatch(new UpdateBookmark(editedBookmark));
       this.editableBookmark = undefined;
     }
@@ -245,6 +254,7 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
   }
 
   drop(event: CdkDragDrop<Bookmark>) {
+    if (this.mutationState.saving || this.mutationState.creating || this.mutationState.changingStructure) return;
 
     if (!event.isPointerOverContainer || (event.previousIndex === event.currentIndex)) return;
 
