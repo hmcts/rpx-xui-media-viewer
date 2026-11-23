@@ -3034,7 +3034,7 @@ __metadata:
     "@ngrx/schematics": "npm:^20"
     "@ngrx/store": "npm:^20.1.0"
     "@ngrx/store-devtools": "npm:^20"
-    "@playwright/test": "npm:1.63.0"
+    "@playwright/test": "npm:1.65.1"
     "@swimlane/ngx-datatable": "npm:^23.0.1"
     "@types/jasmine": "npm:~5.1.0"
     "@types/lodash": "npm:4.17.27"
@@ -3078,7 +3078,7 @@ __metadata:
     odhin-reports-playwright: "patch:odhin-reports-playwright@npm%3A1.1.8#./.yarn/patches/odhin-reports-playwright-npm-1.1.8-a445ed88b7.patch"
     otp: "npm:2.0.1"
     pdfjs-dist: "npm:^4.10.38"
-    playwright-core: "npm:1.63.0"
+    playwright-core: "npm:1.65.1"
     puppeteer: "npm:^24.42.0"
     rpx-xui-translation: "npm:1.2.19"
     rxjs: "npm:^7.8.2"
@@ -4752,14 +4752,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@playwright/test@npm:1.63.0":
-  version: 1.63.0
-  resolution: "@playwright/test@npm:1.63.0"
+"@playwright/test@npm:1.65.1":
+  version: 1.65.1
+  resolution: "@playwright/test@npm:1.65.1"
   dependencies:
-    playwright: "npm:1.63.0"
+    playwright: "npm:1.65.1"
   bin:
     playwright: cli.js
-  checksum: 10/b5e561b8f11488b8062b98c5cf975740f48ae7e9b455fb7152e0fb90d8e13f20c3c3ae6a15833655364246b99f5a46f6601daa5a9eef01de5004c8be7e2b3af3
+  checksum: 10/07ed24cf24c018e3f190a9d57efca3a131e8ad4ccbb5b1ec02d4bb5687edc6443a35b6bcac1139a03903add8b0cf33968422a6ca36ef50b929392748de8a423b
   languageName: node
   linkType: hard
 
@@ -13715,23 +13715,23 @@ __metadata:
   languageName: node
   linkType: hard
 
-"playwright-core@npm:1.63.0":
-  version: 1.63.0
-  resolution: "playwright-core@npm:1.63.0"
+"playwright-core@npm:1.65.1":
+  version: 1.65.1
+  resolution: "playwright-core@npm:1.65.1"
   bin:
     playwright-core: cli.js
-  checksum: 10/d0f7c70786f5e08aa7553a77ba28c07427086e323ae8c4126a647debd8181966dc11d6f8fe1462f2a776ad60c95451b08f01fbee17b11e69a5bd9a2070fe75a6
+  checksum: 10/aa79963cd789367a2ad882cce60e74dd5006129651da8395106b8b1c1a718b95565501943dd35c9d71944698d4afd122f59a0a930635b634841a0b38fe66255d
   languageName: node
   linkType: hard
 
-"playwright@npm:1.63.0":
-  version: 1.63.0
-  resolution: "playwright@npm:1.63.0"
+"playwright@npm:1.65.1":
+  version: 1.65.1
+  resolution: "playwright@npm:1.65.1"
   dependencies:
-    playwright-core: "npm:1.63.0"
+    playwright-core: "npm:1.65.1"
   bin:
     playwright: cli.js
-  checksum: 10/ec87c22888148603a8955bc2a092f416455af931fe53925b9143ce333b83e42a6d8c159c00a4f2d232b27100cf3eadd93cec8a6e5c4e12c1c00663d2034dd515
+  checksum: 10/41ffd721fe18ddc907abbe61479aa0c1ecb16719d7a6840f4f530a61e6c737f757d8ba0935dac10d9e80f308fd3f2eba47e2e9a0a8ceb8fdc0588af08d08fcba
   languageName: node
   linkType: hard
 
