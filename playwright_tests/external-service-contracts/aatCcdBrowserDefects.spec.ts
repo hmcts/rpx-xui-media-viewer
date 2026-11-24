@@ -17,6 +17,7 @@ test.describe('AAT CCD browser legacy Codecept migration', () => {
     await expect(page).toHaveURL(new RegExp(`/cases/case-details/EMPLOYMENT/Leeds/${caseId}(?:#.*)?$`));
     await expect(page.getByRole('tab', { name: /^Case Details/ })).toBeVisible();
     await expect(page.getByRole('combobox', { name: 'Next step' })).toBeVisible();
+    await expect(page.getByRole('combobox', { name: 'Next step' })).toBeEnabled();
     await expect.poll(() => page.getByRole('combobox', { name: 'Next step' }).locator('option:not([value=""]):not([disabled])').count()).toBeGreaterThan(0);
   });
 
