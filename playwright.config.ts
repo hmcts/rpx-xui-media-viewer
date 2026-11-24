@@ -115,8 +115,11 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
     ? requestedReporters
     : [terminalReporter, 'junit', 'odhin-progress', 'odhin'];
   const uniqueReporterNames = [...new Set(reporterNames)];
+  if (env.PW_ENABLE_PERFETTO !== 'false' && !uniqueReporterNames.includes('perfetto')) {
+    uniqueReporterNames.unshift('perfetto');
+  }
 
-  return uniqueReporterNames.map((reporterName) => {
+  const reporters = uniqueReporterNames.map((reporterName): ReporterDescription => {
     if (reporterName === 'junit') {
       return [
         'junit',
@@ -147,6 +150,13 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
       ] as const;
     }
 
+    if (reporterName === 'perfetto') {
+      return [
+        'perfetto',
+        { outputFile: env.PLAYWRIGHT_PERFETTO_OUTPUT_FILE ?? `${defaultOutputRoot}/test-results/perfetto.json` },
+      ] as const;
+    }
+
     if (reporterName === 'odhin-progress') {
       return [
         './playwright_tests/common/reporters/odhin-progress.reporter.cjs',
@@ -162,6 +172,14 @@ const resolveReporters = (env: EnvMap, workerCount: number): ReporterDescription
 
     return [reporterName] as const;
   });
+
+  if (env.CI && env.PLAYWRIGHT_INCLUDE_A11Y !== 'true' && env.PLAYWRIGHT_INCLUDE_WAVE_A11Y !== 'true') {
+    reporters.push([
+      'json',
+      { outputFile: env.PLAYWRIGHT_JSON_OUTPUT ?? `${env.PLAYWRIGHT_REPORT_FOLDER ?? `${defaultOutputRoot}/odhin-report`}/ci-evidence/playwright.json` },
+    ]);
+  }
+  return reporters;
 };
 
 const workerCount = resolveWorkerCount(process.env.FUNCTIONAL_TESTS_WORKERS, 'FUNCTIONAL_TESTS_WORKERS', defaultFunctionalWorkerCount);
@@ -188,7 +206,7 @@ export default defineConfig({
   reporter: resolveReporters(process.env, workerCount),
   use: {
     baseURL: resolveBaseUrl(process.env),
-    trace: 'retain-on-failure',
+    trace: { mode: 'retain-on-failure', snapshots: { dom: true, aria: true, screen: true }, screenshots: true, sources: true },
     screenshot: 'only-on-failure',
     video: 'off',
   },

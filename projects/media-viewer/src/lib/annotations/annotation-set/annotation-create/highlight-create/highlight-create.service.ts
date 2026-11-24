@@ -1,5 +1,5 @@
 import { ToolbarEventService } from './../../../../toolbar/toolbar-event.service';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { take} from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
 import { v4 as uuid } from 'uuid';
@@ -16,9 +16,9 @@ import { AnnotationSet } from '../../annotation-set.model';
 
 @Injectable({ providedIn: 'root' })
 export class HighlightCreateService {
+  private toolBarEvents = inject(ToolbarEventService);
+  private store = inject<Store<fromStore.AnnotationSetState>>(Store);
 
-  constructor(private toolBarEvents: ToolbarEventService,
-    private store: Store<fromStore.AnnotationSetState>) { }
 
   saveAnnotation(rectangles: Rectangle[], page: number, annotationId?: string) {
     this.store.pipe(select(fromSelectors.getDocumentIdSetId), take(1)).subscribe(anoSetDocId => {

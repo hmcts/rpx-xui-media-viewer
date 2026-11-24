@@ -42,6 +42,7 @@
         "lint": {
           "builder": "@angular-eslint/builder:lint",
           "options": {
+            "eslintConfig": "eslint.config.mjs",
             "lintFilePatterns": [
               "projects/media-viewer/**/*.ts",
               "projects/media-viewer/**/*.html"

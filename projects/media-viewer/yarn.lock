@@ -19,7 +19,7 @@ __metadata:
     uuid: ^11.1.1
   peerDependencies:
     "@angular/animations": ^20.0.0
-    "@angular/cdk": ^17.3.8
+    "@angular/cdk": ^20.0.0
     "@angular/common": ^20.0.0
     "@angular/core": ^20.0.0
     "@angular/forms": ^20.0.0
@@ -29,7 +29,7 @@ __metadata:
     "@ngrx/store": ^20
     "@ngrx/store-devtools": ^20
     ngx-chips: 3.0.0
-    rpx-xui-translation: 1.2.12
+    rpx-xui-translation: 1.2.18
     rxjs: ^7.8.2
   languageName: unknown
   linkType: soft
@@ -171,7 +171,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"debug@npm:~4.3.1, debug@npm:~4.3.2":
+"debug@npm:~4.3.1":
   version: 4.3.7
   resolution: "debug@npm:4.3.7"
   dependencies:
@@ -216,11 +216,11 @@ __metadata:
   linkType: hard
 
 "moment-timezone@npm:^0.6.2":
-  version: 0.6.2
-  resolution: "moment-timezone@npm:0.6.2"
+  version: 0.6.6
+  resolution: "moment-timezone@npm:0.6.6"
   dependencies:
     moment: ^2.29.4
-  checksum: ee2838659d26c094ca788cb0032dd9c584fc5f30df3d491ab385f32d01f16f7cf26339fa9d6a843f1c23420c72d283071911a8c86138740b68b381d9d78527d6
+  checksum: a01983e23465a13d42041ee7c042d632137161d36dd5b3f34dc11b084136fcf0c2a8340c963cebfcddaaa31728e09f1648e558488c8a426afbc2ee2f1b37fecd
   languageName: node
   linkType: hard
 
@@ -264,14 +264,14 @@ __metadata:
   linkType: hard
 
 "socket.io-client@npm:^4.8.0":
-  version: 4.8.1
-  resolution: "socket.io-client@npm:4.8.1"
+  version: 4.8.4
+  resolution: "socket.io-client@npm:4.8.4"
   dependencies:
     "@socket.io/component-emitter": ~3.1.0
-    debug: ~4.3.2
+    debug: ~4.4.1
     engine.io-client: ~6.6.1
     socket.io-parser: ~4.2.4
-  checksum: 0ac31d224c7a8567d95bb0522214cc0d3dfa1fbf6de38e63d9aa8e806526e27381d06a527d39e02f173199c48ad112737107148d2e60e1c48a6a8e15391dce8d
+  checksum: 2f248bce7eae61cf514a8dc3b65d67c6240edded0102bf87244bbccb2d57d412fddda07329e97b3a4a50384d149224fb47260f721a7abe1e3c9a6dbdb7ca2e4c
   languageName: node
   linkType: hard
 
@@ -286,9 +286,9 @@ __metadata:
   linkType: hard
 
 "tslib@npm:^2.0.0, tslib@npm:^2.3.0":
-  version: 2.8.1
-  resolution: "tslib@npm:2.8.1"
-  checksum: e4aba30e632b8c8902b47587fd13345e2827fa639e7c3121074d5ee0880723282411a8838f830b55100cbe4517672f84a2472667d355b81e8af165a55dc6203a
+  version: 2.9.1
+  resolution: "tslib@npm:2.9.1"
+  checksum: 40f590cef617a6ad220ac521a0dd8b8c48faf1494468c195c792dc212b293260b7606ffd505aa52328a07954304e5c2631eb8f884034db2286a98efd1aa1686f
   languageName: node
   linkType: hard
 

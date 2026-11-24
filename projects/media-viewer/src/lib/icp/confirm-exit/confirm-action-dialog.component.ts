@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, ViewChild, inject } from '@angular/core';
 import { IcpEventService } from '../../toolbar/icp-event.service';
 
 @Component({
@@ -7,9 +7,9 @@ import { IcpEventService } from '../../toolbar/icp-event.service';
     standalone: false
 })
 export class ConfirmActionDialogComponent implements AfterViewInit {
-  @ViewChild('modalContainer') modalContainer: ElementRef;
+  private icpEventService = inject(IcpEventService);
 
-  constructor(private icpEventService: IcpEventService) {}
+  @ViewChild('modalContainer') modalContainer: ElementRef;
 
   ngAfterViewInit(): void {
     if (this.modalContainer) {

@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { BehaviorSubject, Observable, Subject } from 'rxjs';
 // import * as icpEvents from './icp-event.service';
 // import { participantsListVisible } from './icp-event.service';
@@ -34,8 +34,8 @@ export interface SearchMode {
 
 @Injectable({ providedIn: 'root' })
 export class ToolbarEventService {
+  private icpEventService = inject(IcpEventService);
 
-  constructor(private icpEventService: IcpEventService) {}
 
   public readonly highlightModeSubject = new BehaviorSubject<HighlightMode>(false);
   public readonly highlightToolbarSubject = new BehaviorSubject<HighlightMode>(false);

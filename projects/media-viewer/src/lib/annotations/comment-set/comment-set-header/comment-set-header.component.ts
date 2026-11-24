@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation, inject } from '@angular/core';
 import { Annotation } from '../../annotation-set/annotation-view/annotation.model';
 import { select, Store } from '@ngrx/store';
 import * as fromStore from '../../../store/reducers/reducers';
@@ -16,6 +16,11 @@ import { IcpEventService } from '../../../toolbar/icp-event.service';
     standalone: false
 })
 export class CommentSetHeaderComponent implements OnInit, OnDestroy {
+  private store = inject<Store<fromStore.State>>(Store);
+  private commentService = inject(CommentService);
+  toolbarEvents = inject(ToolbarEventService);
+  readonly icpEventService = inject(IcpEventService);
+
 
   @Input() public showCommentSummary: boolean;
   @Input() public isHidden: boolean;
@@ -27,11 +32,6 @@ export class CommentSetHeaderComponent implements OnInit, OnDestroy {
   isFiltered: boolean;
   navigationList: Annotation[];
   $subscriptions: Subscription;
-
-  constructor(private store: Store<fromStore.State>,
-              private commentService: CommentService,
-              public toolbarEvents: ToolbarEventService,
-              public readonly icpEventService: IcpEventService) {}
 
   ngOnInit(): void {
     const tagFilter$ = this.store.pipe(select(fromTagSelectors.getTagFilters));

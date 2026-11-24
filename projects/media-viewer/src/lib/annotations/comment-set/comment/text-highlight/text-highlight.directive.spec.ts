@@ -1,4 +1,4 @@
-import { ElementRef } from '@angular/core';
+import { ElementRef, Injector, runInInjectionContext } from '@angular/core';
 import { TextHighlightDirective } from './text-highlight.directive';
 
 describe('TextHighlightDirective', () => {
@@ -6,9 +6,10 @@ describe('TextHighlightDirective', () => {
   let hostElement: HTMLDivElement;
 
   beforeEach(() => {
-    hostElement = document.createElement('div');
-    hostElement.innerText = 'text';
-    directive = new TextHighlightDirective(new ElementRef<HTMLElement>(hostElement));
+    directive = runInInjectionContext(
+      Injector.create({ providers: [{ provide: ElementRef, useValue: new ElementRef<HTMLElement>(hostElement) }] }),
+      () => new TextHighlightDirective()
+    );
   });
 
   it('should highlight text when it matches input', () => {

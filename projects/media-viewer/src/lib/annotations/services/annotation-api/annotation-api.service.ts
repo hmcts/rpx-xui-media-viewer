@@ -1,5 +1,5 @@
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { Observable } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 
@@ -9,15 +9,13 @@ import { Comment } from '../../comment-set/comment/comment.model';
 
 @Injectable()
 export class AnnotationApiService {
+  private readonly httpClient = inject(HttpClient);
+
 
   public annotationApiUrl = '/em-anno';
 
   private annotationSetBaseUrl = '/annotation-sets';
   private annotationBaseUrl = '/annotations';
-
-  constructor(
-    private readonly httpClient: HttpClient
-  ) { }
 
   public getAnnotationSet(documentId: string): Observable<any> { // todo add model
     const fixedUrl = `${this.annotationSetsFullUrl}/filter?documentId=${documentId}`;

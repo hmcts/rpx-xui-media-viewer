@@ -1,5 +1,5 @@
 import { Actions, createEffect, ofType } from '@ngrx/effects';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { HttpResponse } from '@angular/common/http';
 import { catchError, exhaustMap, map, switchMap } from 'rxjs/operators';
 import { DocumentConversionApiService } from '../../viewers/convertible-content-viewer/document-conversion-api.service';
@@ -9,11 +9,10 @@ import * as documentActions from '../actions/document.actions';
 
 @Injectable()
 export class DocumentEffects {
-  constructor(
-    private actions$: Actions,
-    private documentConversionService: DocumentConversionApiService,
-    private rotationApiService: RotationApiService,
-  ) { }
+  private actions$ = inject(Actions);
+  private documentConversionService = inject(DocumentConversionApiService);
+  private rotationApiService = inject(RotationApiService);
+
 
   convert$ = createEffect(() =>
     this.actions$.pipe(

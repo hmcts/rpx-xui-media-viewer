@@ -1,15 +1,4 @@
-import {
-  AfterViewInit,
-  Component,
-  ElementRef,
-  EventEmitter,
-  Input,
-  OnChanges,
-  OnDestroy,
-  Output,
-  SimpleChanges,
-  ViewChild
-} from '@angular/core';
+import { AfterViewInit, Component, ElementRef, EventEmitter, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
 import { Rectangle } from './rectangle.model';
 import { Subscription } from 'rxjs';
 import { ToolbarEventService } from '../../../../toolbar/toolbar-event.service';
@@ -22,6 +11,9 @@ import { BoxMovementBounds } from './keyboard-box-move.directive';
     standalone: false
 })
 export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
+  private readonly toolbarEvents = inject(ToolbarEventService);
+  private readonly highlightService = inject(HighlightCreateService);
+
 
   @Input() color: String;
   @Input() zoom: number;
@@ -64,10 +56,6 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
     return this._annoRect;
   }
 
-
-  constructor(private readonly toolbarEvents: ToolbarEventService,
-              private readonly highlightService: HighlightCreateService) {}
-
   ngOnChanges(changes: SimpleChanges) {
     if (changes.rotate) {
       this.adjustForRotation(this.rotate);
@@ -84,7 +72,7 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
     setTimeout(() => this.updateMovementBounds(), 0);
 
     if (this._selected && this.viewRect) {
-      this.viewRect.nativeElement.focus();
+      this.focusWithoutScrolling();
     }
   }
 
@@ -97,7 +85,7 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
   set selected(selected: boolean) {
     this._selected = selected;
     if (this._selected && this.viewRect) {
-      this.viewRect.nativeElement.focus()
+      this.focusWithoutScrolling();
     }
   }
 
@@ -177,5 +165,13 @@ export class RectangleComponent implements OnChanges, AfterViewInit, OnDestroy {
     }
 
     this.tabToToolbar.emit(event);
+  }
+
+  private focusWithoutScrolling(): void {
+    try {
+      this.viewRect.nativeElement.focus({ preventScroll: true });
+    } catch {
+      this.viewRect.nativeElement.focus();
+    }
   }
 }

@@ -1,17 +1,15 @@
 import { Observable } from 'rxjs';
 import { HttpClient } from '@angular/common/http';
-import { Injectable } from '@angular/core';
+import { Injectable, inject } from '@angular/core';
 import { map } from 'rxjs/operators';
 import { Bookmark } from '../../../viewers/pdf-viewer/side-bar/bookmarks/bookmarks.interfaces';
 
 @Injectable()
 export class BookmarksApiService {
+  private readonly httpClient = inject(HttpClient);
+
 
   private readonly ANNOTATIONS_API = '/em-anno';
-
-  constructor(
-    private readonly httpClient: HttpClient
-  ) {}
 
   public getBookmarks(documentId: string): Observable<any> {
     return this.httpClient

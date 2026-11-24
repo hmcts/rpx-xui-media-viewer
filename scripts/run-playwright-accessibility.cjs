@@ -1,5 +1,6 @@
 #!/usr/bin/env node
 
+const path = require('node:path');
 const { execFileSync, spawnSync } = require('node:child_process');
 const { enhanceGeneratedReport } = require('../playwright_tests/common/reporters/odhin-report-enhancer.cjs');
 
@@ -40,6 +41,10 @@ const env = {
     process.env.PLAYWRIGHT_JUNIT_OUTPUT || 'functional-output/tests/playwright-accessibility/playwright-accessibility-junit.xml',
   PLAYWRIGHT_REPORT_FOLDER:
     process.env.PLAYWRIGHT_REPORT_FOLDER || 'functional-output/tests/playwright-accessibility/odhin-report',
+  PLAYWRIGHT_PERFETTO_OUTPUT_FILE: process.env.PLAYWRIGHT_PERFETTO_OUTPUT_FILE || path.join(
+    process.env.PLAYWRIGHT_REPORT_FOLDER || 'functional-output/tests/playwright-accessibility/odhin-report',
+    '..', 'test-results', 'perfetto.json'
+  ),
   PLAYWRIGHT_REPORT_INDEX_FILENAME: process.env.PLAYWRIGHT_REPORT_INDEX_FILENAME || 'xui-playwright-accessibility.html',
   PLAYWRIGHT_REPORT_PROJECT: process.env.PLAYWRIGHT_REPORT_PROJECT || 'RPX XUI Media Viewer - Accessibility',
   PLAYWRIGHT_REPORT_COMMAND: process.env.PLAYWRIGHT_REPORT_COMMAND || playwrightCommand,
