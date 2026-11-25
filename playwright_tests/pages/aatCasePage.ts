@@ -10,23 +10,40 @@ export class AatCasePage {
     if (!username || !password) {
       throw new Error('AAT caseworker credentials are not available');
     }
-    await this.page.goto('/', { waitUntil: 'domcontentloaded' });
-    await this.page.locator('input[name="username"]').fill(username);
-    await this.page.locator('input[name="password"]').fill(password);
-    await this.page.locator('input[value="Sign in"]').click();
-    await this.page.getByRole('heading', { name: 'Case list' }).waitFor();
+    await this.page.goto('/', { waitUntil: 'commit' });
+    const emailInput = this.page.getByRole('textbox', { name: 'Enter your email address' });
+    await emailInput.waitFor({ timeout: 30_000 });
+    await emailInput.fill(username);
+    await this.page.getByRole('button', { name: 'Continue' }).click();
+    await this.page.getByRole('textbox', { name: 'Enter your password' }).fill(password);
+    await this.page.getByRole('button', { name: 'Continue' }).click();
+    await this.page.getByRole('navigation', { name: 'Primary navigation' }).getByRole('link', { name: 'Case list' }).waitFor({ timeout: 30_000 });
   }
 
   async openUploadDocument(caseId: string): Promise<void> {
-    await this.page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
+    await this.openCaseDetails(caseId);
     await this.page.locator('#next-step').selectOption({ label: 'Upload Document' });
-    await this.page.locator('form button[type="submit"]').click();
+    await this.page.getByRole('button', { name: 'Go', exact: true }).click();
     await this.page.getByText('Upload Document').waitFor();
   }
 
   async openCaseDetails(caseId: string): Promise<void> {
-    await this.page.goto(`/case-details/${caseId}`, { waitUntil: 'domcontentloaded' });
-    await this.page.locator('#next-step').waitFor();
+    const [caseResponse] = await Promise.all([
+      this.page.waitForResponse(
+        (response) => response.request().method() === 'GET' && new URL(response.url()).pathname === `/data/internal/cases/${caseId}`,
+        { timeout: 30_000 }
+      ),
+      this.page.goto(`/cases/case-details/EMPLOYMENT/Leeds/${caseId}`, { waitUntil: 'commit' }),
+    ]);
+    if (caseResponse.status() !== 200) {
+      throw new Error('AAT case details did not return the requested case');
+    }
+    const caseData = await caseResponse.json() as { case_id?: string | number };
+    if (String(caseData.case_id) !== caseId) {
+      throw new Error('AAT case details did not return the requested case');
+    }
+    await this.page.getByRole('tab', { name: /^Case Details/ }).waitFor();
+    await this.page.getByRole('combobox', { name: 'Next step' }).waitFor();
   }
 
   async upload(index: number, filename: string, description: string): Promise<void> {
