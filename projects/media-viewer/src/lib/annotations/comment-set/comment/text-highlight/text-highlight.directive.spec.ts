@@ -6,6 +6,9 @@ describe('TextHighlightDirective', () => {
   let hostElement: HTMLDivElement;
 
   beforeEach(() => {
+    hostElement = document.createElement('div');
+    hostElement.textContent = 'text';
+
     directive = runInInjectionContext(
       Injector.create({ providers: [{ provide: ElementRef, useValue: new ElementRef<HTMLElement>(hostElement) }] }),
       () => new TextHighlightDirective()
@@ -38,7 +41,7 @@ describe('TextHighlightDirective', () => {
   });
 
   it('should highlight text containing regular expression characters', () => {
-    hostElement.innerText = 'Find item (1).';
+    hostElement.textContent = 'Find item (1).';
     directive.textToHighlight = 'item (1).';
 
     directive.ngAfterViewChecked();
@@ -47,7 +50,7 @@ describe('TextHighlightDirective', () => {
   });
 
   it('should highlight repeated text matches', () => {
-    hostElement.innerText = 'text then text';
+    hostElement.textContent = 'text then text';
     directive.textToHighlight = 'text';
 
     directive.ngAfterViewChecked();
