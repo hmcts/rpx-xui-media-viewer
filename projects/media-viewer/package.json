@@ -1,6 +1,6 @@
 {
   "name": "@hmcts/media-viewer",
-  "version": "4.2.41-innerhtml-security-update",
+  "version": "4.2.50-innerhtml-security-update",
   "description": "Media Viewer",
   "keywords": [
     "Angular",
