@@ -3035,7 +3035,7 @@ __metadata:
     "@ngrx/store": "npm:^20.1.0"
     "@ngrx/store-devtools": "npm:^20"
     "@playwright/test": "npm:1.65.1"
-    "@swimlane/ngx-datatable": "npm:^23.0.1"
+    "@swimlane/ngx-datatable": "npm:23.0.1"
     "@types/jasmine": "npm:~5.1.0"
     "@types/lodash": "npm:4.17.27"
     "@types/node": "npm:^24.0.0"
@@ -5261,7 +5261,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swimlane/ngx-datatable@npm:^23.0.1":
+"@swimlane/ngx-datatable@npm:23.0.1":
   version: 23.0.1
   resolution: "@swimlane/ngx-datatable@npm:23.0.1"
   dependencies:
