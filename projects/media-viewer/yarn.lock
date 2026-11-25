@@ -9,7 +9,7 @@ __metadata:
   version: 0.0.0-use.local
   resolution: "@hmcts/media-viewer@workspace:."
   dependencies:
-    "@swimlane/ngx-datatable": ^23.0.1
+    "@swimlane/ngx-datatable": 23.0.1
     "@types/uuid": ^10.0.0
     moment-timezone: ^0.6.2
     mutable-div: ^2.0.0
@@ -150,7 +150,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@swimlane/ngx-datatable@npm:^23.0.1":
+"@swimlane/ngx-datatable@npm:23.0.1":
   version: 23.0.1
   resolution: "@swimlane/ngx-datatable@npm:23.0.1"
   dependencies:
