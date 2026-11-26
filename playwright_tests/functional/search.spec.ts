@@ -36,7 +36,7 @@ test.describe('Search', () => {
 
     await mediaViewer.search.open();
     await mediaViewer.search.input.fill('Based');
-    await mediaViewer.search.submitSearch();
+    await mediaViewer.search.input.press('Enter');
     await expect(mediaViewer.search.results).toHaveText('Found 1 of 24');
 
     await expect(mediaViewer.search.nextResultButton).toBeFocused();
