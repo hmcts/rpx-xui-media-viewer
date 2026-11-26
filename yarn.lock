@@ -10008,9 +10008,9 @@ __metadata:
   linkType: hard
 
 "hammerjs@npm:^2.0.8":
-  version: 2.0.8
-  resolution: "hammerjs@npm:2.0.8"
-  checksum: 10/9155d056f252ef35e8ca258dbb5ee2c9d8794f6805d083da7d1d9763d185e3e149459ecc2b36ccce584e3cd5f099fd9fa55056e3bcc7724046390f2e5ae25815
+  version: 2.0.9
+  resolution: "hammerjs@npm:2.0.9"
+  checksum: 10/05b295541c303e1952c70d4db649bbcfc94aabdb0123b34e4577ab17f0a301597304a5532e3860769d6720a63d5fc5be3cfc3016fdfd436dc2359996c1b18b6e
   languageName: node
   linkType: hard
 
