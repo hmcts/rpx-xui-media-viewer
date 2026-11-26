@@ -18,6 +18,7 @@
 >
 </mv-comment-set-header>
 <mv-participants-list></mv-participants-list>
+<!-- TODO STYLE: Replace inline styles with CSS classes -->
 <div
   class="pdfContainer"
   [ngStyle]="{ height: height }"
@@ -57,14 +58,12 @@
       }"
     ></div>
     <div *ngIf="showSelectionStartCursor"
-      class="selection-start-cursor"
-      [style.position]="'fixed'"
+      class="selection-start-cursor selection-cursor--positioned"
       [style.top]="selectionStartCursorY + 'px'"
       [style.left]="selectionStartCursorX + 'px'">
     </div>
     <div *ngIf="showSelectionEndCursor"
-      class="selection-end-cursor"
-      [style.position]="'fixed'"
+      class="selection-end-cursor selection-cursor--positioned"
       [style.top]="selectionEndCursorY + 'px'"
       [style.left]="selectionEndCursorX + 'px'">
     </div>

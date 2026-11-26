@@ -1,4 +1,14 @@
 mv-box-highlight-create {
+  .drawing-container--enabled {
+    width: 100%;
+    height: 100%;
+  }
+
+  .drawing-container:not(.drawing-container--enabled) {
+    width: 0;
+    height: 0;
+  }
+
   .box-highlight {
     top: 0;
     left: 0;
@@ -6,6 +16,15 @@ mv-box-highlight-create {
     height: 0;
     z-index: 10;
     opacity: 0.5;
+    display: none;
+    position: initial;
+    background-color: transparent;
+  }
+
+  .box-highlight--active {
+    display: block;
+    position: absolute;
+    background-color: yellow;
   }
 
   // for keyboard users
@@ -44,5 +63,9 @@ mv-box-highlight-create {
       background-color: #0b0c0c;
       transform: translateY(-0.5px);
     }
+  }
+
+  .drawing-cursor--positioned {
+    position: absolute;
   }
 }

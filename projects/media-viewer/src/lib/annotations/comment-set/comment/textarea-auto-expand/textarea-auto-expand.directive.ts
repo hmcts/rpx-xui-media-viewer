@@ -1,4 +1,4 @@
-import { AfterContentChecked, Directive, ElementRef, HostListener, inject } from '@angular/core';
+import { AfterContentChecked, Directive, ElementRef, HostBinding, HostListener, inject } from '@angular/core';
 
 @Directive({
     selector: '[mvTextAreaAutoExpand]',
@@ -6,6 +6,8 @@ import { AfterContentChecked, Directive, ElementRef, HostListener, inject } from
 })
 export class TextareaAutoExpandDirective implements AfterContentChecked {
   private el = inject(ElementRef);
+
+  @HostBinding('class.textarea-auto-expand') readonly autoExpandClass = true;
 
 
   ngAfterContentChecked(): void {
@@ -17,8 +19,8 @@ export class TextareaAutoExpandDirective implements AfterContentChecked {
   }
 
   adjustHeight(): void {
+    // TODO STYLE: Replace inline styles with CSS classes
     const nativeElement = this.el.nativeElement;
-    nativeElement.style.overflow = 'hidden';
     nativeElement.style.height = 'auto';
     nativeElement.style.height = nativeElement.scrollHeight - 5 + 'px';
   }

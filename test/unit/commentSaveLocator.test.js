@@ -7,11 +7,11 @@ const { test } = require('node:test');
 
 const duplicateCommentMarkup = `
   <div class="comments-panel expanded">
-    <div class="aui-comment" style="z-index: 0">
+    <div class="aui-comment">
       <textarea name="content"></textarea>
       <div class="commentBtns"><button>Save hidden</button></div>
     </div>
-    <div class="aui-comment" style="z-index: 100">
+    <div class="aui-comment aui-comment--selected">
       <textarea name="content"></textarea>
       <div class="commentBtns"><button>Save selected</button></div>
     </div>

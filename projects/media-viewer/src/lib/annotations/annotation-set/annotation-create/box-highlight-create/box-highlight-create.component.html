@@ -1,6 +1,5 @@
-<div #drawingContainer
-  [style.height]="defaultHeight"
-  [style.width]="defaultWidth"
+<div #drawingContainer class="drawing-container"
+  [class.drawing-container--enabled]="drawMode"
   [tabindex]="drawMode && isCurrentPage ? 0 : -1"
   mvKeyboardBoxDraw
   [enabled]="drawMode && isCurrentPage"
@@ -12,19 +11,16 @@
   (mousedown)="initHighlight($event)"
   (mousemove)="updateHighlight($event)"
   (mouseup)="createHighlight()">
-
+  <!-- TODO STYLE: Replace inline styles with CSS classes -->
   <div *ngIf="showCursor"
-    class="drawing-cursor"
-    [style.position]="'absolute'"
+    class="drawing-cursor drawing-cursor--positioned"
     [style.top]="cursorY + 'px'"
     [style.left]="cursorX + 'px'">
   </div>
-
+  <!-- TODO STYLE: Replace inline styles with CSS classes -->
   <div #boxHighlight
     class="box-highlight"
-    [style.display]="display"
-    [style.position]="position"
-    [style.background-color]="backgroundColor"
+    [class.box-highlight--active]="display === 'block'"
     [style.height]="height ? height + 'px' : '100%'"
     [style.width]="width ? width + 'px' : '100%'"
     [style.top]="top + 'px'"

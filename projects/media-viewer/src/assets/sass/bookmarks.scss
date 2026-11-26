@@ -69,6 +69,9 @@ mv-bookmarks {
     .node-content-wrapper-focused {
       background: rgba(255, 0, 0, 0.2);
     }
+    .bookmark-drop-target {
+      border-right: 5px solid #007bff;
+    }
     .tree-children {
       padding-left: 10px;
     }

@@ -26,6 +26,14 @@ body {
   max-height: 100vh;
 }
 
+.media-viewer-demo-toggle {
+  cursor: pointer;
+}
+
+.media-viewer-load-button {
+  vertical-align: unset;
+}
+
 .aui-case-action-alert {
   background-color: govuk-colour("blue");
   color: govuk-colour("white");

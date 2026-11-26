@@ -120,7 +120,7 @@ export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {
   private download() {
     const a = document.createElement('a');
     document.body.appendChild(a);
-    a.setAttribute('style', 'display: none');
+    a.hidden = true;
     a.href = this.url;
     a.download = this.downloadFileName;
     a.click();

@@ -13,12 +13,14 @@ const functionalSpecPattern = 'playwright_tests/functional/**/*.spec.ts';
 const externalServiceContractSpecPattern = 'playwright_tests/external-service-contracts/**/*.spec.ts';
 const supportSpecPattern = 'playwright_tests/support/**/*.spec.ts';
 const accessibilitySpecPattern = 'playwright_tests/accessibility/**/*.spec.ts';
+const cspAuditSpecPattern = 'playwright_tests/csp-audit/**/*.spec.ts';
 const maxWorkerCount = 64;
 const defaultFunctionalWorkerCount = 7;
 const defaultExternalServiceContractWorkerCount = 1;
 const knownExternalDefectTags = /@defect-EXUI-(4961|5123|5124)/;
 const includeKnownDefectTests = process.env.PLAYWRIGHT_INCLUDE_KNOWN_DEFECTS === 'true';
 const runExternalServiceContracts = process.env.PLAYWRIGHT_RUN_EXTERNAL_SERVICE_CONTRACTS === 'true';
+const cspAuditBrowserExecutable = process.env.PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH;
 
 const resolveBaseUrl = (env: EnvMap): string =>
   env.PLAYWRIGHT_BASE_URL ?? env.TEST_URL ?? 'http://localhost:3000/';
@@ -264,6 +266,15 @@ export default defineConfig({
       testMatch: [supportSpecPattern],
       use: {
         ...devices['Desktop Chrome'],
+      },
+    },
+    {
+      name: 'csp-audit',
+      testMatch: [cspAuditSpecPattern],
+      workers: 1,
+      use: {
+        ...devices['Desktop Chrome'],
+        launchOptions: cspAuditBrowserExecutable ? { executablePath: cspAuditBrowserExecutable } : undefined,
       },
     },
     {

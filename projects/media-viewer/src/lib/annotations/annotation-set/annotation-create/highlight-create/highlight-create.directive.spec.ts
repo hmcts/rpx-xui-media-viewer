@@ -34,9 +34,12 @@ describe('HighlightCreateDirective', () => {
     styles: { height: 1122, left: 341, width: 793 }
   };
   const getMockElement = (transform: string) => {
+    const child = document.createElement('span');
+    child.style.padding = '20px';
+    child.style.transform = transform;
     return {
       getBoundingClientRect: () => ({ top: 30, left: 40 }),
-      children: [{ style: { padding: '20', transform: transform } }]
+      children: [child]
     };
   };
 
@@ -139,7 +142,7 @@ describe('HighlightCreateDirective', () => {
 
     directive.onMouseUp(mockEvent);
 
-    expect(mockElement.children[0].style.padding).toBe('0');
+    expect(mockElement.children[0].classList.contains('text-selection--normalised')).toBeTrue();
     expect(mockElement.children[0].style.transform).not.toContain('translate');
   });
 
@@ -153,7 +156,7 @@ describe('HighlightCreateDirective', () => {
 
     directive.onMouseUp(mockEvent);
 
-    expect(mockElement.children[0].style.padding).toBe('0');
+    expect(mockElement.children[0].classList.contains('text-selection--normalised')).toBeTrue();
     expect(mockElement.children[0].style.transform).not.toContain('translateX');
   });
 
