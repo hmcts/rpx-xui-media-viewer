@@ -1,9 +1,13 @@
 'use strict';
 
-require('ts-node/register');
-
 const assert = require('node:assert/strict');
+const path = require('node:path');
 const { test } = require('node:test');
+
+require('ts-node').register({
+  project: path.resolve(__dirname, '../../playwright_tests/tsconfig.json'),
+});
+
 const { AatCasePage } = require('../../playwright_tests/pages/aatCasePage');
 
 test('AAT hand-off follows two-step sign-in and opens a usable Employment case', async () => {
