@@ -31,6 +31,7 @@ export class CtxToolbarComponent implements OnChanges {
 
   @Input() canHighlight: boolean;
   @Input() canBookmark: boolean;
+  @Input() bookmarkDisabled = false;
   @Input() canComment: boolean;
   @Input() canDelete: boolean;
 
@@ -97,6 +98,7 @@ export class CtxToolbarComponent implements OnChanges {
   }
 
   createBookmark() {
+    if (this.bookmarkDisabled) return;
     this.createBookmarkEvent.emit(this.rectangle);
     this.rectangle = undefined;
   }

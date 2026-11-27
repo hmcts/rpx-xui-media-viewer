@@ -33,9 +33,11 @@
           [attr.aria-label]="'Bookmark' | rpxTranslate"
           class="aui__toolbar-button aui__toolbar-button--comments contextual-btn rightButton aui__toolbar-button-bookmark"
           id="bookmarkButton"
+          [disabled]="bookmarkDisabled"
           (mousedown)="createBookmark()"
           (keydown.enter)="createBookmark()">
     <span aria-hidden="true">Bookmark</span></button>
+  <span *ngIf="bookmarkDisabled" role="status">{{ 'Bookmark changes are saving. Some actions are temporarily unavailable.' | rpxTranslate }}</span>
   <div class="arrow-down">
     <div class="inner-triangle"></div>
   </div>

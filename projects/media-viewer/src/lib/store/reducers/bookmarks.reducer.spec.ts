@@ -1,10 +1,11 @@
 import {
-  CreateBookmarkSuccess,
+  CreateBookmark, CreateBookmarkFailure, CreateBookmarkSuccess,
+  DeleteBookmark, DeleteBookmarkFailure, MoveBookmark, MoveBookmarkFailure,
   LoadBookmarks,
   LoadBookmarksFailure,
   LoadBookmarksSuccess,
   DeleteBookmarkSuccess,
-  UpdateBookmarkSuccess, MoveBookmarkSuccess,
+  UpdateBookmark, UpdateBookmarkFailure, UpdateBookmarkSuccess, MoveBookmarkSuccess,
   UpdateBookmarkScrollTop
 } from '../actions/bookmark.actions';
 import * as fromBookmarks from './bookmarks.reducer';
@@ -118,6 +119,111 @@ describe('BookmarksReducer', () => {
     expect(state.bookmarkEntities).toEqual({ [bookmark.id]: bookmark });
     expect(state.loaded).toBeTrue();
     expect(state.loading).toBeFalse();
+  });
+
+  it('does not close a newer draft when an earlier bookmark save completes', () => {
+    const editing = { ...fromBookmarks.initialBookmarksState, editableBookmark: bookmark.id };
+    const saving = fromBookmarks.bookmarksReducer(editing, new UpdateBookmark(bookmark));
+    expect(saving.editableBookmark).toBeUndefined();
+
+    const newerBookmark = { ...bookmark, id: 'newer' };
+    const newerDraft = fromBookmarks.bookmarksReducer(saving, new CreateBookmarkSuccess(newerBookmark));
+    const saved = fromBookmarks.bookmarksReducer(newerDraft, new UpdateBookmarkSuccess(bookmark));
+    expect(saved.editableBookmark).toBe(newerBookmark.id);
+    expect(saved.bookmarkEntities[bookmark.id]).toEqual(bookmark);
+  });
+
+  it('preserves a different draft when an update starts or fails', () => {
+    const editing = { ...fromBookmarks.initialBookmarksState, editableBookmark: 'newer' };
+    const saving = fromBookmarks.bookmarksReducer(editing, new UpdateBookmark(bookmark));
+    const failed = fromBookmarks.bookmarksReducer(saving, new UpdateBookmarkFailure(bookmark));
+    expect(saving.editableBookmark).toBe('newer');
+    expect(failed.editableBookmark).toBe('newer');
+  });
+
+  it('keeps pending saves scoped to their document across navigation and return', () => {
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new fromDocActions.SetDocumentId('documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmark(bookmark));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmark(bookmark));
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('other'));
+    expect(state.pendingSaves).toBe(0);
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmarkSuccess(bookmark, 'documentId'));
+    expect(state.bookmarkEntities[bookmark.id]).toBeUndefined();
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('documentId'));
+    expect(state.pendingSaves).toBe(1);
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmarkFailure({ status: 0 } as any, 'documentId'));
+    expect(state.pendingSaves).toBe(0);
+  });
+
+  it('keeps loading true until the document load finishes after a pending save', () => {
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new fromDocActions.SetDocumentId('documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmark(bookmark));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmarkSuccess(bookmark, 'documentId'));
+    expect(state.loading).toBeTrue();
+    state = fromBookmarks.bookmarksReducer(state, new LoadBookmarksSuccess({ body: [bookmark], status: 200 }, 'documentId'));
+    expect(state.loading).toBeFalse();
+  });
+
+  it('settles child save and move completions without exposing a partial tree during reload', () => {
+    const child = { ...bookmark, id: 'child', parent: 'parent' };
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new fromDocActions.SetDocumentId('documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmark(child));
+    state = fromBookmarks.bookmarksReducer(state, new MoveBookmark([child]));
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('other'));
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmarkSuccess(child, 'documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new MoveBookmarkSuccess([child], 'documentId'));
+    expect(state.pendingSaves).toBe(0);
+    expect(state.pendingStructure).toBeFalse();
+    expect(state.bookmarkEntities).toEqual({});
+    expect(state.loading).toBeTrue();
+  });
+
+  it('settles a pending delete after returning to its document before reloading', () => {
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new fromDocActions.SetDocumentId('documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new DeleteBookmark({ deleted: [bookmark.id], updated: undefined }));
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('other'));
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('documentId'));
+    expect(state.pendingStructure).toBeTrue();
+    state = fromBookmarks.bookmarksReducer(state, new DeleteBookmarkSuccess([bookmark.id], 'documentId'));
+    expect(state.pendingStructure).toBeFalse();
+    expect(state.bookmarkEntities).toEqual({});
+    expect(state.loading).toBeTrue();
+  });
+
+  it('ignores an old document delete completion without dereferencing missing bookmarks', () => {
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new fromDocActions.SetDocumentId('documentId'));
+    state = fromBookmarks.bookmarksReducer(state, new DeleteBookmark({ deleted: [bookmark.id], updated: undefined }));
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('other'));
+    state = fromBookmarks.bookmarksReducer(state, new DeleteBookmarkSuccess([bookmark.id], 'documentId'));
+    expect(state.bookmarkEntities).toEqual({});
+    state = fromBookmarks.bookmarksReducer(state, new fromDocActions.SetDocumentId('documentId'));
+    expect(state.pendingStructure).toBeFalse();
+  });
+
+  it('tracks overlapping saves until every success or failure settles', () => {
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new UpdateBookmark(bookmark));
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmark(bookmark));
+    expect(state.pendingSaves).toBe(2);
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmarkFailure({ status: 0 } as any));
+    expect(state.pendingSaves).toBe(1);
+    state = fromBookmarks.bookmarksReducer(state, new UpdateBookmarkSuccess(bookmark));
+    expect(state.pendingSaves).toBe(0);
+  });
+
+  it('releases create and structural guards on failures', () => {
+    let state = fromBookmarks.bookmarksReducer(fromBookmarks.initialBookmarksState, new CreateBookmark(bookmark));
+    expect(state.pendingCreates).toBe(1);
+    state = fromBookmarks.bookmarksReducer(state, new CreateBookmarkFailure({ status: 0 } as any));
+    expect(state.pendingCreates).toBe(0);
+    state = fromBookmarks.bookmarksReducer(state, new MoveBookmark([bookmark]));
+    expect(state.pendingStructure).toBeTrue();
+    state = fromBookmarks.bookmarksReducer(state, new MoveBookmarkFailure('failure'));
+    expect(state.pendingStructure).toBeFalse();
+    state = fromBookmarks.bookmarksReducer(state, new DeleteBookmark({ deleted: [bookmark.id], updated: undefined }));
+    expect(state.pendingStructure).toBeTrue();
+    state = fromBookmarks.bookmarksReducer(state, new DeleteBookmarkFailure('failure'));
+    expect(state.pendingStructure).toBeFalse();
   });
 
   it('should move bookmark on success', () => {
