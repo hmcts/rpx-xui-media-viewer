@@ -60,3 +60,7 @@ input:checked + .slider:before {
 .slider.round:before {
   border-radius: 50%;
 }
+.toolbar-toggles {
+  float: right;
+  margin-top: 15px;
+}

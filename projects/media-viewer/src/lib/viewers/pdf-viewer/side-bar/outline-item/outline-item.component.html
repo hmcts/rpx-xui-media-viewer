@@ -5,13 +5,13 @@
        (keyup.enter)="toggleOutline()" tabindex="0"></div>
   <a (click)="goToDestination(outline?.dest)"
      (keyup.enter)="goToDestination(outline?.dest)"
-     [style.font-weight]="outline.bold ? 'bold' : ''"
-     [style.font-style]="outline.italic ? 'italic' : ''"
+     [class.outline-item--bold]="outline.bold"
+     [class.outline-item--italic]="outline.italic"
      [ngClass]="showHighlightOutlineCss()"
      tabindex="0">
-    <div style="text-align:left;" [ngClass]="showHighlightOutlineCss()">
+    <div class="outline-item__child" [ngClass]="showHighlightOutlineCss()">
       {{ outline.title }}
-      <span style="float:right;">
+      <span class="outline-item__page-number">
         {{ outline.pageNumber }}
       </span>
     </div>

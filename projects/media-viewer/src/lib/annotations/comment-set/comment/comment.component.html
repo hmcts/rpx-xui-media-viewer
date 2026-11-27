@@ -1,10 +1,10 @@
+<!-- TODO STYLE: Replace inline styles with CSS classes -->
 <div
   #form
   (click)="onCommentClick()"
   class="aui-comment"
-  [ngClass]="{ stylestoggle: (marginToComment$ | async) }"
+  [ngClass]="{ stylestoggle: (marginToComment$ | async), 'aui-comment--selected': selected }"
   [style.top.px]="commentTop"
-  [style.zIndex]="selected ? 100 : 0"
 >
   <div id="detailsWrapper {{ index }}" class="aui-comment__header">
     <span *ngIf="author && !editor" class="aui-comment__author">

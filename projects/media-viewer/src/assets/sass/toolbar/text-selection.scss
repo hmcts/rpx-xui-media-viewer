@@ -2,6 +2,10 @@
   opacity: 1.0;
 }
 
+.text-selection--normalised {
+  padding: 0;
+}
+
 #viewer.textLayer-visible .canvasWrapper {
   background-color: rgb(128,255,128);
 }

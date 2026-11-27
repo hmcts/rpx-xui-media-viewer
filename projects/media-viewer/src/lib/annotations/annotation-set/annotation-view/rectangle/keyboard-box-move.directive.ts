@@ -71,6 +71,7 @@ export class KeyboardBoxMoveDirective implements OnDestroy {
       this.setMoving(true);
     }
 
+    // TODO STYLE: Replace inline styles with CSS classes
     const currentTop = parseFloat(element.style.top) || 0;
     const currentLeft = parseFloat(element.style.left) || 0;
     const currentWidth = element.offsetWidth;

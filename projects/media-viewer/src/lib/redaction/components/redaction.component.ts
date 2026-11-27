@@ -95,7 +95,7 @@ export class RedactionComponent implements OnInit, OnDestroy {
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     document.body.appendChild(a);
-    a.setAttribute('style', 'display: none');
+    a.hidden = true;
     a.href = url;
     a.download = filename;
     a.click();

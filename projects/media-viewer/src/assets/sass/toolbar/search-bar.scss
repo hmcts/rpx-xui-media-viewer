@@ -34,6 +34,18 @@
   }
 }
 
+.searchbar__submit {
+  position: absolute;
+  top: 40px;
+  right: 10px;
+}
+
+.searchbar__advanced {
+  position: absolute;
+  top: 95px;
+  right: 15px;
+}
+
 @media screen and (max-width: 425px) {
   .searchbar {
     width: 100%;

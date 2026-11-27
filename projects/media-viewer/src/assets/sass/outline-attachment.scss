@@ -144,3 +144,19 @@ html[dir="rtl"] .outlineItemToggler::before {
     0 0 1px hsla(0, 0%, 100%, 0.1) inset, 0 0 1px hsla(0, 0%, 0%, 0.2);
   color: hsla(0, 0%, 100%, 1);
 }
+
+.outline-item--bold {
+  font-weight: bold;
+}
+
+.outline-item--italic {
+  font-style: italic;
+}
+
+.outline-item__child {
+  text-align: left;
+}
+
+.outline-item__page-number {
+  float: right;
+}

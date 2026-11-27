@@ -350,9 +350,7 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
 
   dragEnd() {
     this.isUserdragging = false;
-    if (this.hoverHtmlElement?.style) {
-      this.hoverHtmlElement.style.borderRight = '';
-    }
+    this.hoverHtmlElement?.classList.remove('bookmark-drop-target');
   }
 
   dragHover(event: any, node: Bookmark) {
@@ -361,17 +359,13 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
       const percentageX = newEvent.offsetX / newEvent.target.clientWidth;
       if (percentageX > .55) {
         this.hoveredNode = node;
-        if (this.hoverHtmlElement?.style) {
-          this.hoverHtmlElement.style.borderRight = '';
-        }
+        this.hoverHtmlElement?.classList.remove('bookmark-drop-target');
         this.hoverHtmlElement = event.currentTarget;
-        this.hoverHtmlElement.style.borderRight = '5px solid #007bff';
+        this.hoverHtmlElement.classList.add('bookmark-drop-target');
         this.dragNodeInsertToParent = true;
       } else {
         this.hoveredNode = null;
-        if (this.hoverHtmlElement?.style) {
-          this.hoverHtmlElement.style.borderRight = '';
-        }
+        this.hoverHtmlElement?.classList.remove('bookmark-drop-target');
         this.dragNodeInsertToParent = false;
       }
     }
@@ -381,9 +375,7 @@ export class BookmarksComponent implements OnInit, OnDestroy, OnChanges {
     if (this.isUserdragging) {
       if (!node || this.hoveredNode?.id !== node.id) {
         this.dragNodeInsertToParent = false;
-        if (this.hoverHtmlElement?.style) {
-          this.hoverHtmlElement.style.borderRight = '';
-        }
+        this.hoverHtmlElement?.classList.remove('bookmark-drop-target');
         this.hoveredNode = null;
       }
     }

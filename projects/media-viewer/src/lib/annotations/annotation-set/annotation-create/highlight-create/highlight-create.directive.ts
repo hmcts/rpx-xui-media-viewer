@@ -203,7 +203,9 @@ export class HighlightCreateDirective implements OnInit, OnDestroy {
       for (let i = 0; i < element.parentElement.children.length; i++) {
         const child = <HTMLElement>element.parentElement.children[i];
 
-        child.style.padding = '0';
+        // TODO STYLE: Replace inline styles with CSS classes
+        // Note: Most complicated styling change required
+        child.classList.add('text-selection--normalised');
         // regex will be targeting the translate style in string
         // e.g. scaleX(0.969918) translateX(-110.684px) translateY(-105.274px) will become scaleX(0.969918)
         const translateCSSRegex = /translate[XYZ]\(-?\d*(\.\d+)?(px)?\)/g;
