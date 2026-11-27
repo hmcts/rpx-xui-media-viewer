@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, ViewEncapsulation, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 
 import {select, Store} from '@ngrx/store';
 import * as fromStore from '../../../../store/reducers/reducers';
@@ -13,6 +13,7 @@ import {auditTime, tap} from 'rxjs/operators';
     selector: 'mv-comment-filter',
     templateUrl: './comment-filter.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentFilterComponent implements OnInit, OnDestroy {

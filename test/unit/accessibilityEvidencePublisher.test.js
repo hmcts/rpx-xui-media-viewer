@@ -1,13 +1,13 @@
 'use strict';
 
-require('ts-node/register');
-
 const assert = require('node:assert/strict');
 const { spawn, spawnSync } = require('node:child_process');
 const fs = require('node:fs');
 const os = require('node:os');
 const path = require('node:path');
 const { test } = require('node:test');
+const tsNodeProject = path.resolve(__dirname, '../../playwright_tests/tsconfig.json');
+require('ts-node').register({ project: tsNodeProject });
 const { publishAccessibilityEvidence } = require('../../playwright_tests/utils/accessibility/accessibilityEvidencePublisher');
 
 const publisherPath = path.resolve(__dirname, '../../playwright_tests/utils/accessibility/accessibilityEvidencePublisher');
@@ -192,6 +192,7 @@ function publishEvidenceInChildProcess(evidenceDir, entry) {
       cwd: path.resolve(__dirname, '../..'),
       env: {
         ...process.env,
+        TS_NODE_PROJECT: tsNodeProject,
         PW_A11Y_EVIDENCE_DIR: evidenceDir,
         PW_A11Y_ENTRY: JSON.stringify(entry),
       },

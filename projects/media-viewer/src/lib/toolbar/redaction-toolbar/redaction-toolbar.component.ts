@@ -1,4 +1,4 @@
-import { Component, HostListener, Input, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, HostListener, Input, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { SearchType, ToolbarEventService } from '../toolbar-event.service';
 import { select, Store } from '@ngrx/store';
 import * as fromRedactSelectors from '../../store/selectors/redaction.selectors';
@@ -11,6 +11,7 @@ import { ToolbarFocusService } from '../toolbar-focus.service';
 @Component({
     selector: 'mv-redaction-toolbar',
     templateUrl: './redaction-toolbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class RedactionToolbarComponent implements OnInit, OnDestroy {

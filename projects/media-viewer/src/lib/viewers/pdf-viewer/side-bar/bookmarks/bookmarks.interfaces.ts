@@ -11,6 +11,6 @@ export interface Bookmark {
 }
 
 export interface BookmarksPerPage {
-  bookmark: { [id: string]: Bookmark };
+  bookmark: Bookmark[];
   styles: { left: number, height: number, width: number };
 }

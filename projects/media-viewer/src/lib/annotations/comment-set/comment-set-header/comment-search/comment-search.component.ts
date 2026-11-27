@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, Input, OnDestroy, ViewChild, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Annotation } from '../../../annotation-set/annotation-view/annotation.model';
 import { Store } from '@ngrx/store';
 import * as fromStore from '../../../../store/reducers/reducers';
@@ -8,6 +8,7 @@ import * as fromActions from '../../../../store/actions/annotation.actions';
     selector: 'mv-comment-search',
     templateUrl: './comment-search.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentSearchComponent implements AfterViewInit, OnDestroy {

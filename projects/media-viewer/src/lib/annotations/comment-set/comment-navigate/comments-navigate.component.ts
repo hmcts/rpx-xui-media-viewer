@@ -1,4 +1,4 @@
-import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject } from '@angular/core';
+import { Component, Input, OnChanges, SimpleChanges, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Rectangle } from '../../annotation-set/annotation-view/rectangle/rectangle.model';
 import { Annotation } from '../../annotation-set/annotation-view/annotation.model';
 import {Store} from '@ngrx/store';
@@ -10,6 +10,7 @@ import {ToolbarEventService} from '../../../toolbar/toolbar-event.service';
     selector: 'mv-comments-navigate',
     templateUrl: './comments-navigate.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentsNavigateComponent implements OnChanges {

@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnDestroy, OnInit, Output, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Annotation } from '../../annotation-set/annotation-view/annotation.model';
 import { select, Store } from '@ngrx/store';
 import * as fromStore from '../../../store/reducers/reducers';
@@ -13,6 +13,7 @@ import { IcpEventService } from '../../../toolbar/icp-event.service';
     selector: 'mv-comment-set-header',
     templateUrl: './comment-set-header.component.html',
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentSetHeaderComponent implements OnInit, OnDestroy {

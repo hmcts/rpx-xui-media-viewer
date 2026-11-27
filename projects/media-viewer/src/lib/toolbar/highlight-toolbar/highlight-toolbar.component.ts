@@ -1,4 +1,4 @@
-import { Component, HostListener, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, HostListener, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { SearchMode, SearchType, ToolbarEventService } from '../toolbar-event.service';
 import { ToolbarButtonVisibilityService } from '../toolbar-button-visibility.service';
 import { ToolbarFocusService } from '../toolbar-focus.service';
@@ -11,6 +11,7 @@ import * as fromRedactSelectors from '../../store/selectors/redaction.selectors'
     selector: 'mv-highlight-toolbar',
     templateUrl: './highlight-toolbar.component.html',
     styleUrls: ['./highlight-toolbar.component.scss'],
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class HighlightToolbarComponent implements OnInit, OnDestroy {

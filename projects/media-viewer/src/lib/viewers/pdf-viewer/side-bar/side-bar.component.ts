@@ -1,4 +1,4 @@
-import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, Component, ElementRef, HostListener, Input, OnChanges, OnDestroy, OnInit, SimpleChanges, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Outline } from './outline-item/outline.model';
 import { Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
@@ -15,6 +15,7 @@ import { BookmarksComponent } from './bookmarks/bookmarks.component';
 @Component({
     selector: 'mv-side-bar',
     templateUrl: './side-bar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
@@ -24,7 +25,7 @@ export class SideBarComponent implements OnInit, OnChanges, OnDestroy {
 
 
   @Input() annotationsEnabled: boolean;
-  @Input() outline: Outline;
+  @Input() outline: Outline[];
   @Input() url: string;
   @Input() zoom: number;
   @Input() rotate: number;

@@ -1,4 +1,4 @@
-import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren, inject } from '@angular/core';
+import { Component, ElementRef, Input, OnChanges, OnDestroy, OnInit, QueryList, SimpleChanges, ViewChild, ViewChildren, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { select, Store } from '@ngrx/store';
 
@@ -18,6 +18,7 @@ import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 @Component({
     selector: 'mv-comment-set',
     templateUrl: './comment-set.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentSetComponent implements OnInit, OnDestroy, OnChanges {

@@ -1,4 +1,4 @@
-import { Component, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { Component, Input, OnDestroy, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { take } from 'rxjs/operators';
 import { select, Store } from '@ngrx/store';
@@ -18,6 +18,7 @@ import { CtxToolbarComponent } from '../ctx-toolbar/ctx-toolbar.component';
 @Component({
     selector: 'mv-metadata-layer',
     templateUrl: './metadata-layer.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MetadataLayerComponent implements OnInit, OnDestroy {

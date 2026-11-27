@@ -3,7 +3,7 @@ import { ComponentFixture, inject, TestBed } from '@angular/core/testing';
 import { ToolbarEventService } from '../../../../toolbar/toolbar-event.service';
 import { CommentSearchComponent } from './comment-search.component';
 import { FormsModule } from '@angular/forms';
-import { Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, CUSTOM_ELEMENTS_SCHEMA, ViewChild } from '@angular/core';
 import { Store, StoreModule } from '@ngrx/store';
 import { reducers } from '../../../../store/reducers/reducers';
 import * as fromActions from '../../../../store/actions/annotation.actions';
@@ -14,6 +14,7 @@ describe('CommentSearch', () => {
     selector: `mv-host-component`,
     template: `
     <mv-comment-search [annotations]="annotations"></mv-comment-search>`,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
   class TestHostComponent {
@@ -73,6 +74,7 @@ describe('CommentSearch', () => {
       fixture.detectChanges();
       spyOn(store, 'dispatch');
 
+      expect(component.annotations).toBe(hostComponent.annotations);
       component.searchComments('searchText');
 
       expect(store.dispatch).toHaveBeenCalledWith(new fromActions.SearchComment('searchText'));
@@ -84,6 +86,7 @@ describe('CommentSearch', () => {
       fixture.detectChanges();
       spyOn(store, 'dispatch');
 
+      expect(component.annotations).toBe(hostComponent.annotations);
       component.searchComments('searchText');
 
       expect(store.dispatch).not.toHaveBeenCalledWith(new fromActions.SearchComment('searchText'));

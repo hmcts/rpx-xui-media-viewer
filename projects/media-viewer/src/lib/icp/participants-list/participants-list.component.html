@@ -4,15 +4,21 @@
     <p class="participant__name">All Participants</p>
   </div>
 
-  <div *ngIf="(presenter$ | async)?.username !== ''" class="participant__card">
-    <div class="participant__header"> Presenting </div>
-    <p class="participant__name">{{(presenter$ | async)?.username}}</p>
-  </div>
+  @if ((presenter$ | async)?.username !== '') {
+    <div class="participant__card">
+      <div class="participant__header"> Presenting </div>
+      <p class="participant__name">{{(presenter$ | async)?.username}}</p>
+    </div>
+  }
 
-  <div *ngIf="(participants$ | async).length > 1" class="participant__card">
-    <div class="participant__header">Following</div>
-    <ng-container *ngFor="let participant of (participants$ | async)">
-        <p *ngIf="participant.id !== (presenter$ | async)?.id" class="participant__name">{{participant.username}}</p>
-    </ng-container>
-  </div>
+  @if ((participants$ | async).length > 1) {
+    <div class="participant__card">
+      <div class="participant__header">Following</div>
+      @for (participant of (participants$ | async); track participant) {
+        @if (participant.id !== (presenter$ | async)?.id) {
+          <p class="participant__name">{{participant.username}}</p>
+        }
+      }
+    </div>
+  }
 </div>

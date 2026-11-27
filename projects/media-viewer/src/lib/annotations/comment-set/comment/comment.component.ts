@@ -1,4 +1,4 @@
-import { AfterContentInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { AfterContentInit, Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import {Comment} from './comment.model';
 import {User} from '../../models/user.model';
 import {Rectangle} from '../../annotation-set/annotation-view/rectangle/rectangle.model';
@@ -18,6 +18,7 @@ import { HtmlTemplatesHelper } from '../../../shared/util/helpers/html-templates
 @Component({
     selector: 'mv-anno-comment',
     templateUrl: './comment.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class CommentComponent implements OnInit, OnDestroy, AfterContentInit {

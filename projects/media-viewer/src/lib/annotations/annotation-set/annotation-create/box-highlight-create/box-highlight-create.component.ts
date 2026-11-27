@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, Input, OnDestroy, OnInit, Output, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Subscription } from 'rxjs';
 import { Rectangle } from '../../annotation-view/rectangle/rectangle.model';
@@ -10,6 +10,7 @@ import { KeyboardBoxDrawEvent, CursorPosition } from './keyboard-box-draw.direct
 @Component({
     selector: 'mv-box-highlight-create',
     templateUrl: './box-highlight-create.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class BoxHighlightCreateComponent implements OnInit, OnDestroy {

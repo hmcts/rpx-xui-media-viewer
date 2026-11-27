@@ -1,12 +1,14 @@
-<mv-pdf-viewer *ngIf="convertedUrl"
-               (mediaLoadStatus)="onMediaLoad($event)"
-               (pdfViewerException)="onLoadException($event)"
-               (documentTitle)="onDocumentTitleChange($event)"
-               [url]="convertedUrl"
-               [downloadUrl]="originalUrl"
-               [enableAnnotations]="enableAnnotations"
-               [enableRedactions]="enableRedactions"
-               [annotationSet]="enableAnnotations ? annotationSet : null"
-               [downloadFileName]="downloadFileName"
-               [height]="height">
-</mv-pdf-viewer>
+@if (convertedUrl) {
+  <mv-pdf-viewer
+    (mediaLoadStatus)="onMediaLoad($event)"
+    (pdfViewerException)="onLoadException($event)"
+    (documentTitle)="onDocumentTitleChange($event)"
+    [url]="convertedUrl"
+    [downloadUrl]="originalUrl"
+    [enableAnnotations]="enableAnnotations"
+    [enableRedactions]="enableRedactions"
+    [annotationSet]="enableAnnotations ? annotationSet : null"
+    [downloadFileName]="downloadFileName"
+    [height]="height">
+  </mv-pdf-viewer>
+}

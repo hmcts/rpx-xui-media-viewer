@@ -1,4 +1,4 @@
-import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, OnDestroy, inject } from '@angular/core';
+import { Component, EventEmitter, Input, Output, ViewChild, ElementRef, OnDestroy, inject, ChangeDetectionStrategy } from '@angular/core';
 import { v4 as uuid } from 'uuid';
 import { Annotation } from './annotation.model';
 import { Rectangle } from './rectangle/rectangle.model';
@@ -24,6 +24,7 @@ const FOCUSABLE_SELECTOR = [
 @Component({
     selector: 'mv-annotation',
     templateUrl: './annotation-view.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class AnnotationViewComponent implements OnDestroy {

@@ -1,4 +1,4 @@
-import { AfterContentInit, AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject } from '@angular/core';
+import { AfterContentInit, AfterViewChecked, ChangeDetectorRef, Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, Output, SimpleChanges, ViewChild, ViewEncapsulation, inject, ChangeDetectionStrategy } from '@angular/core';
 import { delay, filter, Observable, Subscription, take } from 'rxjs';
 import {
   defaultImageOptions, defaultMultimediaOptions,
@@ -44,6 +44,7 @@ enum ConvertibleContentTypes {
     templateUrl: './media-viewer.component.html',
     styleUrls: ['./media-viewer.component.scss'],
     encapsulation: ViewEncapsulation.None,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MediaViewerComponent implements OnChanges, OnDestroy, AfterContentInit, AfterViewChecked {

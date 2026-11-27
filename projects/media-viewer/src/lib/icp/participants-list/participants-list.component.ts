@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Observable, Subscription } from 'rxjs';
 import { ToolbarEventService } from '../../toolbar/toolbar-event.service';
 import { IcpParticipant, IcpState } from '../icp.interfaces';
@@ -9,6 +9,7 @@ import { IcpEventService } from '../../toolbar/icp-event.service';
 @Component({
     selector: 'mv-participants-list',
     templateUrl: './participants-list.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ParticipantsListComponent implements OnInit, OnDestroy {

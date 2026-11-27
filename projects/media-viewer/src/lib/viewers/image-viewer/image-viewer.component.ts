@@ -1,4 +1,4 @@
-import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, inject } from '@angular/core';
+import { Component, ElementRef, EventEmitter, HostListener, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { PrintService } from '../../print.service';
 import { AnnotationSet } from '../../annotations/annotation-set/annotation-set.model';
@@ -15,6 +15,7 @@ import { ViewerEventService } from '../viewer-event.service';
 @Component({
     selector: 'mv-image-viewer',
     templateUrl: './image-viewer.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class ImageViewerComponent implements OnInit, OnDestroy, OnChanges {

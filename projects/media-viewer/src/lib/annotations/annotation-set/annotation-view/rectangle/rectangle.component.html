@@ -1,42 +1,43 @@
-<div *ngIf="editable; else nonEditable">
-  <div #rectElement
-       class="rectangle"
-       draggable
-       resizable
-       mvKeyboardBoxMove
-       [tabindex]="rectangleTabIndex"
-       [ngClass]="{ 'selected': selected, 'grabNDrag': enableGrabNDrag }"
-       [style.backgroundColor]="'#' + color"
-       [style.width]="width + 'px'"
-       [style.height]="height + 'px'"
-       [style.left]="left + 'px'"
-       [style.top]="top + 'px'"
-       [rotate]="0"
-       [selected]="selected"
-       [movementBounds]="movementBounds"
-       (click)="onClick()"
-       (focus)="onFocus()"
-       (keydown.tab)="onTab($event)"
-       (stopped)="onUpdate(rectElement)"
-       (keyboardMovingChange)="onKeyboardMovingChange($event)"
-       (boxDelete)="onDelete()">
+@if (editable) {
+  <div>
+    <div #rectElement
+      class="rectangle"
+      draggable
+      resizable
+      mvKeyboardBoxMove
+      [tabindex]="rectangleTabIndex"
+      [ngClass]="{ 'selected': selected, 'grabNDrag': enableGrabNDrag }"
+      [style.backgroundColor]="'#' + color"
+      [style.width]="width + 'px'"
+      [style.height]="height + 'px'"
+      [style.left]="left + 'px'"
+      [style.top]="top + 'px'"
+      [rotate]="0"
+      [selected]="selected"
+      [movementBounds]="movementBounds"
+      (click)="onClick()"
+      (focus)="onFocus()"
+      (keydown.tab)="onTab($event)"
+      (stopped)="onUpdate(rectElement)"
+      (keyboardMovingChange)="onKeyboardMovingChange($event)"
+      (boxDelete)="onDelete()">
+    </div>
   </div>
-</div>
-<ng-template #nonEditable>
+} @else {
   <div #rectElement
-       class="rectangle"
-       mvKeyboardBoxMove
-       [tabindex]="rectangleTabIndex"
-       [ngClass]="{ 'selected': selected }"
-       [style.backgroundColor]="'#' + color"
-       [style.width]="width + 'px'"
-       [style.height]="height+ 'px'"
-       [style.left]="left + 'px'"
-       [style.top]="top + 'px'"
-       [enabled]="false"
-       (click)="onClick()"
-       (focus)="onFocus()"
-       (keydown.tab)="onTab($event)"
-       (boxDelete)="onDelete()">
+    class="rectangle"
+    mvKeyboardBoxMove
+    [tabindex]="rectangleTabIndex"
+    [ngClass]="{ 'selected': selected }"
+    [style.backgroundColor]="'#' + color"
+    [style.width]="width + 'px'"
+    [style.height]="height+ 'px'"
+    [style.left]="left + 'px'"
+    [style.top]="top + 'px'"
+    [enabled]="false"
+    (click)="onClick()"
+    (focus)="onFocus()"
+    (keydown.tab)="onTab($event)"
+    (boxDelete)="onDelete()">
   </div>
-</ng-template>
+}

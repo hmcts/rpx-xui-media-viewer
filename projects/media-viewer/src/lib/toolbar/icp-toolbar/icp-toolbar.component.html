@@ -17,22 +17,32 @@
 
   <div id="presenter-info">
     <div class="item-label">
-      <label class="govuk-label" *ngIf="!presenterName" data-l10n-id="noPresenter_label">Waiting for presenter</label>
-      <label class="govuk-label" *ngIf="presenterName && isPresenter" data-l10n-id="isPresenter_label">You are
+      @if (!presenterName) {
+        <label class="govuk-label" data-l10n-id="noPresenter_label">Waiting for presenter</label>
+      }
+      @if (presenterName && isPresenter) {
+        <label class="govuk-label" data-l10n-id="isPresenter_label">You are
         presenting</label>
-      <label class="govuk-label" *ngIf="presenterName && !isPresenter"
-        data-l10n-id="otherPresenter_label">{{ presenterName | titlecase }}
+      }
+      @if (presenterName && !isPresenter) {
+        <label class="govuk-label"
+          data-l10n-id="otherPresenter_label">{{ presenterName | titlecase }}
         is presenting</label>
+      }
     </div>
     <div class="item-button">
-      <button *ngIf="!presenterName" class="govuk-button" id="icp-present" tabindex="0" [attr.aria-label]="'Start presenting' | rpxTranslate"
-        (click)="present()">
-        <span data-l10n-id="icp-present_label" aria-hidden="true">Start presenting</span>
-      </button>
-      <button *ngIf="isPresenter" class="govuk-button  govuk-button--warning" id="icp-stop-presenting" tabindex="0"
-        [attr.aria-label]="'Stop presenting' | rpxTranslate" (click)="stopPresenting()">
-        <span data-l10n-id="icp-stop-presenting_label" aria-hidden="true">Stop Presenting</span>
-      </button>
+      @if (!presenterName) {
+        <button class="govuk-button" id="icp-present" tabindex="0" [attr.aria-label]="'Start presenting' | rpxTranslate"
+          (click)="present()">
+          <span data-l10n-id="icp-present_label" aria-hidden="true">Start presenting</span>
+        </button>
+      }
+      @if (isPresenter) {
+        <button class="govuk-button  govuk-button--warning" id="icp-stop-presenting" tabindex="0"
+          [attr.aria-label]="'Stop presenting' | rpxTranslate" (click)="stopPresenting()">
+          <span data-l10n-id="icp-stop-presenting_label" aria-hidden="true">Stop Presenting</span>
+        </button>
+      }
     </div>
   </div>
 
@@ -41,7 +51,7 @@
       [attr.aria-label]="'Participants list' | rpxTranslate" (click)="showParticipantsList()">
       <span
         data-l10n-id="icp-stop-presenting_label" aria-hidden="true">{{(icpEventService.participantsListVisible | async) ? 'Hide': 'Show'}}
-        participants</span>
+      participants</span>
     </button>
   </div>
 </div>

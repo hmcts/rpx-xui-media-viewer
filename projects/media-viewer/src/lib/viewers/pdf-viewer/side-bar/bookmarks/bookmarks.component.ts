@@ -1,5 +1,5 @@
 import { Bookmark } from './../../../../store/models/bookmarks.interface';
-import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject } from '@angular/core';
+import { Component, EventEmitter, Input, OnChanges, OnDestroy, OnInit, Output, SimpleChanges, inject, ChangeDetectionStrategy } from '@angular/core';
 import { select, Store } from '@ngrx/store';
 import { Subscription, from } from 'rxjs';
 
@@ -19,6 +19,7 @@ import { CdkDragDrop } from '@angular/cdk/drag-drop';
 @Component({
     selector: 'mv-bookmarks',
     templateUrl: './bookmarks.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 

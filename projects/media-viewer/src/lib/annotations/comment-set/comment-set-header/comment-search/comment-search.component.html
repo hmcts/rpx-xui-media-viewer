@@ -7,20 +7,20 @@
   aria-label="search comments input"
   [ngModel]="searchString"
   (ngModelChange)="searchString = $event"
-/>
+  />
 <button
   type="button"
   [class.govuk-button--disabled]="searchInput?.value.length <= 2"
   class="govuk-button comment-search__item"
   (click)="searchComments(searchInput.value.trim())"
->
+  >
   {{ "Search" | rpxTranslate }}
 </button>
-<ng-container *ngIf="searchResults.length > 0">
+@if (searchResults.length > 0) {
   <mv-comments-navigate [annotationList]="searchResults"></mv-comments-navigate>
-</ng-container>
-<ng-container *ngIf="searchString && searchResults?.length === 0">
+}
+@if (searchString && searchResults?.length === 0) {
   <p class="comment-search__item">
     {{ "No matches have been found" | rpxTranslate }}
   </p>
-</ng-container>
+}

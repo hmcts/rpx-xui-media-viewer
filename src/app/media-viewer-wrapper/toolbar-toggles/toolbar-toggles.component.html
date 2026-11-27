@@ -1,6 +1,6 @@
 <table style="float: right; margin-top: 15px">
   <tr>
-    <ng-container *ngIf="toggleToolbar.getValue()">
+    @if (toggleToolbar.getValue()) {
       <td>
         <app-toggle
           [label]="'search'"
@@ -51,7 +51,7 @@
           "
         ></app-toggle>
       </td>
-    </ng-container>
+    }
     <td>
       <div class="govuk-grid-row">
         <div class="govuk-grid-column-full">
@@ -65,7 +65,7 @@
               id="toggleAnnotations"
               [checked]="toggleAnnotations.getValue()"
               (change)="toggleAnnotations.next($event.target.checked)"
-            />
+              />
             <span class="slider round"></span>
           </label>
         </div>
@@ -84,7 +84,7 @@
               id="toggleRedact"
               [checked]="toggleRedaction.getValue()"
               (change)="toggleRedaction.next($event.target.checked)"
-            />
+              />
             <span class="slider round"></span>
           </label>
         </div>
@@ -103,7 +103,7 @@
               id="toggleICP"
               [checked]="toggleICP.getValue()"
               (change)="toggleICP.next($event.target.checked)"
-            />
+              />
             <span class="slider round"></span>
           </label>
         </div>
@@ -122,7 +122,7 @@
               id="toggleMultimedia"
               [checked]="toggleMultimediaPlayer.getValue()"
               (change)="toggleMultimediaPlayer.next($event.target.checked)"
-            />
+              />
             <span class="slider round"></span>
           </label>
         </div>
@@ -141,7 +141,7 @@
               id="toggleRedactSearch"
               [checked]="toggleSearchRedact.getValue()"
               (change)="toggleSearchRedact.next($event.target.checked)"
-            />
+              />
             <span class="slider round"></span>
           </label>
         </div>

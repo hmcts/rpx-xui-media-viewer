@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, ChangeDetectionStrategy} from '@angular/core';
 
 /*
 * Gov UK Label component
@@ -8,17 +8,23 @@ import {Component, Input} from '@angular/core';
 * */
 @Component({
     selector: 'mv-gov-label',
-    template: `<h1 *ngIf="config.isPageHeading else noHeading">
-          <label *ngIf="config.label" [class]="config.classes + ' govuk-label'"
-                 [for]="config.id" [innerHTML]="config.label">
-          </label>
-        </h1>
-        <ng-template #noHeading>
-          <label *ngIf="config.label" [class]="config.classes + ' govuk-label'"
-                 [for]="config.id" [innerHTML]="config.label">
-          </label>
-        </ng-template>
-  `,
+    template: `@if (config.isPageHeading) {
+  <h1>
+    @if (config.label) {
+      <label [class]="config.classes + ' govuk-label'"
+        [for]="config.id" [innerHTML]="config.label">
+      </label>
+    }
+  </h1>
+} @else {
+  @if (config.label) {
+    <label [class]="config.classes + ' govuk-label'"
+      [for]="config.id" [innerHTML]="config.label">
+    </label>
+  }
+}
+`,
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class GovUkLabelComponent {

@@ -6,31 +6,32 @@
     (click)="$event.stopPropagation()"
     cdkTrapFocus
     tabindex="0"
-  >
+    >
     <div id="comment-container" class="comment-container" #commentContainer>
       <h2 class="govuk-heading-m">{{ title }}</h2>
-      <ng-container *ngIf="comments$ | async as comments">
-        <ng-container *ngIf="comments.length">
+      @if (comments$ | async; as comments) {
+        @if (comments.length) {
           <button
             type="submit"
             class="govuk-button govuk-!-margin-right-1"
             (click)="onFiltersToggle()"
-          >
+            >
             {{
-              !showFilters
-                ? ("Show Filters" | rpxTranslate)
-                : ("Hide Filters" | rpxTranslate)
+            !showFilters
+            ? ("Show Filters" | rpxTranslate)
+            : ("Hide Filters" | rpxTranslate)
             }}
           </button>
-          <button
-            type="submit"
-            class="govuk-button govuk-button--secondary"
-            (click)="onClearFilters()"
-            *ngIf="hasFilter"
-          >
-            {{ "Clear Filters" | rpxTranslate }}
-          </button>
-          <ng-container *ngIf="showFilters">
+          @if (hasFilter) {
+            <button
+              type="submit"
+              class="govuk-button govuk-button--secondary"
+              (click)="onClearFilters()"
+              >
+              {{ "Clear Filters" | rpxTranslate }}
+            </button>
+          }
+          @if (showFilters) {
             <form [formGroup]="filtersFg" (ngSubmit)="onFilter()">
               <div class="dates">
                 <div class="dates__from">
@@ -61,26 +62,27 @@
                       id: 'filters'
                     }"
                     [isHeading]="false"
-                  >
+                    >
                     <div
                       class="govuk-checkboxes--scroll"
                       [formGroup]="filtersFg.controls['tagFilters']"
-                    >
+                      >
                       <div class="govuk-checkboxes govuk-checkboxes--small">
-                        <div
-                          class="govuk-checkboxes__item"
-                          *ngFor="let item of allTags$ | async"
-                        >
-                          <input
-                            [formControlName]="item.key"
-                            class="govuk-checkboxes__input"
-                            [value]="false"
-                            type="checkbox"
-                          />
-                          <label class="govuk-label govuk-checkboxes__label">
-                            {{ item.key | unsnake }} ({{ item.length }})
-                          </label>
-                        </div>
+                        @for (item of allTags$ | async; track item) {
+                          <div
+                            class="govuk-checkboxes__item"
+                            >
+                            <input
+                              [formControlName]="item.key"
+                              class="govuk-checkboxes__input"
+                              [value]="false"
+                              type="checkbox"
+                              />
+                            <label class="govuk-label govuk-checkboxes__label">
+                              {{ item.key | unsnake }} ({{ item.length }})
+                            </label>
+                          </div>
+                        }
                       </div>
                     </div>
                   </mv-gov-uk-fieldset>
@@ -92,14 +94,14 @@
                 </div>
               </div>
             </form>
-          </ng-container>
+          }
           <ngx-datatable
             [rows]="comments"
             rowHeight="auto"
             [headerHeight]="50"
             [columnMode]="'flex'"
             [sorts]="[{ prop: 'date', dir: 'desc' }]"
-          >
+            >
             <ngx-datatable-column
               name="{{ 'User' | rpxTranslate }}"
               [flexGrow]="1"
@@ -108,56 +110,58 @@
             <ngx-datatable-column
               name="{{ 'Page' | rpxTranslate }}"
               [flexGrow]="1"
-            >
+              >
               <ng-template ngx-datatable-cell-template let-value="value">
                 <a
                   [routerLink]="[]"
                   class="comment-summary_pages"
                   (click)="navigateToPage(value)"
                   >{{ value }}</a
+                  >
+                </ng-template>
+              </ngx-datatable-column>
+              <ngx-datatable-column
+                name="{{ 'Date' | rpxTranslate }}"
+                [flexGrow]="1"
+              ></ngx-datatable-column>
+              <ngx-datatable-column
+                name="{{ 'Comment' | rpxTranslate }}"
+                [flexGrow]="3"
+                [sortable]="false"
+              ></ngx-datatable-column>
+              <ngx-datatable-column
+                name="{{ 'Tags' | rpxTranslate }}"
+                [flexGrow]="1"
+                [sortable]="false"
                 >
-              </ng-template>
-            </ngx-datatable-column>
-            <ngx-datatable-column
-              name="{{ 'Date' | rpxTranslate }}"
-              [flexGrow]="1"
-            ></ngx-datatable-column>
-            <ngx-datatable-column
-              name="{{ 'Comment' | rpxTranslate }}"
-              [flexGrow]="3"
-              [sortable]="false"
-            ></ngx-datatable-column>
-            <ngx-datatable-column
-              name="{{ 'Tags' | rpxTranslate }}"
-              [flexGrow]="1"
-              [sortable]="false"
-            >
-              <ng-template ngx-datatable-cell-template let-value="value">
-                <span class="hmcts-badge" *ngFor="let tag of value">{{
-                  tag.label
-                }}</span>
-              </ng-template>
-            </ngx-datatable-column>
-          </ngx-datatable>
-        </ng-container>
-        <ng-container *ngIf="!comments.length">
-          <h3 class="govuk-heading-s">
-            {{
+                <ng-template ngx-datatable-cell-template let-value="value">
+                  @for (tag of value; track tag) {
+                    <span class="hmcts-badge">{{
+                      tag.label
+                    }}</span>
+                  }
+                </ng-template>
+              </ngx-datatable-column>
+            </ngx-datatable>
+          }
+          @if (!comments.length) {
+            <h3 class="govuk-heading-s">
+              {{
               "No comments available. Select text to add a highlight or comment."
-                | rpxTranslate
-            }}
-          </h3>
-        </ng-container>
-      </ng-container>
-    </div>
+              | rpxTranslate
+              }}
+            </h3>
+          }
+        }
+      </div>
 
-    <div class="button-container">
-      <button (click)="onPrint()" class="govuk-button govuk-button--secondary">
-        {{ "Print" | rpxTranslate }}
-      </button>
-      <button id="modal-close-button" (click)="onClose()" class="govuk-button">
-        {{ "Close" | rpxTranslate }}
-      </button>
+      <div class="button-container">
+        <button (click)="onPrint()" class="govuk-button govuk-button--secondary">
+          {{ "Print" | rpxTranslate }}
+        </button>
+        <button id="modal-close-button" (click)="onClose()" class="govuk-button">
+          {{ "Close" | rpxTranslate }}
+        </button>
+      </div>
     </div>
   </div>
-</div>

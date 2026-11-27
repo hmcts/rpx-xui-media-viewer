@@ -1,12 +1,14 @@
 <div class="govuk-tabs commentSummaryHeader" [ngClass]="{'icp-mode': icpEventService.enabled | async}" data-module="govuk-tabs">
   <ul class="govuk-tabs__list">
-    <li *ngFor="let tab of tabs; let i = index" class="govuk-tabs__list-item govuk-tabs__list-item"
+    @for (tab of tabs; track tab; let i = $index) {
+      <li class="govuk-tabs__list-item govuk-tabs__list-item"
         [ngClass]="{'govuk-tabs__list-item--selected': tabSelected === tab.label}">
-      <a id="commentSubPane{{ i }}" (click)="selectTab(tab.label)" [routerLink]="[]" [ngClass]="{'govuk-tabs__list-item--filtered': tab.isFiltered}"
-         class="govuk-tabs__tab" [hidden]="isHidden">
-        {{ tab.label | titlecase }}
-      </a>
-    </li>
+        <a id="commentSubPane{{ i }}" (click)="selectTab(tab.label)" [routerLink]="[]" [ngClass]="{'govuk-tabs__list-item--filtered': tab.isFiltered}"
+          class="govuk-tabs__tab" [hidden]="isHidden">
+          {{ tab.label | titlecase }}
+        </a>
+      </li>
+    }
     <li>
       <button id="mvCloseBtn" #mvCloseBtn class="mv-button commentSummaryHeader-button--close"
         title="Close Comments" [attr.aria-label]="'Close Comments' | rpxTranslate"
@@ -15,46 +17,49 @@
     </li>
   </ul>
   <div class="govuk-tabs__panel" [hidden]="!tabSelected">
-    <ng-container *ngIf="tabSelected === 'comments'">
+    @if (tabSelected === 'comments') {
       <div style="width: 100%">
-        <div class="hmcts-banner" *ngIf="navigationList?.length === 0">
-          <svg alt="" class="hmcts-banner__icon" fill="currentColor" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" height="25" width="25">
+        @if (navigationList?.length === 0) {
+          <div class="hmcts-banner">
+            <svg alt="" class="hmcts-banner__icon" fill="currentColor" focusable="false" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 25 25" height="25" width="25">
             <path d="M13.7,18.5h-2.4v-2.4h2.4V18.5z M12.5,13.7c-0.7,0-1.2-0.5-1.2-1.2V7.7c0-0.7,0.5-1.2,1.2-1.2s1.2,0.5,1.2,1.2v4.8
 C13.7,13.2,13.2,13.7,12.5,13.7z M12.5,0.5c-6.6,0-12,5.4-12,12s5.4,12,12,12s12-5.4,12-12S19.1,0.5,12.5,0.5z" /></svg>
-          <div class="hmcts-banner__message">
-            <span class="hmcts-banner__assistive">information</span>
-            Select text to add a comment or highlight.
-          </div>
+              <div class="hmcts-banner__message">
+                <span class="hmcts-banner__assistive">information</span>
+                Select text to add a comment or highlight.
+              </div>
+            </div>
+          }
+          <button type="button" class="govuk-button"
+            id="commentSummary" tabindex="0"
+            data-l10n-id="commentSummary"
+            title="Open collate summary"
+            [attr.aria-label]="'Open collate summary' | rpxTranslate"
+          (click)="toggleCommentsSummary()">Collate comments</button>
         </div>
-        <button type="button" class="govuk-button"
-                id="commentSummary" tabindex="0"
-                data-l10n-id="commentSummary"
-                title="Open collate summary"
-                [attr.aria-label]="'Open collate summary' | rpxTranslate"
-                (click)="toggleCommentsSummary()">Collate comments</button>
+        @if (navigationList?.length > 0) {
+          <mv-comments-navigate
+            [annotationList]="navigationList">
+          </mv-comments-navigate>
+        }
+        <p class="aui-comment__private-text">
+          <span class="aui-comment__private">private</span>
+          All comments can only be seen by you
+        </p>
+      }
+      <div [hidden]="tabSelected !== 'filter'">
+        <div class="govuk-tabs__panel--container">
+          <mv-comment-filter></mv-comment-filter>
+          @if (navigationList?.length > 0) {
+            <mv-comments-navigate
+              [annotationList]="navigationList">
+            </mv-comments-navigate>
+          }
+        </div>
       </div>
-      <ng-container *ngIf="navigationList?.length > 0">
-        <mv-comments-navigate
-          [annotationList]="navigationList">
-        </mv-comments-navigate>
-      </ng-container>
-      <p class="aui-comment__private-text">
-        <span class="aui-comment__private">private</span>
-        All comments can only be seen by you
-      </p>
-    </ng-container>
-    <div [hidden]="tabSelected !== 'filter'">
-      <div class="govuk-tabs__panel--container">
-        <mv-comment-filter></mv-comment-filter>
-        <mv-comments-navigate
-          *ngIf="navigationList?.length > 0"
-          [annotationList]="navigationList">
-        </mv-comments-navigate>
-      </div>
-    </div>
 
-    <div [hidden]="tabSelected !== 'search'">
-      <mv-comment-search [annotations]="navigationList"></mv-comment-search>
+      <div [hidden]="tabSelected !== 'search'">
+        <mv-comment-search [annotations]="navigationList"></mv-comment-search>
+      </div>
     </div>
   </div>
-</div>

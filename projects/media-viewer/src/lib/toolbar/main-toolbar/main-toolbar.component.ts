@@ -1,5 +1,5 @@
 import { ConnectionPositionPair } from '@angular/cdk/overlay';
-import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, inject } from '@angular/core';
+import { AfterViewInit, ChangeDetectorRef, Component, ElementRef, HostListener, Input, OnDestroy, OnInit, ViewChild, inject, ChangeDetectionStrategy } from '@angular/core';
 import { Subscription } from 'rxjs';
 import { filter, take } from 'rxjs/operators';
 import { ToolbarEventService } from '../toolbar-event.service';
@@ -12,6 +12,7 @@ import { HtmlTemplatesHelper } from '../../shared/util/helpers/html-templates.he
 @Component({
     selector: 'mv-main-toolbar',
     templateUrl: './main-toolbar.component.html',
+    changeDetection: ChangeDetectionStrategy.Eager,
     standalone: false
 })
 export class MainToolbarComponent implements OnInit, OnDestroy, AfterViewInit {
